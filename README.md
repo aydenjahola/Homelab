@@ -1,4 +1,4 @@
-# Homelab
+# Homelab - Hephaestus Configs
 
 This repository contains the configuration and setup files for my personal homelab. My homelab consists of a variety of different hardware and software components, including:
 
