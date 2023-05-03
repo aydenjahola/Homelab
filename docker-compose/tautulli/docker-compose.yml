@@ -1,0 +1,24 @@
+version: "2.1"
+
+services:
+  tautulli:
+    image: lscr.io/linuxserver/tautulli
+    container_name: tautulli
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Dublin
+    volumes:
+      - ~/homelab-data/tautulli/drive/config/tautulli:/config
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tautulli.entrypoints=https"
+      - "traefik.http.routers.tautulli.rule=Host(`tautulli.local.aydenjahola.com`)"
+      - "traefik.http.services.tautulli.loadbalancer.server.port=8181"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

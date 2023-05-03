@@ -1,0 +1,27 @@
+version: '3'
+services:
+  homarr:
+    container_name: homarr
+    image: ghcr.io/ajnart/homarr:latest
+    restart: unless-stopped
+    environment:
+      - EDIT_MODE_PASSWORD=${EDIT_MODE_PASSWORD}
+      - DISABLE_EDIT_MODE=TRUE
+      - DEFAULT_COLOR_SCHEME=dark
+    volumes:
+      - ~/homelab-data/homarr/configs:/app/data/configs
+      - ~/homelab-data/homarr/icons:/app/public/icons
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homarr.entrypoints=https"
+      - "traefik.http.routers.homarr.rule=Host(`home.aydenjahola.com`) || Host(`home.local.aydenjahola.com`)"
+      - "traefik.http.services.homarr.loadbalancer.server.port=7575"
+      
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

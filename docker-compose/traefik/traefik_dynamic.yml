@@ -1,0 +1,58 @@
+http:
+  routers:
+    plex:
+      rule: "Host(`plex.local.aydenjahola.com`)"
+      entryPoints:
+        - "https"
+      middlewares:
+        - "plexHeaders"
+      service: "plex"
+    truenas:
+      rule: "Host(`truenas.local.aydenjahola.com`)"
+      entryPoints:
+        - "https"
+      service: "truenas"
+    nomad:
+      rule: "Host(`nomad.local.aydenjahola.com`)"
+      entryPoints:
+        - "https"
+      middlewares:
+        - "nomadHeaders"
+      service: "nomad"
+    homebridge:
+      rule: "Host(`homebridge.local.aydenjahola.com`)"
+      entryPoints:
+        - "https"
+      service: "homebridge"
+  services:
+    plex:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.56:32400"
+    truenas:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.52:80"
+    nomad:
+      loadBalancer:
+         servers:
+          - url: "http://192.168.1.34:4646"
+    homebridge:
+      loadBalancer:
+         servers:
+          - url: "http://192.168.1.57:80"
+  middlewares:
+    plexHeaders:
+      headers:
+        sslRedirect: true
+        stsSeconds: "315360000"
+        browserXSSFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        frameDeny: false
+    nomadHeaders:
+      headers:
+        customRequestHeaders:
+          Origin: "https://nomad.local.aydenjahola.com"

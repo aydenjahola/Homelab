@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      TZ: 'Europe/Dublin'
+      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
+    volumes:
+      - '~/homelab-data/pihole/etc-pihole:/etc/pihole'
+      - '~/homelab-data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d'
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.entrypoints=https"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.local.aydenjahola.com`)"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      - "traefik.http.routers.pihole.middlewares=pihole-admin"
+      - "traefik.http.middlewares.pihole-admin.addprefix.prefix=/admin"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

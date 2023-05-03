@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  dash:
+    image: mauricenino/dashdot:latest
+    restart: unless-stopped
+    privileged: true
+    environment:
+      DASHDOT_ENABLE_CPU_TEMPS: 'true'
+    volumes:
+      - /:/mnt/host:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashdot.entrypoints=https"
+      - "traefik.http.routers.dashdot.rule=Host(`dashdot.local.aydenjahola.com`)"
+      - "traefik.http.services.homer.loadbalancer.server.port=3001"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

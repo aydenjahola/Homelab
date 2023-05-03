@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+  mail:
+    image: bytemark/smtp
+    container_name: plausible-mail
+    restart: always
+    networks:
+      - internal
+
+  plausible_db:
+    image: postgres:14
+    container_name: plausible-db
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    restart: always
+
+  plausible_events_db:
+    image: yandex/clickhouse-server:latest
+    volumes:
+      - event-data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    networks:
+      - internal
+    restart: always
+
+  plausible:
+    image: plausible/analytics:latest
+    container_name: plausible
+    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run"
+    depends_on:
+      - plausible_db
+      - plausible_events_db
+      - mail
+    env_file:
+      - plausible-conf.env
+    environment:
+      - DISABLE_REGISTRATION=true
+    networks:
+      - internal
+      - proxy
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plausible.rule=Host(`plausible.aydenjahola.com`)" # TODO: Change with your own domain
+      - "traefik.http.routers.plausible.entrypoints=https"
+      - "traefik.http.services.plausible.loadbalancer.server.port=8000"
+
+volumes:
+  db-data:
+    driver: local
+  event-data:
+    driver: local
+  geoip:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false

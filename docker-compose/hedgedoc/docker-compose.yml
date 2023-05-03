@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  database:
+    image: postgres:13.4-alpine
+    container_name: hedgedoc-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=hedgedoc
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=hedgedoc
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - internal
+  hedgedoc:
+    image: quay.io/hedgedoc/hedgedoc
+    container_name: hedgedoc
+    restart: unless-stopped
+    environment:
+      - CMD_DB_URL=postgres://hedgedoc:${POSTGRES_PASSWORD}@database:5432/hedgedoc
+      - CMD_DOMAIN=md.aydenjahola.com
+      - CMD_PROTOCOL_USESSL=true
+    volumes:
+      - uploads:/hedgedoc/public/uploads
+    depends_on:
+      - database
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.md.entrypoints=https"
+      - "traefik.http.routers.md.rule=Host(`md.aydenjahola.com`) || Host(`md.local.aydenjahola.com`)"
+      - "traefik.http.services.md.loadbalancer.server.port=3000"
+    networks:
+      - proxy
+      - internal
+
+networks:
+  internal:
+  proxy:
+    external: true
+
+volumes:
+  database:
+  uploads:
+

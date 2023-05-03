@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  pasta:
+    image: cglatot/pasta
+    container_name: pasta
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pasta.entrypoints=https"
+      - "traefik.http.routers.pasta.rule=Host(`pasta.local.aydenjahola.com`)"
+      - "traefik.http.services.pasta.loadbalancer.server.port=80"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+
