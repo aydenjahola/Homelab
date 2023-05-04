@@ -3,3 +3,4 @@ docker-compose/traefik/acme.json
 docker-compose/plausible/geoip/docker-compose.geoip.yml
 docker-compose/plausible/geoip/geoip.conf
 docker-compose/plausible/plausible-conf.env
+docker-compose/vikunja/db/

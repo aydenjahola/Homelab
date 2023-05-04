@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  api:
+    container_name: vikunja-api
+    image: vikunja/api
+    environment:
+      VIKUNJA_DATABASE_HOST: ${VIKUNJA_DATABASE_HOST}
+      VIKUNJA_DATABASE_PASSWORD: ${VIKUNJA_DATABASE_PASSWORD}
+      VIKUNJA_DATABASE_TYPE: ${VIKUNJA_DATABASE_TYPE}
+      VIKUNJA_DATABASE_USER: ${VIKUNJA_DATABASE_USER}
+      VIKUNJA_DATABASE_DATABASE: ${VIKUNJA_DATABASE_DATABASE}
+      VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_SERVICE_JWTSECRET}
+      VIKUNJA_SERVICE_FRONTENDURL: ${VIKUNJA_SERVICE_FRONTENDURL}
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: 0
+    volumes: 
+      - ~/homelab-data/vikunja/files:/app/vikunja/files
+    networks:
+      - proxy
+      - default
+    depends_on:
+      - db
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vikunja-api.rule=Host(`vikunja.aydenjahola.com`) && (PathPrefix(`/api/v1`) || PathPrefix(`/dav/`) || PathPrefix(`/.well-known/`))"
+      - "traefik.http.routers.vikunja-api.entrypoints=https"
+  frontend:
+    container_name: vikunja-frontend
+    image: vikunja/frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vikunja-frontend.rule=Host(`vikunja.aydenjahola.com`)"
+      - "traefik.http.routers.vikunja-frontend.entrypoints=https"
+    networks:
+      - proxy
+      - default
+    restart: unless-stopped
+  db:
+    container_name: vikunja-db
+    image: mariadb:10
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - ./db:/var/lib/mysql
+    restart: unless-stopped
+    command: --max-connections=1000
+
+networks:
+  proxy:
+    external: true
