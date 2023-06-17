@@ -49,7 +49,7 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.plausible.rule=Host(`plausible.aydenjahola.com`)" # TODO: Change with your own domain
+      - "traefik.http.routers.plausible.rule=Host(`plausible.aydenjahola.com`)"
       - "traefik.http.routers.plausible.entrypoints=https"
       - "traefik.http.services.plausible.loadbalancer.server.port=8000"
 
