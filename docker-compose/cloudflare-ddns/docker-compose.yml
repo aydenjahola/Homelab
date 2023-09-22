@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  cloudflare-ddns:
+    image: oznu/cloudflare-ddns:latest
+    container_name: cloudflare-ddns
+    restart: always
+    environment:
+      - API_KEY=${API_KEY}
+      - ZONE=aydenjahola.com
+      - SUBDOMAIN=home
+      - PROXIED=true
+

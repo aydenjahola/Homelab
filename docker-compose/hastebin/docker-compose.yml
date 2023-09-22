@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  hastebin:
+    image: rlister/hastebin
+    container_name: hastebin
+    restart: unless-stopped
+    environment:
+      STORAGE_TYPE: redis
+      STORAGE_HOST: redis
+    networks:
+      - proxy
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hastebin.entrypoints=https"
+      - "traefik.http.routers.hastebin.rule=Host(`hastebin.aydenjahola.com`) || Host(`hastebin.local.aydenjahola.com`)"
+      - "traefik.http.services.hastebin.loadbalancer.server.port=7777"
+  redis:
+    image: redis
+    container_name: hastebin-redis
+    restart: unless-stopped
+    volumes:
+      - /mnt/drive/data/hastebin:/data
+    entrypoint: redis-server --appendonly yes
+    networks:
+      - internal
+
+networks:
+  internal:
+  proxy:
+    external: true
+
