@@ -5,3 +5,4 @@ docker-compose/plausible/geoip/geoip.conf
 docker-compose/plausible/plausible-conf.env
 docker-compose/vikunja/db/
 docker-compose/discord-bot/
+docker-compose/email-generator/
