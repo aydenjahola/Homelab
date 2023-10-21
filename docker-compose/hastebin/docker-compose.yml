@@ -14,7 +14,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.hastebin.entrypoints=https"
-      - "traefik.http.routers.hastebin.rule=Host(`hastebin.aydenjahola.com`) || Host(`hastebin.local.aydenjahola.com`)"
+      - "traefik.http.routers.hastebin.rule=Host(`paste.aydenjahola.com`) || Host(`paste.local.aydenjahola.com`)"
       - "traefik.http.services.hastebin.loadbalancer.server.port=7777"
   redis:
     image: redis
