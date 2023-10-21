@@ -17,7 +17,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
       - internal
-    restart: always
 
   plausible_events_db:
     image: yandex/clickhouse-server:latest
