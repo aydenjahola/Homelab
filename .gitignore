@@ -1,8 +1,8 @@
 .env
+*.env
 docker-compose/traefik/acme.json
-docker-compose/plausible/geoip/docker-compose.geoip.yml
-docker-compose/plausible/geoip/geoip.conf
 docker-compose/plausible/plausible-conf.env
+docker-compose/plausible/geoip/geoip.conf
 docker-compose/vikunja/db/
 docker-compose/discord-bot/
 docker-compose/email-generator/

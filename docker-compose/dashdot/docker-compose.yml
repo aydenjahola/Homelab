@@ -13,7 +13,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashdot.entrypoints=https"
       - "traefik.http.routers.dashdot.rule=Host(`dashdot.local.aydenjahola.com`)"
-      - "traefik.http.services.homer.loadbalancer.server.port=3001"
+      - "traefik.http.services.dashdot.loadbalancer.server.port=3001"
     networks:
       - proxy
 
