@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: stallman-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stallman.entrypoints=https"
+      - "traefik.http.routers.stallman.rule=Host(`stallman.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

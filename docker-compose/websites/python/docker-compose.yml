@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: python-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.python.entrypoints=https"
+      - "traefik.http.routers.python.rule=Host(`python.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

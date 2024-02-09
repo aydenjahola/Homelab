@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: ipv6-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ipv6.entrypoints=https"
+      - "traefik.http.routers.ipv6.rule=Host(`ipv6.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
