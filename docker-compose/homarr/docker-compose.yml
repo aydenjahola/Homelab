@@ -11,6 +11,7 @@ services:
     volumes:
       - ~/homelab-data/homarr/configs:/app/data/configs
       - ~/homelab-data/homarr/icons:/app/public/icons
+      - ./homarr/data:/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
     labels:

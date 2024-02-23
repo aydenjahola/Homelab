@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: regex-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.regex.entrypoints=https"
+      - "traefik.http.routers.regex.rule=Host(`regex.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

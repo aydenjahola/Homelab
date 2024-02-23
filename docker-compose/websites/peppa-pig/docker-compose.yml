@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: peppa-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.peppa.entrypoints=https"
+      - "traefik.http.routers.peppa.rule=Host(`peppa.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

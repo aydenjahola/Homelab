@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: gd-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gd.entrypoints=https"
+      - "traefik.http.routers.gd.rule=Host(`gd.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

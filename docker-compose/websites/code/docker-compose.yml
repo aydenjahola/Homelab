@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: code-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.code.entrypoints=https"
+      - "traefik.http.routers.code.rule=Host(`code.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

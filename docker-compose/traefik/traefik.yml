@@ -20,6 +20,8 @@ entryPoints:
             sans: "*.aydenjahola.com"
           - main: "local.aydenjahola.com"
             sans: "*.local.aydenjahola.com"
+          - main: "inaamessawi.com"
+            sans: "*.inaamessawi.com"
 
 certificatesResolvers:
   cloudflare:

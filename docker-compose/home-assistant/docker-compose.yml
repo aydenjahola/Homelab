@@ -1,0 +1,26 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: home-assistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    restart: unless-stopped
+    privileged: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ha.rule=Host(`ha.local.aydenjahola.com`)"
+      - "traefik.http.routers.ha.entrypoints=https"
+      - "traefik.http.services.ha.loadbalancer.server.port=8123"
+    networks:
+      - internal
+      - proxy
+
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false

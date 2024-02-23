@@ -6,3 +6,4 @@ docker-compose/plausible/geoip/geoip.conf
 docker-compose/vikunja/db/
 docker-compose/discord-bot/
 docker-compose/email-generator/
+config.toml

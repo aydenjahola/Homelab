@@ -1,0 +1,46 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres:13
+    container_name: listmonk-db
+    networks:
+      - internal
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U listmonk"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    volumes:
+      - ~/homelab-data/listmonk/postgresql/:/var/lib/postgresql/data
+
+  app:
+    image: listmonk/listmonk:latest
+    container_name: listmonk-web
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.listmonk.entrypoints=https"
+      - "traefik.http.routers.listmonk.rule=Host(`lists.aydenjahola.com`)"
+      - "traefik.http.services.listmonk.loadbalancer.server.port=9000"
+    networks:
+      - proxy
+      - internal
+    environment:
+      - TZ=Etc/UTC
+      - SITE_URL=https://listmonk.aydenjahola.com
+    depends_on:
+      - db
+    volumes:
+      - ./config.toml:/listmonk/config.toml
+      - ~/homelab-data/listmonk/static:/listmonk/static
+
+networks:
+  internal:
+  proxy:
+    external: true

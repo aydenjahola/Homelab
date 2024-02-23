@@ -1,0 +1,17 @@
+version: '3'
+services:
+  nginx:
+    container_name: onlyfans-website
+    image: nginx:latest
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.onlyfans.entrypoints=https"
+      - "traefik.http.routers.onlyfans.rule=Host(`onlyfans.aydenjahola.com`)"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
