@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  odoo:
+    container_name: odoo-web
+    image: odoo:15.0
+    env_file: .env
+    user: root
+    depends_on:
+      - postgres
+    volumes:
+      - ~/homelab-data/odoo/odoo-web-data:/var/lib/odoo
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.odoo.entrypoints=https"
+      - "traefik.http.routers.odoo.rule=Host(`odoo.local.aydenjahola.com`)"
+      - "traefik.http.services.odoo.loadbalancer.server.port=8069"
+    networks:
+      - proxy
+      - internal
+        
+  postgres:
+    container_name: odoo-db
+    image: postgres:13
+    env_file: .env
+    volumes:
+      - ~/homelab-data/odoo/odoo-db-data:/var/lib/postgresql/data/pgdata
+    networks:
+      - internal
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+
+networks:
+  internal:
+  proxy:
+    external: true

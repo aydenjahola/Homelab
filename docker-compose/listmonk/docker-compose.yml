@@ -36,6 +36,7 @@ services:
       - SITE_URL=https://listmonk.aydenjahola.com
     depends_on:
       - db
+    command: "./listmonk --static-dir=/listmonk/static"
     volumes:
       - ./config.toml:/listmonk/config.toml
       - ~/homelab-data/listmonk/static:/listmonk/static
