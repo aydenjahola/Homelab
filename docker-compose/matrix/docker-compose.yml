@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+
+  synapse:
+    container_name: matrix-synapse
+    image: docker.io/matrixdotorg/synapse:latest
+    user: root
+    restart: unless-stopped
+    # See the readme for a full documentation of the environment settings
+    # NOTE: You must edit homeserver.yaml to use postgres, it defaults to sqlite
+    environment:
+      - SYNAPSE_CONFIG_PATH=/data/homeserver.yaml
+    volumes:
+      - ~/homelab-data/matrix/files:/data
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.matrix.entrypoints=https"
+      - "traefik.http.routers.matrix.rule=Host(`matrix.aydenjahola.com`)"
+      - "traefik.http.services.matrix.loadbalancer.server.port=8008"
+    networks:
+      - proxy
+      - internal
+
+  db:
+    container_name: matrix-db
+    image: docker.io/postgres:12-alpine
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
+      # ensure the database gets created correctly
+      # https://element-hq.github.io/synapse/latest/postgres.html#set-up-database
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - ~/homelab-data/matrix/postgresql:/var/lib/postgresql/data
+    networks:
+      - internal
+
+volumes:
+  matrix-files:
+  matrix-postgresql:
+
+
+
+networks:
+  internal:
+  proxy:
+    external: true
