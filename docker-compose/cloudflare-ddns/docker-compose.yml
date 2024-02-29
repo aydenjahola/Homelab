@@ -8,7 +8,6 @@ services:
     environment:
       - API_KEY=${API_KEY}
       - ZONE=aydenjahola.com
-      - ZONE=inaamessawi.com
       - SUBDOMAIN=home
       - PROXIED=true
 
