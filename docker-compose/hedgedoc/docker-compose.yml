@@ -21,6 +21,9 @@ services:
       - CMD_DB_URL=postgres://hedgedoc:${POSTGRES_PASSWORD}@database:5432/hedgedoc
       - CMD_DOMAIN=md.aydenjahola.com
       - CMD_PROTOCOL_USESSL=true
+      - CMD_ALLOW_ANONYMOUS=false
+      - CMD_ALLOW_EMAIL_REGISTER=false
+      - CMD_ALLOW_GRAVATAR=true
     volumes:
       - uploads:/hedgedoc/public/uploads
     depends_on:

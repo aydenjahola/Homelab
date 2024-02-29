@@ -2,6 +2,7 @@ version: '3.5'
 
 services:
   dash:
+    container_name: dashdot
     image: mauricenino/dashdot:latest
     restart: unless-stopped
     privileged: true

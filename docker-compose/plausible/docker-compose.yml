@@ -19,6 +19,7 @@ services:
       - internal
 
   plausible_events_db:
+    container_name: plausible-events-db
     image: yandex/clickhouse-server:latest
     volumes:
       - event-data:/var/lib/clickhouse
