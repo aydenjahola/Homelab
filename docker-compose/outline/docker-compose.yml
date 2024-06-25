@@ -4,6 +4,7 @@ services:
   outline:
     image: docker.getoutline.com/outlinewiki/outline:latest
     container_name: outline
+    restart: unless-stopped
     env_file: ./docker.env
     volumes:
       - ~/homelab-data/outline/storage-data:/var/lib/outline/data
@@ -23,6 +24,7 @@ services:
   redis:
     image: redis
     container_name: outline-redis
+    restart: unless-stopped
     env_file: ./docker.env
     ports:
       - "6379:6379"
@@ -40,6 +42,7 @@ services:
   postgres:
     image: postgres
     container_name: outline-db
+    restart: unless-stopped
     env_file: ./docker.env
     ports:
       - "5432:5432"
@@ -58,7 +61,6 @@ services:
       - internal
 
 volumes:
-  https-portal-data:
   storage-data:
   database-data:
 
