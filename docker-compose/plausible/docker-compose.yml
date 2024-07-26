@@ -58,8 +58,6 @@ volumes:
     driver: local
   event-data:
     driver: local
-  geoip:
-    driver: local
 
 networks:
   proxy:
