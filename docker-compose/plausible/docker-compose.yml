@@ -8,7 +8,7 @@ services:
       - internal
 
   plausible_db:
-    image: postgres:14
+    image: postgres:16-alpine
     container_name: plausible-db
     restart: always
     volumes:
@@ -20,9 +20,12 @@ services:
 
   plausible_events_db:
     container_name: plausible-events-db
-    image: yandex/clickhouse-server:latest
+    image: clickhouse/clickhouse-server:24.3.3.102-alpine
     volumes:
       - event-data:/var/lib/clickhouse
+      - event-logs:/var/log/clickhouse-server
+      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
+      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
     ulimits:
       nofile:
         soft: 262144
@@ -32,9 +35,9 @@ services:
     restart: always
 
   plausible:
-    image: plausible/analytics:latest
+    image: ghcr.io/plausible/community-edition:v2.1.1
     container_name: plausible
-    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run"
+    command: sh -c "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
       - plausible_db
       - plausible_events_db
@@ -57,6 +60,8 @@ volumes:
   db-data:
     driver: local
   event-data:
+    driver: local
+  event-logs:
     driver: local
 
 networks:
