@@ -1,0 +1,31 @@
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Dublin
+      - PASSWORD=${PASSWORD}
+        #- HASHED_PASSWORD=${HASHED_PASSWORD}
+      - SUDO_PASSWORD=${SUDO_PASSWORD}
+        #- SUDO_PASSWORD_HASH=${SUDO_HASHED_PASSWORD}
+      - PROXY_DOMAIN=code.local.aydenjahola.com
+      - DEFAULT_WORKSPACE=/config/workspace
+    volumes:
+      - ~/homelab-data/code-server/config:/config
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.code.rule=Host(`code.aydenjahola.com`)"
+      - "traefik.http.routers.code.entrypoints=https"
+      - "traefik.http.services.code.loadbalancer.server.port=8443"
+    networks:
+      - internal
+      - proxy
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false

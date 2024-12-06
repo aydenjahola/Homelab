@@ -1,0 +1,46 @@
+services:
+  rallly:
+    container_name: rally
+    image: lukevella/rallly:latest
+    restart: always
+    depends_on:
+      - rallly_db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vote.rule=Host(`vote.aydenjahola.com`)"
+      - "traefik.http.routers.vote.entrypoints=https"
+      - "traefik.http.services.vote.loadbalancer.server.port=3000"
+    networks:
+      - internal
+      - proxy
+    env_file:
+      - ./.env
+
+  rallly_db:
+    container_name: rally_db
+    image: postgres:17.2
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${PG_PASSWD}
+      - POSTGRES_DB=${PG_DB}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false

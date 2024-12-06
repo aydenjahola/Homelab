@@ -19,26 +19,6 @@ http:
       middlewares:
         - "nomadHeaders"
       service: "nomad"
-    radarr:
-      rule: "Host(`radarr.local.aydenjahola.com`)"
-      entryPoints:
-        - "https"
-      service: "radarr"
-    sonarr:
-      rule: "Host(`sonarr.local.aydenjahola.com`)"
-      entryPoints:
-        - "https"
-      service: "sonarr"
-    prowlarr:
-      rule: "Host(`prowlarr.local.aydenjahola.com`)"
-      entryPoints:
-        - "https"
-      service: "prowlarr"
-    qbittorrent:
-      rule: "Host(`torr.local.aydenjahola.com`)"
-      entryPoints:
-        - "https"
-      service: "qbittorrent"
     netdata:
       rule: "Host(`nasstatus.local.aydenjahola.com`)"
       entryPoints:
@@ -57,22 +37,6 @@ http:
       loadBalancer:
          servers:
           - url: "http://192.168.1.34:4646"
-    radarr:
-      loadBalancer:
-         servers:
-          - url: "http://192.168.1.14:7878"
-    sonarr:
-      loadBalancer:
-         servers:
-          - url: "http://192.168.1.14:8989"
-    prowlarr:
-      loadBalancer:
-         servers:
-          - url: "http://192.168.1.52:9696"
-    qbittorrent:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.1.8:8080"
     netdata:
       loadBalancer:
          servers:
