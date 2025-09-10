@@ -10,10 +10,6 @@ job "cloudflare-ddns" {
 
       config {
         image      = "oznu/cloudflare-ddns:latest"
-
-        volumes = [
-          "local/.env:/.env"
-        ]
       }
 
       template {

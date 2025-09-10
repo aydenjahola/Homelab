@@ -35,7 +35,6 @@ job "vaultwarden" {
 
         volumes = [
           "/storage/nomad/vaultwarden:/data:rw",
-          "local/.env:/.env"
         ]
       }
 

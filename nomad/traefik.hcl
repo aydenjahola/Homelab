@@ -51,7 +51,6 @@ job "traefik" {
           "local/traefik.yml:/traefik.yml:ro",
           "/storage/nomad/traefik/acme.json:/acme.json",
           "/storage/nomad/traefik/traefik_logs:/traefik_logs",
-          "local/.env:/.env"
         ]
       }
 
