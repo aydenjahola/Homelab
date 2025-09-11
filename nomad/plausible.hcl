@@ -77,7 +77,7 @@ EOF
       driver = "docker"
 
       config {
-        image = "clickhouse/clickhouse-server:24.3.3.102-alpine"
+        image = "clickhouse/clickhouse-server:24.12-alpine"
         ports  = ["clickhouse"]
 
         volumes = [
@@ -85,10 +85,28 @@ EOF
           "/storage/nomad/plausible/event-logs:/var/log/clickhouse-server",
           "local/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro",
           "local/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro",
+          "local/clickhouse-ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro"
         ]
       }
 
-            template {
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+CLICKHOUSE_SKIP_USER_SETUP=1
+EOH
+      }
+
+      template {
+        destination = "local/clickhouse-ipv4-only.xml"
+        data        = <<EOH
+<clickhouse>
+    <listen_host>0.0.0.0</listen_host>
+</clickhouse>
+EOH
+      }
+
+      template {
         data        = <<EOH
 <clickhouse>
     <logger>
@@ -138,7 +156,7 @@ EOH
         ports = ["http"]
 
         command = "/bin/sh"
-        args    = ["-c", "sleep 10 && /entrypoint.sh db migrate && /entrypoint.sh run"]
+        args    = ["-c", "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"]
 
         volumes = [
           "/storage/nomad/plausible/data:/var/lib/plausible",
