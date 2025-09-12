@@ -34,7 +34,7 @@ job "vaultwarden" {
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/vaultwarden:/data:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}:/data:rw",
         ]
       }
 
@@ -46,7 +46,7 @@ job "vaultwarden" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOF
+        data = <<EOH
 ADMIN_TOKEN={{ key "vaultwarden/admin/token" }}
 WEBSOCKET_ENABLED=true
 SIGNUPS_ALLOWED=false
@@ -56,7 +56,7 @@ SMTP_PORT={{ key "vaultwarden/smtp/port" }}
 SMTP_USERNAME={{ key "vaultwarden/smtp/username" }}
 SMTP_PASSWORD={{ key "vaultwarden/smtp/password" }}
 DOMAIN={{ key "vaultwarden/domain" }}
-EOF
+EOH
       }
     }
   }

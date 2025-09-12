@@ -34,7 +34,7 @@ job "home-assistant" {
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/home-assistant/config:/config:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/config:/config:rw",
           "/etc/localtime:/etc/localtime:ro",
           "/run/dbus:/run/dbus:ro",
         ]

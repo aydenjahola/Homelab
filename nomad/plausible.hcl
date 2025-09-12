@@ -53,18 +53,18 @@ job "plausible" {
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/plausible/db/data:/var/lib/postgresql/data"
+          "/storage/nomad/${NOMAD_JOB_NAME}/db/data:/var/lib/postgresql/data"
         ]
       }
 
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOF
+        data = <<EOH
 POSTGRES_USER={{ key "plausible/db/user" }}
 POSTGRES_NAME={{ key "plausible/db/name" }}
 POSTGRES_PASSWORD={{ key "plausible/db/password" }}
-EOF
+EOH
       }
 
       resources {
@@ -81,8 +81,8 @@ EOF
         ports  = ["clickhouse"]
 
         volumes = [
-          "/storage/nomad/plausible/event-data:/var/lib/clickhouse",
-          "/storage/nomad/plausible/event-logs:/var/log/clickhouse-server",
+          "/storage/nomad/${NOMAD_JOB_NAME}/event-data:/var/lib/clickhouse",
+          "/storage/nomad/${NOMAD_JOB_NAME}/event-logs:/var/log/clickhouse-server",
           "local/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro",
           "local/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro",
           "local/clickhouse-ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro"
@@ -107,6 +107,7 @@ EOH
       }
 
       template {
+        destination = "local/clickhouse-config.xml"
         data        = <<EOH
 <clickhouse>
     <logger>
@@ -125,10 +126,10 @@ EOH
     <part_log remove="remove"/>
 </clickhouse>
 EOH
-        destination = "local/clickhouse-config.xml"
       }
 
       template {
+        destination = "local/clickhouse-user-config.xml"
         data        = <<EOH
 <clickhouse>
     <profiles>
@@ -139,7 +140,6 @@ EOH
     </profiles>
 </clickhouse>
 EOH
-        destination = "local/clickhouse-user-config.xml"
       }
 
       resources {
@@ -159,13 +159,13 @@ EOH
         args    = ["-c", "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"]
 
         volumes = [
-          "/storage/nomad/plausible/data:/var/lib/plausible",
+          "/storage/nomad/${NOMAD_JOB_NAME}/data:/var/lib/plausible",
         ]
       }
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOF
+        data = <<EOH
 DISABLE_REGISTRATION=true
 
 SECRET_KEY_BASE={{ key "plausible/secret/key" }}
@@ -183,7 +183,7 @@ DATABASE_URL=postgres://{{ key "plausible/db/user" }}:{{ key "plausible/db/passw
 CLICKHOUSE_DATABASE_URL=http://{{ env "NOMAD_ADDR_clickhouse" }}/plausible_events_db
 
 TMPDIR=/var/lib/plausible/tmp
-EOF
+EOH
       }
 
       resources {

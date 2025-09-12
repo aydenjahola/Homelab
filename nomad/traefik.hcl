@@ -49,8 +49,8 @@ job "traefik" {
           "/etc/localtime:/etc/localtime:ro",
           "/var/run/docker.sock:/var/run/docker.sock:ro",
           "local/traefik.yml:/traefik.yml:ro",
-          "/storage/nomad/traefik/acme.json:/acme.json",
-          "/storage/nomad/traefik/traefik_logs:/traefik_logs",
+          "/storage/nomad/${NOMAD_JOB_NAME}/acme.json:/acme.json",
+          "/storage/nomad/${NOMAD_JOB_NAME}/traefik_logs:/traefik_logs",
         ]
       }
 
@@ -62,16 +62,15 @@ job "traefik" {
       template {
         destination = "local/.env"
         env = true
-        data = <<EOF
+        data = <<EOH
 CF_API_EMAIL={{ key "traefik/cf/email" }}
 CF_API_KEY={{ key "traefik/cf/api" }}
-EOF
+EOH
       }
 
       template {
         destination = "local/traefik.yml"
-        env         = false
-        data = <<EOF
+        data = <<EOH
 api:
   dashboard: true
 
@@ -122,7 +121,7 @@ tracing:
 
 metrics:
   addInternals: true
-EOF
+EOH
       }
     }
   }
