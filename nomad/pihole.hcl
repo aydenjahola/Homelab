@@ -26,10 +26,6 @@ job "pihole" {
         "traefik.enable=true",
         "traefik.http.routers.pihole.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.pihole.entrypoints=https",
-        "traefik.http.routers.pihole.middlewares=pihole-admin-redirect",
-        "traefik.http.middlewares.pihole-admin-redirect.redirectregex.regex=^https?://([^/]+)/?$",
-        "traefik.http.middlewares.pihole-admin-redirect.redirectregex.replacement=https://${1}/admin",
-        "traefik.http.middlewares.pihole-admin-redirect.redirectregex.permanent=true",
       ]
     }
 
