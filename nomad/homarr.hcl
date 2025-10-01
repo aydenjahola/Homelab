@@ -30,7 +30,7 @@ job "homarr" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/ajnart/homarr:latest"
+        image = "ghcr.io/homarr-labs/homarr:latest"
         ports = ["http"]
 
         volumes = [
@@ -42,12 +42,14 @@ job "homarr" {
       }
 
       template {
-        destination  = "local/.env"
-        env          = true
-        data         = <<EOH
-EDIT_MODE_PASSWORD   = {{ key "homarr/edit/password" }}
-DISABLE_EDIT_MODE    = {{ key "homarr/edit/disable" }}
-DEFAULT_COLOR_SCHEME = {{ key "homarr/default/color" }}
+        destination    = "local/.env"
+        env            = true
+        data           = <<EOH
+EDIT_MODE_PASSWORD     = {{ key "homarr/edit/password" }}
+DISABLE_EDIT_MODE      = {{ key "homarr/edit/disable" }}
+DEFAULT_COLOR_SCHEME   = {{ key "homarr/default/color" }}
+SECRET_ENCRYPTION_KEY  = {{ key "homarr/encryption/key" }}
+DISABLE_UPGRADE_MODAL  = true
 EOH
       }
 
