@@ -6,6 +6,11 @@ job "pihole" {
     domain = "pihole.local.aydenjahola.com"
   }
 
+  constraint {
+    attribute = "${attr.unique.hostname}"
+    value     = "odin"
+  }
+
   group "pihole" {
     count = 1
 
@@ -15,6 +20,7 @@ job "pihole" {
       }
       port "dns" {
         static = 53
+        to     = 53
       }
     }
 
@@ -44,7 +50,7 @@ job "pihole" {
 
       resources {
         cpu    = 500
-        memory = 512
+        memory = 800
       }
 
       template {
@@ -52,7 +58,10 @@ job "pihole" {
         env         = true
         data = <<EOH
 TZ=Europe/Dublin
-WEBPASSWORD={{ key "pihole/web/password" }}
+
+FTLCONF_webserver_api_password={{ key "pihole/web/password" }}
+
+FTLCONF_dns_listeningMode= 'all'
 EOH
       }
     }
