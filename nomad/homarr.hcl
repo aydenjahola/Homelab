@@ -36,7 +36,7 @@ job "homarr" {
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/configs:/app/data/configs:rw",
           "/storage/nomad/${NOMAD_JOB_NAME}/icons:/app/public/icons:rw",
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/data:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/data:/appdata:rw",
           "/var/run/docker.sock:/var/run/docker.sock:ro",
         ]
       }
@@ -55,7 +55,7 @@ EOH
 
       resources {
         cpu    = 500
-        memory = 512
+        memory = 800
       }
     }
   }
