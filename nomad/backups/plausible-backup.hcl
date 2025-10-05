@@ -27,17 +27,39 @@ job "plausible-backup" {
           <<SCRIPT
 set -euo pipefail
 
-echo "==> Installing gnupg + rclone ..."
-apk add --no-cache gnupg rclone ca-certificates >/dev/null
+echo "==> Installing curl + gnupg + rclone ..."
+apk add --no-cache curl gnupg rclone ca-certificates >/dev/null
 
 export RCLONE_CONFIG="/local/rclone.conf"
 export GNUPGHOME="/gnupg"
 
-DB_HOST="$DB_HOST"
-DB_PORT="$DB_PORT"
-DB_USER="$POSTGRES_USER"
-DB_NAME="$POSTGRES_DB"
+: "$DB_HOST"
+: "$DB_PORT"
+: "$POSTGRES_USER"
+: "$POSTGRES_PASSWORD"
+: "$POSTGRES_DB"
+: "$GPG_RECIPIENT"
+: "$RETENTION_DAYS"
+: "$DISCORD_WEBHOOK_URL"
+
 export PGPASSWORD="$POSTGRES_PASSWORD"
+
+notify_ok() {
+  msg="$*"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$(printf '{"content":"%s"}' "$msg")" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+notify_fail() {
+  msg="$*"
+  payload="$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$msg")"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$payload" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+trap 'notify_fail "❌ <@367293674981294086> **plausible-postgres-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
 DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
 BASENAME="plausible-postgres-$DATE.sql.gz"
@@ -46,8 +68,8 @@ ENC_PATH="$PLAIN_PATH.gpg"
 
 REMOTE="gdrive:backups/plausible/postgres"
 
-echo "==> Dumping Postgres $DB_NAME@$DB_HOST:$DB_PORT ..."
-pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner --no-privileges \
+echo "==> Dumping Postgres $POSTGRES_DB@$DB_HOST:$DB_PORT ..."
+pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-privileges \
   | gzip -c > "$PLAIN_PATH"
 
 echo "==> Encrypting for $GPG_RECIPIENT ..."
@@ -66,6 +88,7 @@ shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -f "$ENC_PATH" || true
 
 echo "==> Postgres backup finished."
+notify_ok "✅ **plausible-postgres-backup** finished on \`$(hostname)\` at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$BASENAME.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
         ]
 
@@ -90,6 +113,7 @@ POSTGRES_DB={{ key "plausible/db/name" }}
 
 GPG_RECIPIENT={{ key "backup/gpg/key" }}
 RETENTION_DAYS={{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
 EOH
       }
 
@@ -123,9 +147,29 @@ apk add --no-cache curl gnupg rclone ca-certificates >/dev/null
 export RCLONE_CONFIG="/local/rclone.conf"
 export GNUPGHOME="/gnupg"
 
-CH_HOST="$CH_HOST"
-CH_PORT="$CH_PORT"
-CH_DB="$CLICKHOUSE_DB"
+: "$CH_HOST"
+: "$CH_PORT"
+: "$CLICKHOUSE_DB"
+: "$GPG_RECIPIENT"
+: "$RETENTION_DAYS"
+: "$DISCORD_WEBHOOK_URL"
+
+notify_ok() {
+  msg="$*"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$(printf '{"content":"%s"}' "$msg")" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+notify_fail() {
+  msg="$*"
+  payload="$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$msg")"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$payload" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+trap 'notify_fail "❌ <@367293674981294086> **plausible-clickhouse-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
 DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
 WORKDIR="$NOMAD_TASK_DIR/chdump-$DATE"
@@ -135,20 +179,20 @@ CH_URL="http://$CH_HOST:$CH_PORT/"
 
 ue() { od -An -tx1 | tr -d ' \n' | sed 's/../%&/g'; }
 
-echo "==> Listing ClickHouse tables in $CH_DB ..."
-TABLES="$(curl -fsS "$CH_URL?query=$(printf %s "SELECT name FROM system.tables WHERE database = '$CH_DB' ORDER BY name FORMAT TSV" | ue)")"
+echo "==> Listing ClickHouse tables in $CLICKHOUSE_DB ..."
+TABLES="$(curl -fsS "$CH_URL?query=$(printf %s "SELECT name FROM system.tables WHERE database = '$CLICKHOUSE_DB' ORDER BY name FORMAT TSV" | ue)")"
 
-printf 'CREATE DATABASE IF NOT EXISTS %s;\n' "$CH_DB" > "$WORKDIR/00_create_database.sql"
+printf 'CREATE DATABASE IF NOT EXISTS %s;\n' "$CLICKHOUSE_DB" > "$WORKDIR/00_create_database.sql"
 
 echo "==> Dumping schema and data for each table ..."
 IFS=$'\n'
 for t in $TABLES; do
   [ -z "$t" ] && continue
 
-  curl -fsS "$CH_URL?query=$(printf %s "SHOW CREATE TABLE $CH_DB.$t FORMAT TSVRaw" | ue)" \
+  curl -fsS "$CH_URL?query=$(printf %s "SHOW CREATE TABLE $CLICKHOUSE_DB.$t FORMAT TSVRaw" | ue)" \
     | sed -e 's/\\n/\n/g' > "$WORKDIR/schema/$t.sql"
 
-  curl -fsS --data-binary "SELECT * FROM $CH_DB.$t FORMAT Native" "$CH_URL" > "$WORKDIR/data/$t.native"
+  curl -fsS --data-binary "SELECT * FROM $CLICKHOUSE_DB.$t FORMAT Native" "$CH_URL" > "$WORKDIR/data/$t.native"
 done
 unset IFS
 
@@ -177,6 +221,7 @@ rm -rf "$WORKDIR" || true
 rm -f "$ENC_PATH" || true
 
 echo "==> ClickHouse backup finished."
+notify_ok "✅ **plausible-clickhouse-backup** finished on \`$(hostname)\` at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$PLAIN_PATH.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
         ]
 
@@ -199,6 +244,7 @@ CLICKHOUSE_DB=plausible_events_db
 
 GPG_RECIPIENT={{ key "backup/gpg/key" }}
 RETENTION_DAYS={{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
 EOH
       }
 

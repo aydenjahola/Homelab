@@ -25,23 +25,34 @@ job "linkwarden-backup" {
         args = [
           "-lc",
           <<SCRIPT
-set -e -o pipefail
+set -euo pipefail
 
-echo "==> Installing gnupg + rclone ..."
-apk add --no-cache gnupg rclone ca-certificates >/dev/null
+echo "==> Installing dependencies (gnupg, rclone, curl) ..."
+apk add --no-cache gnupg rclone ca-certificates curl >/dev/null
 
 export RCLONE_CONFIG="/local/rclone.conf"
 export GNUPGHOME="/gnupg"
 
-: "${DB_HOST}"
-: "${DB_PORT}"
-: "${POSTGRES_USER}"
-: "${POSTGRES_PASSWORD}"
-: "${POSTGRES_DB}"
-: "${GPG_RECIPIENT}"
-: "${RETENTION_DAYS}"
+: "$DB_HOST"
+: "$DB_PORT"
+: "$POSTGRES_USER"
+: "$POSTGRES_PASSWORD"
+: "$POSTGRES_DB"
+: "$GPG_RECIPIENT"
+: "$RETENTION_DAYS"
+: "$DISCORD_WEBHOOK_URL"
 
 export PGPASSWORD="$POSTGRES_PASSWORD"
+
+notify() {
+  status="$1"; shift
+  msg="$*"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$(printf '{"content":"%s"}' "$msg")" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+trap 'notify "fail" "❌ <@367293674981294086> **linkwarden-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
 DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
 BASENAME="linkwarden-postgres-$DATE.sql.gz"
@@ -70,8 +81,10 @@ shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -f "$ENC_PATH" || true
 
 echo "==> Backup finished."
+
+notify "ok" "✅ **linkwarden-backup** finished on \`$(hostname)\` at \`$(date -u +'%Y-%m-%d %H:%M:%SZ')\`. File: \`$BASENAME.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
-        ]
+]
 
         volumes = [
           "/home/ayden/.config/rclone/rclone.conf:/local/rclone.conf:ro",
@@ -94,6 +107,8 @@ POSTGRES_DB={{ key "linkwarden/db/name" }}
 
 GPG_RECIPIENT={{ key "backup/gpg/key" }}
 RETENTION_DAYS={{ key "backup/retention/days" }}
+
+DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
 EOH
       }
 

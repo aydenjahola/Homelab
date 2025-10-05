@@ -27,11 +27,32 @@ job "vaultwarden-backup" {
           <<SCRIPT
 set -euo pipefail
 
-echo "==> Installing sqlite + gnupg + rclone ..."
-apk add --no-cache sqlite gnupg rclone ca-certificates >/dev/null
+echo "==> Installing sqlite + curl + gnupg + rclone ..."
+apk add --no-cache sqlite curl gnupg rclone ca-certificates >/dev/null
 
 export RCLONE_CONFIG="/local/rclone.conf"
 export GNUPGHOME="/gnupg"
+
+: "$GPG_RECIPIENT"
+: "$RETENTION_DAYS"
+: "$DISCORD_WEBHOOK_URL"
+
+notify_ok() {
+  msg="$*"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$(printf '{"content":"%s"}' "$msg")" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+notify_fail() {
+  msg="$*"
+  payload="$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$msg")"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$payload" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+trap 'notify_fail "❌ <@367293674981294086> **vaultwarden-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
 DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
 BASENAME="vaultwarden-backup-$DATE.sql.gz"
@@ -43,7 +64,6 @@ REMOTE="gdrive:backups/vaultwarden"
 DB_PATH="/data/db.sqlite3"
 
 echo "==> Dumping SQLite database ($DB_PATH) ..."
-# Create a consistent SQL dump and compress it
 sqlite3 "$DB_PATH" ".timeout 5000" ".dump" | gzip -c > "$PLAIN_PATH"
 
 echo "==> Encrypting for $GPG_RECIPIENT ..."
@@ -62,6 +82,7 @@ shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -f "$ENC_PATH" || true
 
 echo "==> Backup finished."
+notify_ok "✅ **vaultwarden-backup** finished on \`$(hostname)\` at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$BASENAME.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
         ]
 
@@ -83,6 +104,7 @@ SCRIPT
         data        = <<EOH
 GPG_RECIPIENT={{ key "backup/gpg/key" }}
 RETENTION_DAYS={{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
 EOH
       }
     }

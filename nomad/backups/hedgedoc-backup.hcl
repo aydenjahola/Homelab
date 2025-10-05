@@ -27,17 +27,39 @@ job "hedgedoc-backup" {
           <<SCRIPT
 set -euo pipefail
 
-echo "==> Installing gnupg + rclone ..."
-apk add --no-cache gnupg rclone ca-certificates >/dev/null
+echo "==> Installing curl + gnupg + rclone ..."
+apk add --no-cache curl gnupg rclone ca-certificates >/dev/null
 
 export RCLONE_CONFIG="/local/rclone.conf"
 export GNUPGHOME="/gnupg"
 
-DB_HOST="$DB_HOST"
-DB_PORT="$DB_PORT"
-DB_USER="$POSTGRES_USER"
-DB_NAME="$POSTGRES_DB"
+: "$DB_HOST"
+: "$DB_PORT"
+: "$POSTGRES_USER"
+: "$POSTGRES_PASSWORD"
+: "$POSTGRES_DB"
+: "$GPG_RECIPIENT"
+: "$RETENTION_DAYS"
+: "$DISCORD_WEBHOOK_URL"
+
 export PGPASSWORD="$POSTGRES_PASSWORD"
+
+notify_ok() {
+  msg="$*"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$(printf '{"content":"%s"}' "$msg")" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+notify_fail() {
+  msg="$*"
+  payload="$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$msg")"
+  curl -sS -H "Content-Type: application/json" \
+    -d "$payload" \
+    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+}
+
+trap 'notify_fail "❌ <@367293674981294086> **hedgedoc-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
 DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
 BASENAME="hedgedoc-backup-$DATE.sql.gz"
@@ -46,8 +68,8 @@ ENC_PATH="$PLAIN_PATH.gpg"
 
 REMOTE="gdrive:backups/hedgedoc"
 
-echo "==> Dumping database $DB_NAME@$DB_HOST:$DB_PORT ..."
-pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner --no-privileges \
+echo "==> Dumping database $POSTGRES_DB@$DB_HOST:$DB_PORT ..."
+pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-privileges \
   | gzip -c > "$PLAIN_PATH"
 
 echo "==> Encrypting for $GPG_RECIPIENT ..."
@@ -66,6 +88,7 @@ shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -f "$ENC_PATH" || true
 
 echo "==> Backup finished."
+notify_ok "✅ **hedgedoc-backup** finished on \`$(hostname)\` at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$BASENAME.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
         ]
 
@@ -90,6 +113,7 @@ POSTGRES_DB={{ key "hedgedoc/db/name" }}
 
 GPG_RECIPIENT={{ key "backup/gpg/key" }}
 RETENTION_DAYS={{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
 EOH
       }
 
