@@ -32,18 +32,10 @@ job "plausible" {
       ]
     }
 
-    task "mail" {
-      driver = "docker"
-
-      config {
-        image = "bytemark/smtp"
-      }
-
-      resources {
-        cpu    = 50
-        memory = 64
-      }
-    }
+    service {
+      name = "plausible-db"
+      port = "db"
+    }   
 
     task "db" {
       driver = "docker"
@@ -71,6 +63,11 @@ EOH
         cpu    = 200
         memory = 256
       }
+    }
+
+    service {
+      name = "plausible-clickhouse"
+      port = "clickhouse"
     }
 
     task "clickhouse" {
@@ -183,6 +180,13 @@ DATABASE_URL=postgres://{{ key "plausible/db/user" }}:{{ key "plausible/db/passw
 CLICKHOUSE_DATABASE_URL=http://{{ env "NOMAD_ADDR_clickhouse" }}/plausible_events_db
 
 TMPDIR=/var/lib/plausible/tmp
+
+MAILER_EMAIL={{ key "plausible/smtp/from" }}
+MAILER_NAME={{ key "plausible/smtp/name" }}
+SMTP_HOST_ADDR={{ key "plausible/smtp/host" }}
+SMTP_HOST_PORT={{ key "plausible/smtp/port" }}
+SMTP_USER_NAME={{ key "plausible/smtp/username" }}
+SMTP_USER_PWD={{ key "plausible/smtp/password" }}
 EOH
       }
 
@@ -193,4 +197,3 @@ EOH
     }
   }
 }
-

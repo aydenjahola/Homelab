@@ -53,7 +53,7 @@ job "linkwarden" {
         destination = "local/.env"
         env         = true
         data = <<EOH
-NEXTAUTH_URL=http://localhost:3000/api/v1/auth
+NEXTAUTH_URL=http://{{ env "NOMAD_META_domain" }}/api/v1/auth
 NEXTAUTH_SECRET={{ key "linkwarden/nextauth/secret" }}
 
 DATABASE_URL=postgresql://{{ key "linkwarden/db/user" }}:{{ key "linkwarden/db/password" }}@{{ env "NOMAD_ADDR_db" }}/{{ key "linkwarden/db/name" }}
@@ -67,16 +67,15 @@ MEILI_HOST={{ env "NOMAD_ADDR_search" }}
 MEILI_MASTER_KEY={{ key "linkwarden/search/key" }}
 
 # SMTP Settings
-NEXT_PUBLIC_EMAIL_PROVIDER=
-EMAIL_FROM=
-EMAIL_SERVER=
-BASE_URL=
+NEXT_PUBLIC_EMAIL_PROVIDER=true
+EMAIL_FROM={{ key "linkwarden/smtp/from" }}
+EMAIL_SERVER=smtp://{{ key "linkwarden/smtp/user" }}:{{ key "linkwarden/smtp/password" }}@{{ key "linkwarden/smtp/host" }}:{{ key "linkwarden/smtp/port" }}
 EOH
       }
     }
 
     service {
-      name = "db"
+      name = "linkwarden-db"
       port = "db"
     }
 

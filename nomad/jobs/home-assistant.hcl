@@ -47,4 +47,3 @@ job "home-assistant" {
     }
   }
 }
-
