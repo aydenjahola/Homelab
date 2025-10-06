@@ -15,22 +15,29 @@ job "vaultwarden-backup" {
       driver = "docker"
 
       config {
-        image   = "alpine:3.20"
+        image   = "postgres:17-alpine"
         command = "/bin/sh"
         args = [
           "-lc",
           <<SCRIPT
 set -euo pipefail
 
-echo "==> Installing sqlite + curl + gnupg + rclone ..."
-apk add --no-cache sqlite curl gnupg rclone ca-certificates >/dev/null
+echo "==> Installing curl + gnupg + rclone ..."
+apk add --no-cache curl gnupg rclone ca-certificates >/dev/null
 
 export RCLONE_CONFIG="/local/rclone.conf"
 export GNUPGHOME="/gnupg"
 
+: "$DB_HOST"
+: "$DB_PORT"
+: "$POSTGRES_USER"
+: "$POSTGRES_PASSWORD"
+: "$POSTGRES_DB"
 : "$GPG_RECIPIENT"
 : "$RETENTION_DAYS"
 : "$DISCORD_WEBHOOK_URL"
+
+export PGPASSWORD="$POSTGRES_PASSWORD"
 
 notify_ok() {
   msg="$*"
@@ -56,10 +63,9 @@ ENC_PATH="$PLAIN_PATH.gpg"
 
 REMOTE="gdrive:backups/vaultwarden"
 
-DB_PATH="/data/db.sqlite3"
-
-echo "==> Dumping SQLite database ($DB_PATH) ..."
-sqlite3 "$DB_PATH" ".timeout 5000" ".dump" | gzip -c > "$PLAIN_PATH"
+echo "==> Dumping database $POSTGRES_DB@$DB_HOST:$DB_PORT ..."
+pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-privileges \
+  | gzip -c > "$PLAIN_PATH"
 
 echo "==> Encrypting for $GPG_RECIPIENT ..."
 gpg --batch --yes --trust-model always -r "$GPG_RECIPIENT" -o "$ENC_PATH" --encrypt "$PLAIN_PATH"
@@ -84,7 +90,6 @@ SCRIPT
         volumes = [
           "/home/ayden/.config/rclone/rclone.conf:/local/rclone.conf:ro",
           "/home/ayden/.gnupg:/gnupg:ro",
-          "/storage/nomad/vaultwarden:/data:ro",
         ]
       }
 
@@ -97,9 +102,25 @@ SCRIPT
         destination = "local/.env"
         env         = true
         data        = <<EOH
+POSTGRES_USER={{ key "vaultwarden/db/user" }}
+POSTGRES_PASSWORD={{ key "vaultwarden/db/password" }}
+POSTGRES_DB={{ key "vaultwarden/db/name" }}
+
 GPG_RECIPIENT={{ key "backup/gpg/key" }}
 RETENTION_DAYS={{ key "backup/retention/days" }}
 DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+EOH
+      }
+
+      template {
+        destination = "local/db.env"
+        env         = true
+        data        = <<EOH
+{{- $svc := service "vaultwarden-db" -}}
+{{- if gt (len $svc) 0 -}}
+DB_HOST={{ (index $svc 0).Address }}
+DB_PORT={{ (index $svc 0).Port }}
+{{- end -}}
 EOH
       }
     }
