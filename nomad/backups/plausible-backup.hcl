@@ -2,11 +2,6 @@ job "plausible-backup" {
   datacenters = ["dc1"]
   type        = "batch"
 
-  constraint {
-    attribute = "${attr.unique.hostname}"
-    value     = "odin"
-  }
-
   periodic {
     crons            = ["0 */6 * * *"]
     prohibit_overlap = true
@@ -59,9 +54,9 @@ notify_fail() {
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
 }
 
-trap 'notify_fail "❌ <@367293674981294086> **plausible-postgres-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
+trap 'notify_fail "❌ <@367293674981294086> **plausible-postgres-backup** failed on $(hostname) at $(dat +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
-DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
+DATE="$(date +'%Y-%m-%d_%H-%M-%SZ')"
 BASENAME="plausible-postgres-$DATE.sql.gz"
 PLAIN_PATH="$NOMAD_TASK_DIR/$BASENAME"
 ENC_PATH="$PLAIN_PATH.gpg"
@@ -88,7 +83,7 @@ shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -f "$ENC_PATH" || true
 
 echo "==> Postgres backup finished."
-notify_ok "✅ **plausible-postgres-backup** finished on \`$(hostname)\` at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$BASENAME.gpg\` uploaded to \`$REMOTE\`."
+notify_ok "✅ **plausible-postgres-backup** finished on \`$(hostname)\` at \`$(date +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$BASENAME.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
         ]
 
@@ -169,9 +164,9 @@ notify_fail() {
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
 }
 
-trap 'notify_fail "❌ <@367293674981294086> **plausible-clickhouse-backup** failed on $(hostname) at $(date -u +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
+trap 'notify_fail "❌ <@367293674981294086> **plausible-clickhouse-backup** failed on $(hostname) at $(date +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
 
-DATE="$(date -u +'%Y-%m-%d_%H-%M-%SZ')"
+DATE="$(date +'%Y-%m-%d_%H-%M-%SZ')"
 WORKDIR="$NOMAD_TASK_DIR/chdump-$DATE"
 mkdir -p "$WORKDIR/schema" "$WORKDIR/data"
 
@@ -221,7 +216,7 @@ rm -rf "$WORKDIR" || true
 rm -f "$ENC_PATH" || true
 
 echo "==> ClickHouse backup finished."
-notify_ok "✅ **plausible-clickhouse-backup** finished on \`$(hostname)\` at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$PLAIN_PATH.gpg\` uploaded to \`$REMOTE\`."
+notify_ok "✅ **plausible-clickhouse-backup** finished on \`$(hostname)\` at \`$(date +%Y-%m-%dT%H:%M:%SZ)\`. File: \`$PLAIN_PATH.gpg\` uploaded to \`$REMOTE\`."
 SCRIPT
         ]
 
