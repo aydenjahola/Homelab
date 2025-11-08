@@ -15,7 +15,8 @@ job "circuitrix" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/aydenjahola/circuitrix:main"
+        image      = "ghcr.io/aydenjahola/circuitrix:latest"
+        force_pull = true
       }
 
       resources {

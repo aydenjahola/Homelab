@@ -26,8 +26,6 @@ job "ghost" {
         "traefik.enable=true",
         "traefik.http.routers.ghost.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.ghost.entrypoints=https",
-        "traefik.http.routers.ghost-admin.rule=Host(`${NOMAD_META_admin_domain}`)",
-        "traefik.http.routers.ghost-admin.entrypoints=https",
       ]
     }
 
