@@ -30,11 +30,11 @@ job "uptime-kuma" {
       driver = "docker"
 
       config {
-        image = "louislam/uptime-kuma:latest"
+        image = "louislam/uptime-kuma:2"
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/app/data:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/data:rw",
         ]
       }
 
