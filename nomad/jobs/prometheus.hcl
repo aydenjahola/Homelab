@@ -11,7 +11,7 @@ job "prometheus" {
 
     network {
       port "web" {
-        static = 9090
+        to = 9090
       }
     }
 
