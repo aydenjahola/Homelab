@@ -49,7 +49,7 @@ job "janan-wordpress" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 WORDPRESS_DB_HOST={{ env "NOMAD_ADDR_db" }}
 WORDPRESS_DB_USER={{ key "janan/db/user" }}
 WORDPRESS_DB_PASSWORD={{ key "janan/db/password" }}
@@ -83,7 +83,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 MYSQL_ROOT_PASSWORD={{ key "janan/db/root/password" }}
 MYSQL_DATABASE={{ key "janan/db/name" }}
 MYSQL_USER={{ key "janan/db/user" }}

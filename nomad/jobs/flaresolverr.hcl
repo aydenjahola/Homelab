@@ -42,7 +42,7 @@ job "flaresolverr" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 TZ=Europe/Dublin
 LOG_LEVEL=info
 LOG_HTML=false

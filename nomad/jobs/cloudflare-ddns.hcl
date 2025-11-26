@@ -9,13 +9,13 @@ job "cloudflare-ddns" {
       driver = "docker"
 
       config {
-        image      = "oznu/cloudflare-ddns:latest"
+        image = "oznu/cloudflare-ddns:latest"
       }
 
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOF
+        data        = <<EOF
 API_KEY="{{ key "cloudflare/api/key" }}"
 ZONE={{ key "cloudflare/zone" }}
 SUBDOMAIN={{ key "cloudflare/subdomain" }}

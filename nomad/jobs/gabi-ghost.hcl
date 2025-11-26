@@ -44,7 +44,7 @@ job "ghost" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 NODE_ENV=production
 
 # Site URLs

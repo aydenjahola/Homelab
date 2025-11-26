@@ -49,7 +49,7 @@ job "hedgedoc" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 CMD_DB_URL=postgres://{{ key "hedgedoc/db/user" }}:{{ key "hedgedoc/db/password"}}@{{ env "NOMAD_ADDR_db" }}/{{ key "hedgedoc/db/name" }}
 CMD_DOMAIN={{ env "NOMAD_META_domain" }}
 CMD_PROTOCOL_USESSL={{ key "hedgedoc/ssl" }}

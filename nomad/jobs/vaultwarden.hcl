@@ -50,7 +50,7 @@ job "vaultwarden" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 ADMIN_TOKEN={{ key "vaultwarden/admin/token" }}
 
 DOMAIN={{ key "vaultwarden/domain" }}
@@ -88,13 +88,13 @@ EOH
       }
 
       template {
+        destination = "local/.env"
+        env         = true
         data        = <<EOH
 POSTGRES_NAME={{ key "vaultwarden/db/name" }}
 POSTGRES_USER={{ key "vaultwarden/db/user" }}
 POSTGRES_PASSWORD={{ key "vaultwarden/db/password" }}
 EOH
-        destination = "local/db.env"
-        env         = true
       }
     }
   }

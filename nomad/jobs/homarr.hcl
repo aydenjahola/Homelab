@@ -50,9 +50,9 @@ job "homarr" {
       }
 
       template {
-        destination    = "local/.env"
-        env            = true
-        data           = <<EOH
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
 EDIT_MODE_PASSWORD     = {{ key "homarr/edit/password" }}
 DISABLE_EDIT_MODE      = {{ key "homarr/edit/disable" }}
 DEFAULT_COLOR_SCHEME   = {{ key "homarr/default/color" }}
@@ -98,7 +98,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 POSTGRES_USER={{ key "homarr/db/user" }}
 POSTGRES_NAME={{ key "homarr/db/name" }}
 POSTGRES_PASSWORD={{ key "homarr/db/password" }}

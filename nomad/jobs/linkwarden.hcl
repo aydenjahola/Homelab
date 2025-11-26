@@ -52,7 +52,7 @@ job "linkwarden" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 NEXTAUTH_URL=http://{{ env "NOMAD_META_domain" }}/api/v1/auth
 NEXTAUTH_SECRET={{ key "linkwarden/nextauth/secret" }}
 
@@ -99,7 +99,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 POSTGRES_USER={{ key "linkwarden/db/user" }}
 POSTGRES_PASSWORD={{ key "linkwarden/db/password" }}
 POSTGRES_DB={{ key "linkwarden/db/name" }}
@@ -127,7 +127,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 MEILI_MASTER_KEY={{ key "linkwarden/search/key" }}
 EOH
       }

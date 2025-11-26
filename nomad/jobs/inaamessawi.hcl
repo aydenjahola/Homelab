@@ -50,7 +50,7 @@ job "inaamessawi-wordpress" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 WORDPRESS_DB_HOST={{ env "NOMAD_ADDR_db" }}
 WORDPRESS_DB_USER={{ key "inaamessawi/db/user" }}
 WORDPRESS_DB_PASSWORD={{ key "inaamessawi/db/password" }}
@@ -84,7 +84,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 MYSQL_ROOT_PASSWORD={{ key "inaamessawi/db/root/password" }}
 MYSQL_DATABASE={{ key "inaamessawi/db/name" }}
 MYSQL_USER={{ key "inaamessawi/db/user" }}
