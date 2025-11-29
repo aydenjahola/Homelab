@@ -3,7 +3,7 @@ job "janan-wordpress" {
   type        = "service"
 
   meta {
-    domain = "janan.aydenjahola.com"
+    domain = "katyaphone.com.au"
   }
 
   group "janan" {
