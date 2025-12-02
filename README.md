@@ -1,10 +1,10 @@
-# Homelab - Hephaestus Configs
+# Homelab
 
 This repository contains the configuration and setup files for my personal homelab. My homelab consists of a variety of different hardware and software components, including:
 
-- Dell Optiplex
-- TrueNAS
-- Docker containers
+- x4 Dell Optiplex 5060
+- TrueNAS SCALE
+- Docker
 - Traefik
 - Nomad
 
@@ -18,29 +18,12 @@ Additionally, I use my homelab to host various personal projects and services, s
 
 The repository contains scripts to automate the setup and configuration of various components of my homelab. This allows for easy replication of the setup across different environments.
 
-The setup files include configurations for the following components:
-
-- Docker
-- DashDot
-- Portainer
-- Pi-Hole
-- Pasta
-- Plausible
-- Portainer
-- UptimeKuma
-- Traefik
-- Tautulli
-- Nomad
-- HedgeDoc
-- Homarr
-- HomeBridge
-- Vikunja
-
 ## Usage
 
 To use the setup files, clone this repository to your local machine and modify the variables and configurations as needed for your specific environment.
 
-For each component, there is a separate directory containing the necessary files for setup. Navigate to the desired directory and run the setup script.
+~~For each component, there is a separate directory containing the necessary files for setup. Navigate to the desired directory and run the setup script.~~
+Docker Compose dir is not maintained anymore and all my up-to-date configs lives in the Nomad dir.
 
 ## Contributing
 
