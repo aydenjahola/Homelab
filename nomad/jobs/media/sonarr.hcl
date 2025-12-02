@@ -39,7 +39,7 @@ job "sonarr" {
         ports = ["http"]
 
         volumes = [
-          "/home/ayden/${NOMAD_JOB_NAME}/data:/config:rw",
+          "/home/ayden/${NOMAD_JOB_NAME}/data:/config:rw", # some weird NFS issues, upgraded to v4 since but never tested if there are still issues
           "/storage/jellyfin/tv:/tv:rw",
           "/storage/jellyfin/downloads:/downloads:rw",
           "/etc/localtime:/etc/localtime:ro"
