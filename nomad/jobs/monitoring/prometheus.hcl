@@ -48,7 +48,7 @@ job "prometheus" {
         destination = "local/prometheus.yml"
         data        = <<EOH
 global:
-  scrape_interval: 15s
+  scrape_interval: 5s
 
 scrape_configs:
   - job_name: "node-exporters"
@@ -58,8 +58,10 @@ scrape_configs:
         - "192.168.1.101:9100"
         - "192.168.1.102:9100"
 
-  - job_name: "nomad"
+  - job_name: "nomad_metrics"
     metrics_path: "/v1/metrics"
+    params:
+      format: ["prometheus"]
     static_configs:
       - targets:
         - "192.168.1.100:4646"
