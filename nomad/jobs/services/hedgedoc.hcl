@@ -56,6 +56,21 @@ CMD_PROTOCOL_USESSL={{ key "hedgedoc/ssl" }}
 CMD_ALLOW_ANONYMOUS={{ key "hedgedoc/allow/annonymous" }}
 CMD_ALLOW_EMAIL_REGISTER={{ key "hedgedoc/allow/email" }}
 CMD_ALLOW_GRAVATAR={{ key "hedgedoc/allow/gravatar" }}
+
+CMD_SESSION_SECRET={{ key "hedgedoc/session/secret" }}
+
+CMD_OAUTH2_PROVIDERNAME=Keycloak
+CMD_OAUTH2_AUTHORIZATION_URL={{ key "hedgedoc/auth/url" }}
+CMD_OAUTH2_TOKEN_URL={{ key "hedgedoc/token/url" }}
+CMD_OAUTH2_USER_PROFILE_URL={{ key "hedgedoc/profile/url" }}
+CMD_OAUTH2_USER_PROFILE_USERNAME_ATTR=preferred_username
+CMD_OAUTH2_USER_PROFILE_DISPLAY_NAME_ATTR=name
+CMD_OAUTH2_USER_PROFILE_EMAIL_ATTR=email
+CMD_OAUTH2_CLIENT_ID={{ key "hedgedoc/client/id" }}
+CMD_OAUTH2_CLIENT_SECRET={{ key "hedgedoc/client/secret" }}
+CMD_OAUTH2_SCOPE=openid profile email
+CMD_PROTOCOL_USESSL=true
+CMD_URL_ADDPORT=false
 EOH
       }
     }

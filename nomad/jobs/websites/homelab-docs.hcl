@@ -30,8 +30,9 @@ job "homelab-docs" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/aydenjahola/homelab-docs:latest"
-        ports = ["http"]
+        image      = "ghcr.io/aydenjahola/homelab-docs:latest"
+        force_pull = true
+        ports      = ["http"]
 
         auth {
           username = "${DOCKER_USER}"

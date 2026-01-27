@@ -56,7 +56,11 @@ ADMIN_TOKEN={{ key "vaultwarden/admin/token" }}
 DOMAIN={{ key "vaultwarden/domain" }}
 
 WEBSOCKET_ENABLED=true
+
 SIGNUPS_ALLOWED=false
+SIGNUPS_VERIFY=true
+SIGNUPS_VERIFY_RESEND_TIME=3600
+SIGNUPS_VERIFY_RESEND_LIMIT=6
 
 SMTP_HOST={{ key "vaultwarden/smtp/host" }}
 SMTP_FROM={{ key "vaultwarden/smtp/from" }}
@@ -66,6 +70,12 @@ SMTP_PASSWORD={{ key "vaultwarden/smtp/password" }}
 
 
 DATABASE_URL=postgresql://{{ key "vaultwarden/db/user" }}:{{ key "vaultwarden/db/password" }}@{{ env "NOMAD_ADDR_db" }}/{{ key "vaultwarden/db/name" }}
+
+PUSH_ENABLED=true
+PUSH_INSTALLATION_ID={{ key "vaultwarden/install/id" }}
+PUSH_INSTALLATION_KEY={{ key "vaultwarden/install/key" }}
+PUSH_RELAY_URI=https://api.bitwarden.eu
+PUSH_IDENTITY_URI=https://identity.bitwarden.eu
 EOH
       }
     }
