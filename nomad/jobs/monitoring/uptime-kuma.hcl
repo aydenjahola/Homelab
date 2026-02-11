@@ -44,13 +44,13 @@ job "uptime-kuma" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-PUID=1000
-PGID=1000
-TZ=Etc/UTC
-MYSQL_ROOT_PASSWORD={{ key "uptime-kuma/db/root/password" }}
-MYSQL_DATABASE={{ key "uptime-kuma/db/name" }}
-MYSQL_USER={{ key "uptime-kuma/db/user" }}
-MYSQL_PASSWORD={{ key "uptime-kuma/db/password" }}
+PUID                = 1000
+PGID                = 1000
+TZ                  = Europe/Dublin
+MYSQL_ROOT_PASSWORD = {{ key "uptime-kuma/db/root/password" }}
+MYSQL_DATABASE      = {{ key "uptime-kuma/db/name" }}
+MYSQL_USER          = {{ key "uptime-kuma/db/user" }}
+MYSQL_PASSWORD      = {{ key "uptime-kuma/db/password" }}
 EOH
       }
 
