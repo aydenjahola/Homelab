@@ -13,6 +13,7 @@ job "nextcloud" {
       port "http" {
         to = 80
       }
+
       port "db" {
         to = 5432
       }
@@ -51,10 +52,19 @@ job "nextcloud" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-POSTGRES_HOST={{ env "NOMAD_ADDR_db" }}
-POSTGRES_DB={{ key "nextcloud/db/name" }}
-POSTGRES_USER={{ key "nextcloud/db/user" }}
-POSTGRES_PASSWORD={{ key "nextcloud/db/password" }}
+NC_dbhost            = {{ env "NOMAD_ADDR_db" }}
+NC_dbname            = {{ key "nextcloud/db/name" }}
+NC_dbuser            = {{ key "nextcloud/db/user" }}
+NC_dbpassword        = {{ key "nextcloud/db/password" }}
+
+NC_mail_smtphost     = {{ key "nextcloud/smtp/host" }}
+NC_mail_smtpname     = {{ key "nextcloud/smtp/user" }}
+NC_mail_smtppassword = {{ key "nextcloud/smtp/password" }}
+NC_mail_from_address = {{ key "nextcloud/smtp/from" }}
+NC_mail_smtpmode     = smtp
+NC_mail_smtpsecure   = ssl
+NC_mail_smtpport     = 465
+NC_mail_smtpauth     = true
 EOH
       }
     }
@@ -86,9 +96,9 @@ EOH
         destination = "local/.env"
         env         = true
         data        = <<EOH
-POSTGRES_DB={{ key "nextcloud/db/name" }}
-POSTGRES_USER={{ key "nextcloud/db/user" }}
-POSTGRES_PASSWORD={{ key "nextcloud/db/password" }}
+POSTGRES_DB       = {{ key "nextcloud/db/name" }}
+POSTGRES_USER     = {{ key "nextcloud/db/user" }}
+POSTGRES_PASSWORD = {{ key "nextcloud/db/password" }}
 EOH
       }
     }
@@ -110,17 +120,6 @@ EOH
       resources {
         cpu    = 200
         memory = 256
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_HOST={{ env "NOMAD_ADDR_db" }}
-POSTGRES_DB={{ key "nextcloud/db/name" }}
-POSTGRES_USER={{ key "nextcloud/db/user" }}
-POSTGRES_PASSWORD={{ key "nextcloud/db/password" }}
-EOH
       }
     }
   }
