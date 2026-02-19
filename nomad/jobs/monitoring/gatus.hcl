@@ -128,6 +128,17 @@ EOH
       template {
         destination = "local/config.yaml"
         data        = <<EOH
+ui:
+  title: "Homelab Status"
+  description: "Status and uptime for my homelab"
+  header: "Status"
+  dashboard-heading: "Health Dashboard"
+  dashboard-subheading: "Centralised dashboard to monitor all my running services and track downtime"
+  logo: "https://www.aydenjahola.com/favicon.ico"
+  link: "https://{{ env "NOMAD_META_domain" }}"
+
+  dark-mode: on
+
 storage:
   type: postgres
   path: '{{- range service "gatus-db" -}}postgres://{{ key "gatus/db/user" | urlquery }}:{{ key "gatus/db/password" | urlquery }}@{{ .Address }}:{{ .Port }}/{{ key "gatus/db/name" | urlquery }}?sslmode=disable{{- end -}}'
