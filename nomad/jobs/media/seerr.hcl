@@ -1,12 +1,12 @@
-job "jellyseerr" {
+job "seerr" {
   datacenters = ["dc1"]
   type        = "service"
 
   meta {
-    domain = "jellyseerr.local.aydenjahola.com"
+    domain = "seerr.local.aydenjahola.com"
   }
 
-  group "jellyseerr" {
+  group "seerr" {
     count = 1
 
     network {
@@ -16,25 +16,25 @@ job "jellyseerr" {
     }
 
     service {
-      name = "jellyseerr"
+      name = "seerr"
       port = "http"
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.jellyseerr.entrypoints=https",
-        "traefik.http.routers.jellyseerr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.seerr.entrypoints=https",
+        "traefik.http.routers.seerr.rule=Host(`${NOMAD_META_domain}`)",
       ]
     }
 
-    task "jellyseerr" {
+    task "seerr" {
       driver = "docker"
 
       config {
-        image = "fallenbagel/jellyseerr:latest"
+        image = "ghcr.io/seerr-team/seerr:latest"
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/app/config:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/config:rw",
           "/etc/localtime:/etc/localtime:ro",
         ]
       }
