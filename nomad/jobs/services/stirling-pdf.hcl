@@ -30,7 +30,7 @@ job "stirling-pdf" {
       driver = "docker"
 
       config {
-        image = "docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest"
+        image = "docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest-fat"
         ports = ["http"]
 
         volumes = [
