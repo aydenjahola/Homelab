@@ -30,8 +30,12 @@ job "your-lastfm" {
       driver = "docker"
 
       config {
-        image = "gomaink/your-lastfm"
-        ports = ["http"]
+        image   = "gomaink/your-lastfm"
+        ports   = ["http"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/data"
+        ]
       }
 
       template {
