@@ -9,17 +9,22 @@ job "cloudflare-ddns" {
       driver = "docker"
 
       config {
-        image = "oznu/cloudflare-ddns:latest"
+        image           = "favonia/cloudflare-ddns:latest"
+        readonly_rootfs = true
+        cap_drop        = ["all"]
+        security_opt    = ["no-new-privileges:true"]
       }
 
       template {
         destination = "local/.env"
         env         = true
         data        = <<EOF
-API_KEY="{{ key "cloudflare/api/key" }}"
-ZONE={{ key "cloudflare/zone" }}
-SUBDOMAIN={{ key "cloudflare/subdomain" }}
-PROXIED=true
+CLOUDFLARE_API_TOKEN = "{{ key "cloudflare/api/key" }}"
+DOMAINS              = {{ key "cloudflare/zone" }}
+PROXIED              = true
+TZ                   = "Europe/Dublin"
+UPDATE_CRON          = "@every 2m"
+IP6_PROVIDER         = "none"
 EOF
       }
 
