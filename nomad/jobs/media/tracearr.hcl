@@ -183,10 +183,10 @@ EOH
         destination = "local/.env"
         env         = true
         data        = <<EOH
-NODE_ENV=production
-PORT=3000
-HOST=0.0.0.0
-TZ="Eurple/Dublin"
+NODE_ENV = production
+PORT     = 3000
+HOST     = 0.0.0.0
+TZ       = "Europe/Dublin"
 
 {{- range service "tracearr-db" }}
 DATABASE_URL=postgres://{{ key "tracearr/db/user" }}:{{ key "tracearr/db/password" }}@{{ .Address }}:{{ .Port }}/{{ key "tracearr/db/name" }}
