@@ -1,42 +1,42 @@
-job "radarr" {
+job "bazarr" {
   datacenters = ["dc1"]
   type        = "service"
 
   meta {
-    domain = "radarr.local.aydenjahola.com"
+    domain = "bazarr.local.aydenjahola.com"
   }
 
-  group "radarr" {
+  group "bazarr" {
     count = 1
 
     network {
       port "http" {
-        to = 7878
+        to = 6767
       }
     }
 
     service {
-      name = "radarr"
+      name = "bazarr"
       port = "http"
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.radarr.entrypoints=https",
-        "traefik.http.routers.radarr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.bazarr.entrypoints=https",
+        "traefik.http.routers.bazarr.rule=Host(`${NOMAD_META_domain}`)",
       ]
     }
 
-    task "radarr" {
+    task "bazarr" {
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/radarr:latest"
+        image = "lscr.io/linuxserver/bazarr:latest"
         ports = ["http"]
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/data:/config:rw",
           "/storage/jellyfin/movies:/movies:rw",
-          "/storage/jellyfin/downloads:/downloads:rw",
+          "/storage/jellyfin/tv:/tv:rw",
           "/etc/localtime:/etc/localtime:ro",
         ]
       }
