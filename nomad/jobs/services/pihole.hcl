@@ -18,6 +18,7 @@ job "pihole" {
       port "http" {
         to = 80
       }
+
       port "dns" {
         static = 53
         to     = 53
@@ -56,7 +57,7 @@ job "pihole" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 TZ=Europe/Dublin
 
 FTLCONF_webserver_api_password={{ key "pihole/web/password" }}
