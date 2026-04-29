@@ -62,8 +62,8 @@ CMD_SESSION_SECRET                        = {{ key "hedgedoc/session/secret" }}
 
 CMD_OAUTH2_PROVIDERNAME                   = Keycloak
 CMD_OAUTH2_AUTHORIZATION_URL              = {{ key "hedgedoc/auth/url" }}
-CMD_OAUTH2_TOKEN_URL                      ={{ key "hedgedoc/token/url" }}
-CMD_OAUTH2_USER_PROFILE_URL               ={{ key "hedgedoc/profile/url" }}
+CMD_OAUTH2_TOKEN_URL                      = {{ key "hedgedoc/token/url" }}
+CMD_OAUTH2_USER_PROFILE_URL               = {{ key "hedgedoc/profile/url" }}
 CMD_OAUTH2_USER_PROFILE_USERNAME_ATTR     = preferred_username
 CMD_OAUTH2_USER_PROFILE_DISPLAY_NAME_ATTR = name
 CMD_OAUTH2_USER_PROFILE_EMAIL_ATTR        = email
