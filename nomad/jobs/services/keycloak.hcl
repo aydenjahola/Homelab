@@ -13,10 +13,6 @@ job "keycloak" {
       port "http" {
         to = 8080
       }
-
-      port "db" {
-        to = 5432
-      }
     }
 
     service {
@@ -32,9 +28,40 @@ job "keycloak" {
       ]
     }
 
-    service {
-      name = "keycloak-db"
-      port = "db"
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:17-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$KC_DB_URL_HOST\" -p \"$KC_DB_URL_PORT\" -U \"$KC_DB_USERNAME\"; do echo waiting for db; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+KC_DB_USERNAME={{ key "keycloak/db/user" }}
+{{ range service "keycloak-db" }}
+KC_DB_URL_HOST={{ .Address }}
+KC_DB_URL_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
     }
 
     task "keycloak" {
@@ -56,26 +83,51 @@ job "keycloak" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-KC_HOSTNAME={{ env "NOMAD_META_domain" }}
+KC_HOSTNAME              ={{ env "NOMAD_META_domain" }}
 
 KC_DB=postgres
-KC_DB_URL_HOST={{ env "NOMAD_HOST_IP_db" }}
-KC_DB_URL_PORT={{ env "NOMAD_HOST_PORT_db" }}
-KC_DB_USERNAME={{ key "keycloak/db/user" }}
-KC_DB_PASSWORD={{ key "keycloak/db/password" }}
-KC_DB_DATABASE={{ key "keycloak/db/name" }}
-KC_DB_SCHEMA=public
+KC_DB_USERNAME           = {{ key "keycloak/db/user" }}
+KC_DB_PASSWORD           = {{ key "keycloak/db/password" }}
+KC_DB_DATABASE           = {{ key "keycloak/db/name" }}
+KC_DB_SCHEMA             = public
 
-KC_METRICS_ENABLED=true
-KC_HTTP_ENABLED=true
-KC_PROXY_HEADERS=xforwarded
-PROXY_ADDRESS_FORWARDING=true
+{{ range service "keycloak-db" }}
+KC_DB_URL_HOST={{ .Address }}
+KC_DB_URL_PORT={{ .Port }}
+{{ end }}
+
+KC_METRICS_ENABLED       = true
+KC_HTTP_ENABLED          = true
+KC_PROXY_HEADERS         = xforwarded
+PROXY_ADDRESS_FORWARDING = true
 EOH
       }
 
       resources {
         cpu    = 1000
         memory = 2048
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "keycloak-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
       }
     }
 
@@ -96,9 +148,9 @@ EOH
         destination = "local/.env"
         env         = true
         data        = <<EOH
-POSTGRES_DB={{ key "keycloak/db/name" }}
-POSTGRES_USER={{ key "keycloak/db/user" }}
-POSTGRES_PASSWORD={{ key "keycloak/db/password" }}
+POSTGRES_DB       = {{ key "keycloak/db/name" }}
+POSTGRES_USER     = {{ key "keycloak/db/user" }}
+POSTGRES_PASSWORD = {{ key "keycloak/db/password" }}
 EOH
       }
 
