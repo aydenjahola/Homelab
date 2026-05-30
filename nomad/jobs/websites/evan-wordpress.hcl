@@ -3,7 +3,7 @@ job "eqpaint-wordpress" {
   type        = "service"
 
   meta {
-    domain = "eqpaint.aydenjahola.com"
+    domain = "eqpaintingsolutions.com.au"
   }
 
   group "db" {
@@ -76,6 +76,9 @@ EOH
         "traefik.http.routers.eqpaint.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.eqpaint.entrypoints=https",
         "traefik.http.routers.eqpaint.tls=true",
+        "traefik.http.middlewares.eqpaint-bodylimit.buffering.maxRequestBodyBytes=0",
+        "traefik.http.middlewares.eqpaint-bodylimit.buffering.memRequestBodyBytes=0",
+        "traefik.http.routers.eqpaint.middlewares=eqpaint-bodylimit",
       ]
     }
 
@@ -139,6 +142,7 @@ EOH
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/wp_data:/var/www/html:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/php_config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro",
         ]
       }
 

@@ -90,6 +90,8 @@ entryPoints:
             sans: "*.inaamessawi.com"
           - main: "katyaphone.com.au"
             sans: "*.katyaphone.com.au"
+          - main: "eqpaintingsolutions.com.au"
+            sans: "*.eqpaintingsolutions.com.au"
 
 certificatesResolvers:
   cloudflare:
