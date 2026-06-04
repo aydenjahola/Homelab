@@ -35,7 +35,8 @@ job "grafana" {
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/grafana",
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/grafana/plugins"
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/plugins:/var/lib/grafana/plugins",
+          "local/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml",
         ]
       }
 
@@ -70,9 +71,30 @@ GF_AUTH_GENERIC_OAUTH_API_URL={{ key "grafana/userinfo/url" }}
 EOH
       }
 
+      template {
+        destination = "local/datasources.yml"
+        data        = <<EOH
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: https://prometheus.local.aydenjahola.com
+    isDefault: true
+    editable: true
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: https://loki.local.aydenjahola.com
+    editable: true
+EOH
+      }
+
       resources {
         cpu    = 300
-        memory = 512
+        memory = 800
       }
     }
   }

@@ -67,6 +67,20 @@ scrape_configs:
         - "192.168.1.100:4646"
         - "192.168.1.101:4646"
         - "192.168.1.102:4646"
+
+  - job_name: "loki"
+    scheme: https
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+        - "loki.local.aydenjahola.com"
+
+  - job_name: "grafana-alloy"
+    static_configs:
+      - targets:
+        - "192.168.1.100:12345"
+        - "192.168.1.101:12345"
+        - "192.168.1.102:12345"
 EOH
       }
 
