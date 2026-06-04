@@ -210,11 +210,6 @@ endpoints:
     <<: *defaults_https
 
   # --- Cloud / Apps ---
-  - name: nextcloud
-    group: services
-    url: "https://nextcloud.local.aydenjahola.com"
-    <<: *defaults_https
-
   - name: forgejo
     group: services
     url: "https://git.aydenjahola.com"
@@ -242,9 +237,9 @@ endpoints:
     url: "https://jellyfin.local.aydenjahola.com"
     <<: *defaults_https
 
-  - name: jellyseerr
+  - name: seerr
     group: media
-    url: "https://jellyseerr.local.aydenjahola.com"
+    url: "https://seerr.local.aydenjahola.com"
     <<: *defaults_https
 
   - name: radarr
@@ -260,11 +255,6 @@ endpoints:
   - name: prowlarr
     group: media
     url: "https://prowl.local.aydenjahola.com"
-    <<: *defaults_https
-
-  - name: jellystat
-    group: media
-    url: "https://jellystat.local.aydenjahola.com"
     <<: *defaults_https
 
   - name: flaresolverr
@@ -307,6 +297,11 @@ endpoints:
   - name: katyaphone
     group: public
     url: "https://katyaphone.com.au"
+    <<: *defaults_https
+
+  - name: eqpainting
+    group: public
+    url: "https://eqpaintingsolutions.com.au"
     <<: *defaults_https
 
   - name: inaamessawi
