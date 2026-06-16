@@ -136,7 +136,6 @@ ui:
   dashboard-subheading: "Centralised dashboard to monitor all my running services and track downtime"
   logo: "https://www.aydenjahola.com/favicon.ico"
   link: "https://{{ env "NOMAD_META_domain" }}"
-
   dark-mode: on
 
 storage:
@@ -177,6 +176,31 @@ endpoints:
     url: "https://ha.local.aydenjahola.com"
     <<: *defaults_https
 
+  - name: adventurelog-web
+    group: services
+    url: "trips.aydenjahola.com"
+    <<: *defaults
+
+  - name: adventurelog-server
+    group: services
+    url: "trips-api.aydenjahola.com"
+    <<: *defaults
+
+  - name: archisteamfarm
+    group: services
+    url: "asf.local.aydenjahola.com"
+    <<: *defaults
+
+  - name: dozzle
+    group: services
+    url: "dozzle.local.aydenjahola.com"
+    <<: *defaults
+
+  - name: watchyourlan
+    group: services
+    url: "wyl.local.aydenjahola.com"
+    <<: *defaults
+
   # --- Analytics / Docs ---
   - name: plausible
     group: services
@@ -189,18 +213,28 @@ endpoints:
     <<: *defaults_https
 
   - name: hedgedoc
-    group: sercices
+    group: services
     url: "https://md.aydenjahola.com"
     <<: *defaults_https
 
   - name: stirling-pdf
-    group: sercices
+    group: services
     url: "https://pdf.aydenjahola.com/api/v1/info/status"
     <<: *defaults_https
 
+  - name: your-lastfm
+    group: services
+    url: "ylfm.local.aydenjahola.com"
+    <<: *defaults
+
+  - name: reactive-resume
+    group: services
+    url: "resume.local.aydenjahola.com"
+    <<: *defaults
+
   # --- Auth / Security ---
   - name: vaultwarden
-    group: sercices
+    group: services
     url: "https://vault.aydenjahola.com"
     <<: *defaults_https
 
@@ -215,11 +249,46 @@ endpoints:
     url: "https://git.aydenjahola.com"
     <<: *defaults_https
 
+  - name: netronome
+    group: services
+    url: "netronome.aydenjahola.com"
+    <<: *defaults
+
+  - name: tracearr
+    group: services
+    url: "tracearr.local.aydenjahola.com"
+    <<: *defaults
+
   # --- Monitoring / Infra ---
+  - name: gatus
+    group: monitoring
+    url: "https://gatus.aydenjahola.com"
+    <<: *defaults_https
+
   - name: grafana
     group: monitoring
     url: "https://grafana.aydenjahola.com"
     <<: *defaults_https
+
+  - name: grafana-alloy-odin
+    group: monitoring
+    url: "http://192.168.1.100:12345"
+    <<: *defaults
+
+  - name: grafana-alloy-thor
+    group: monitoring
+    url: "http://192.168.1.101:12345"
+    <<: *defaults
+
+  - name: grafana-alloy-loki
+    group: monitoring
+    url: "http://192.168.1.102:12345"
+    <<: *defaults
+
+  - name: loki
+    group: monitoring
+    url: "loki.local.aydenjahola.com"
+    <<: *defaults
 
   - name: prometheus
     group: monitoring
@@ -231,7 +300,27 @@ endpoints:
     url: "https://traefik.local.aydenjahola.com"
     <<: *defaults_https
 
+  - name: dozzle-agent-odin
+    group: infra
+    url: "http://192.168.1.100:7007"
+    <<: *defaults
+
+  - name: dozzle-agent-thor
+    group: infra
+    url: "http://192.168.1.101:7007"
+    <<: *defaults
+
+  - name: dozzle-agent-loki
+    group: infra
+    url: "http://192.168.1.102:7007"
+    <<: *defaults
+
   # --- Media Stack ---
+  - name: bazarr
+    group: media
+    url: "https://bazarr.local.aydenjahola.com"
+    <<: *defaults
+
   - name: jellyfin
     group: media
     url: "https://jellyfin.local.aydenjahola.com"
