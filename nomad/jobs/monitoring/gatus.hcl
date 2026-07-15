@@ -178,27 +178,27 @@ endpoints:
 
   - name: adventurelog-web
     group: services
-    url: "trips.aydenjahola.com"
+    url: "https://trips.aydenjahola.com"
     <<: *defaults
 
   - name: adventurelog-server
     group: services
-    url: "trips-api.aydenjahola.com"
+    url: "https://trips-api.aydenjahola.com"
     <<: *defaults
 
   - name: archisteamfarm
     group: services
-    url: "asf.local.aydenjahola.com"
+    url: "https://asf.local.aydenjahola.com"
     <<: *defaults
 
   - name: dozzle
     group: services
-    url: "dozzle.local.aydenjahola.com"
+    url: "https://dozzle.local.aydenjahola.com"
     <<: *defaults
 
   - name: watchyourlan
     group: services
-    url: "wyl.local.aydenjahola.com"
+    url: "https://wyl.local.aydenjahola.com"
     <<: *defaults
 
   # --- Analytics / Docs ---
@@ -224,12 +224,12 @@ endpoints:
 
   - name: your-lastfm
     group: services
-    url: "ylfm.local.aydenjahola.com"
+    url: "https://ylfm.local.aydenjahola.com"
     <<: *defaults
 
   - name: reactive-resume
     group: services
-    url: "resume.local.aydenjahola.com"
+    url: "https://resume.local.aydenjahola.com"
     <<: *defaults
 
   # --- Auth / Security ---
@@ -251,12 +251,12 @@ endpoints:
 
   - name: netronome
     group: services
-    url: "netronome.aydenjahola.com"
+    url: "https://netronome.aydenjahola.com"
     <<: *defaults
 
   - name: tracearr
     group: services
-    url: "tracearr.local.aydenjahola.com"
+    url: "https://tracearr.local.aydenjahola.com"
     <<: *defaults
 
   # --- Monitoring / Infra ---
@@ -287,7 +287,7 @@ endpoints:
 
   - name: loki
     group: monitoring
-    url: "loki.local.aydenjahola.com"
+    url: "https://loki.local.aydenjahola.com"
     <<: *defaults
 
   - name: prometheus
