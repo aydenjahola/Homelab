@@ -144,7 +144,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "wordpress:6.5-apache"
+        image = "wordpress:php8.3-apache"
         ports = ["http"]
 
         volumes = [
