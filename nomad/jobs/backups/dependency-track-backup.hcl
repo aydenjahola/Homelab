@@ -3,7 +3,7 @@ job "dependency-track-backup" {
   type        = "batch"
 
   periodic {
-    crons            = ["30 2 * * *"]
+    crons            = ["0 */6 * * *"]
     prohibit_overlap = true
     time_zone        = "Europe/Dublin"
   }
