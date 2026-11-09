@@ -12,3 +12,8 @@ config.toml
 nomad/docs/
 nomad/jobs/media/qbittorent.hcl
 nomad/jobs/media/transmission.hcl
+
+# Ansible vault (real secrets; only vault.yml.example is committed)
+ansible/group_vars/all/vault.yml
+ansible/**/vault.yml
+ansible/collections/

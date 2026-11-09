@@ -1,0 +1,71 @@
+---
+- name: Install Debian sources.list (main contrib non-free non-free-firmware + backports)
+  ansible.builtin.copy:
+    src: sources.list
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Ensure keyring directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install Docker apt key
+  ansible.builtin.copy:
+    src: docker.asc
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+# The same HashiCorp key exists at both paths; hashicorp.list uses the
+# /usr/share one, the /etc/apt/keyrings copy is unused but kept for parity.
+- name: Install HashiCorp apt key
+  ansible.builtin.copy:
+    src: hashicorp-archive-keyring.gpg
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    - /etc/apt/keyrings/hashicorp.gpg
+
+- name: Install third-party apt sources
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/apt/sources.list.d/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - docker.list
+    - hashicorp.list
+  register: packages_sources
+
+- name: Refresh apt cache when sources changed
+  ansible.builtin.apt:
+    update_cache: true
+  when: packages_sources is changed and not ansible_check_mode
+
+- name: Install pinned HashiCorp/Docker packages
+  ansible.builtin.apt:
+    name: "{{ packages_pinned.keys() | zip(packages_pinned.values()) | map('join', '=') | list }}"
+    state: present
+
+- name: Hold pinned packages (opt-in; not held today)
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop: "{{ packages_pinned.keys() | list }}"
+  when: packages_hold_pinned | bool
+
+- name: Install common and per-host packages
+  ansible.builtin.apt:
+    name: "{{ packages_common + packages_extra }}"
+    state: present

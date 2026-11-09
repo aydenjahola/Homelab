@@ -1,0 +1,17 @@
+---
+# eno1 = DHCP via ifupdown + dhcpcd; static addressing comes from router
+# reservations. See group_vars/all/main.yml.
+- name: Install /etc/network/interfaces
+  ansible.builtin.copy:
+    src: interfaces
+    dest: /etc/network/interfaces
+    owner: root
+    group: root
+    mode: "0644"
+  # Not restarting networking automatically: doing that over SSH on the
+  # only NIC is how you lose the box. Reboot or `ifdown/ifup` by hand.
+
+- name: Enable ifupdown networking
+  ansible.builtin.systemd_service:
+    name: networking
+    enabled: true

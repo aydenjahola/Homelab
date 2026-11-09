@@ -1,0 +1,33 @@
+---
+# consul 2.0.0-1 itself is installed (pinned) by the packages role; the
+# package creates the consul user (987), the stock systemd unit (no
+# drop-ins are used) and an empty /etc/consul.d/consul.env.
+- name: Consul directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: consul
+    group: consul
+    mode: "0755"
+  loop:
+    - "{{ consul_config_dir }}"
+    - "{{ consul_data_dir }}"
+
+# Byte-identical to the live file: the stock HashiCorp example with
+# client_addr/ui/server/bind/advertise/bootstrap_expect/retry_join/limits
+# set. Gossip encryption, TLS and ACLs are NOT enabled.
+- name: Render consul.hcl
+  ansible.builtin.template:
+    src: consul.hcl.j2
+    dest: "{{ consul_config_dir }}/consul.hcl"
+    owner: consul
+    group: consul
+    mode: "0644"
+    validate: /usr/bin/consul validate -config-format=hcl %s
+  notify: Restart consul
+
+- name: Consul service
+  ansible.builtin.systemd_service:
+    name: consul
+    enabled: true
+    state: started

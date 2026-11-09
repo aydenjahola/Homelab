@@ -1,0 +1,38 @@
+---
+# Nomad bridge networking needs the reference CNI plugins in /opt/cni/bin.
+# Installed by hand from the upstream release tarball (not a package).
+- name: Read installed CNI plugin version
+  ansible.builtin.command: "{{ cni_bin_dir }}/bridge --version"
+  register: cni_installed
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Ensure CNI directory
+  ansible.builtin.file:
+    path: "{{ cni_bin_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install CNI plugins v{{ cni_version }}
+  # The plugins print their version on stderr.
+  when: ("v" ~ cni_version) not in (cni_installed.stdout | default('')) ~ (cni_installed.stderr | default(''))
+  block:
+    - name: Download CNI plugins
+      ansible.builtin.get_url:
+        url: "{{ cni_url }}"
+        dest: "/tmp/cni-plugins-v{{ cni_version }}.tgz"
+        checksum: "sha256:{{ cni_sha256 }}"
+        mode: "0644"
+
+    - name: Unpack CNI plugins
+      ansible.builtin.unarchive:
+        src: "/tmp/cni-plugins-v{{ cni_version }}.tgz"
+        dest: "{{ cni_bin_dir }}"
+        remote_src: true
+        owner: root
+        group: root
+      # Nothing to unpack in check mode (get_url does not download).
+      when: not ansible_check_mode

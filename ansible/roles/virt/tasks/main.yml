@@ -1,0 +1,28 @@
+---
+# Support for the Nomad "virt" (nomad-driver-virt, libvirt) and "qemu"
+# task drivers. Packages come from the packages role. KVM is available
+# (/dev/kvm, VT-x) on all three OptiPlex 5060s.
+#
+# dnsmasq runs with its stock config (no /etc/dnsmasq.d files) and listens
+# on :53 on every host - it was enabled when libvirt/nomad-driver-virt was
+# installed. libvirt's "default" network is defined but inactive.
+- name: Libvirt and dnsmasq services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+  loop:
+    - libvirtd.service
+    - libvirt-guests.service
+    - virtlockd.service
+    - virtlogd.service
+    - dnsmasq.service
+
+- name: Check KVM device
+  ansible.builtin.stat:
+    path: /dev/kvm
+  register: virt_kvm
+
+- name: Warn when KVM is missing
+  ansible.builtin.debug:
+    msg: "/dev/kvm is missing on {{ inventory_hostname }} - qemu/virt Nomad tasks will fail (enable VT-x in BIOS)."
+  when: not virt_kvm.stat.exists

@@ -1,0 +1,169 @@
+---
+# Shared settings for odin, thor and loki, captured from the live hosts
+# on 2026-11-09 (Debian 13.5 "trixie", kernel 6.12.90+deb13.1-amd64).
+# Per-host values live in host_vars/<host>.yml.
+
+ansible_user: ayden
+ansible_become: true
+
+# ---------------------------------------------------------------- base
+base_timezone: Europe/London
+base_locale: en_GB.UTF-8
+# The Debian installer leaves these shipped defaults; they are not managed:
+#   /etc/systemd/timesyncd.conf  (stock, systemd-timesyncd enabled, NTP from DHCP/defaults)
+#   /etc/ssh/sshd_config         (stock Debian; no sshd_config.d drop-ins)
+#   /etc/containerd/config.toml  (stock containerd.io: disabled_plugins = ["cri"])
+#   /etc/dhcpcd.conf             (stock dhcpcd-base, unmodified per `dpkg -V`)
+
+# ------------------------------------------------------------- network
+# eno1 is DHCP (ifupdown + dhcpcd). The 192.168.1.10x addresses are DHCP
+# reservations on the router (192.168.1.1), which also hands out DNS
+# (192.168.1.1, search domain "station"). Nothing on the hosts pins the IP.
+# The 192.168.1.240 VIP seen on one host is owned by the keepalived Nomad
+# job (nomad/jobs/...), NOT by host config - deliberately not managed here.
+network_interface: eno1
+network_gateway: 192.168.1.1
+
+# ------------------------------------------------------------ packages
+# Versions installed today. Pinned with name=version so a rebuild gets
+# exactly these. No apt holds/preferences exist on the hosts today; set
+# packages_hold_pinned: true to also `apt-mark hold` them.
+packages_hold_pinned: false
+packages_pinned:
+  nomad: "2.0.3-1"
+  consul: "2.0.0-1"
+  docker-ce: "5:29.5.3-1~debian.13~trixie"
+  docker-ce-cli: "5:29.5.3-1~debian.13~trixie"
+  containerd.io: "2.2.4-1~debian.13~trixie"
+  docker-buildx-plugin: "0.34.1-1~debian.13~trixie"
+  docker-compose-plugin: "5.1.4-1~debian.13~trixie"
+  # No longer present in the HashiCorp apt index (only in dpkg status and
+  # /var/cache/apt/archives/nomad-driver-virt_0.0.1~beta.1-1_amd64.deb).
+  nomad-driver-virt: "0.0.1~beta.1-1"
+
+# `apt-mark showmanual` common to all three hosts, minus the Debian
+# installer's base set (libs, essential, tasksel, firmware, grub, ...).
+packages_common:
+  - apt-listchanges
+  - apt-utils
+  - bash-completion
+  - bind9-dnsutils
+  - bind9-host
+  - bridge-utils
+  - ca-certificates
+  - cloud-init
+  - cron
+  - curl
+  - dhcpcd-base
+  - dnsmasq
+  - gnupg
+  - gpg
+  - ifupdown
+  - inetutils-telnet
+  - iproute2
+  - iptables
+  - iputils-ping
+  - libvirt-daemon-system
+  - lsof
+  - netcat-traditional
+  - nfs-common
+  - nftables
+  - nvidia-cuda-toolkit
+  - nvidia-driver
+  - nvidia-settings
+  - openssh-client
+  - openssh-server
+  - pciutils
+  - qemu-system
+  - qemu-system-x86
+  - qemu-utils
+  - rclone
+  - rsync
+  - sudo
+  - systemd-timesyncd
+  - traceroute
+  - usbutils
+  - vim
+  - wget
+# Per-host additions: packages_extra in host_vars.
+packages_extra: []
+
+# --------------------------------------------------------------- users
+users_admin: ayden
+users_admin_groups:
+  - cdrom
+  - floppy
+  - sudo
+  - audio
+  - dip
+  - video
+  - plugdev
+  - users
+  - netdev
+  - docker
+# Public keys only (both present on all three hosts).
+users_admin_authorized_keys_file: authorized_keys.pub
+# /etc/sudoers line 50 was changed from the Debian default.
+users_sudo_group_line: "%sudo\tALL=(ALL) NOPASSWD: ALL"
+# Per-host user crontab lines (host_vars).
+users_admin_cron_lines: []
+
+# ------------------------------------------------------------- storage
+storage_mounts:
+  - path: /storage
+    src: "192.168.1.103:/mnt/superfast/sonic"
+    fstype: nfs4
+    opts: "rw,hard,vers=4.2,proto=tcp,_netdev,relatime,actimeo=1"
+    dump: "0"
+    passno: "0"
+# Top-level layout of the NFS export as seen from the clients. These live
+# on the NAS (192.168.1.103) - they are asserted, not created, by default.
+storage_layout:
+  - { path: /storage/nomad, owner: ayden, group: ayden, mode: "0775" }
+  - { path: /storage/images, owner: "10001", group: "10001", mode: "2770" }
+  - { path: /storage/cloud-init, owner: "10001", group: "10001", mode: "2770" }
+  - { path: /storage/backups, owner: root, group: root, mode: "0755" }
+  - { path: /storage/jellyfin, owner: root, group: root, mode: "0755" }
+  - { path: /storage/truenas_backup, owner: root, group: root, mode: "0755" }
+storage_manage_layout: false
+
+# --------------------------------------------------------------- docker
+# No /etc/docker/daemon.json exists today: json-file logging, overlay2,
+# systemd cgroup driver, no registry mirrors/insecure registries.
+docker_daemon_json: {}
+
+# ------------------------------------------------------------------ cni
+cni_version: "1.6.2"
+cni_url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz"
+# sha256 of the tarball; its bridge binary matches the hosts' sha256 e77d4e8c...
+cni_sha256: "b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090"
+cni_bin_dir: /opt/cni/bin
+
+# --------------------------------------------------------------- consul
+consul_config_dir: /etc/consul.d
+consul_data_dir: /opt/consul
+# Sorted IPs of the *other* homelab hosts (matches every host today).
+consul_retry_join: "{{ groups['homelab'] | difference([inventory_hostname]) | map('extract', hostvars, 'host_ip') | sort }}"
+consul_http: "http://127.0.0.1:8500"
+
+# ---------------------------------------------------------------- nomad
+nomad_config_dir: /etc/nomad.d
+nomad_data_dir: /opt/nomad
+nomad_plugin_dir: /opt/nomad/plugins
+nomad_bind_addr: "0.0.0.0"
+nomad_bootstrap_expect: 3
+nomad_qemu_image_path: /storage/images
+nomad_hcl_layout: standard
+nomad_http: "http://127.0.0.1:4646"
+nomad_extra_dirs: []
+
+# ---------------------------------------------------------- health waits
+health_retries: 60
+health_delay: 5
+
+# -------------------------------------------------------------- openvpn
+openvpn_enabled: false
+openvpn_port: 1194
+# PKI (ca.key, server.key, tc.key, ...) is secret: only written when this
+# is true and the vault_openvpn_* variables are set. See vault.yml.example.
+openvpn_manage_pki: false

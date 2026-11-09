@@ -1,0 +1,36 @@
+---
+# Copy to group_vars/all/vault.yml, fill in, then:
+#   ansible-vault encrypt group_vars/all/vault.yml
+# vault.yml is gitignored. Placeholders only - no real values in git.
+#
+# Nothing in Nomad/Consul config is secret today: ACLs, TLS and Consul
+# gossip encryption are all disabled (encrypt is commented out), so the
+# cluster runs without any vault values. The only secrets on the hosts
+# are the OpenVPN server PKI on odin and thor (only used when
+# openvpn_manage_pki: true).
+
+# Public endpoint clients use (client-common.txt "remote" line).
+vault_openvpn_remote:
+  odin: "vpn.example.invalid 1194"
+  thor: "vpn.example.invalid 1195"
+
+# PEM blobs from /etc/openvpn/server/ on each host (odin and thor each
+# have their own CA - they are two independent servers on the same
+# 10.8.0.0/24 client subnet).
+vault_openvpn_pki:
+  odin:
+    ca_crt: "CHANGEME"
+    ca_key: "CHANGEME"
+    server_crt: "CHANGEME"
+    server_key: "CHANGEME"
+    tc_key: "CHANGEME"
+    dh_pem: "CHANGEME"
+    crl_pem: "CHANGEME"
+  thor:
+    ca_crt: "CHANGEME"
+    ca_key: "CHANGEME"
+    server_crt: "CHANGEME"
+    server_key: "CHANGEME"
+    tc_key: "CHANGEME"
+    dh_pem: "CHANGEME"
+    crl_pem: "CHANGEME"

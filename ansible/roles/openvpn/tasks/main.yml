@@ -1,0 +1,78 @@
+---
+# odin (udp/1194) and thor (udp/1195) each run an independent OpenVPN
+# server (openvpn-server@server) on 10.8.0.0/24, set up by the
+# Nyr openvpn-install script: config in /etc/openvpn/server, NAT/forward
+# rules from openvpn-iptables.service, ip_forward via sysctl.d.
+- name: OpenVPN package
+  ansible.builtin.apt:
+    name: openvpn
+    state: present
+
+- name: IP forwarding for VPN clients
+  ansible.builtin.copy:
+    src: 99-openvpn-forward.conf
+    dest: /etc/sysctl.d/99-openvpn-forward.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Apply sysctl
+
+- name: OpenVPN server config
+  ansible.builtin.template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server/server.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart openvpn
+
+# Secret PKI - only with openvpn_manage_pki: true and a filled vault.yml.
+- name: OpenVPN server PKI
+  ansible.builtin.copy:
+    content: "{{ vault_openvpn_pki[inventory_hostname][item.key] }}"
+    dest: "/etc/openvpn/server/{{ item.file }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { key: ca_crt, file: ca.crt, mode: "0600" }
+    - { key: ca_key, file: ca.key, mode: "0600" }
+    - { key: server_crt, file: server.crt, mode: "0600" }
+    - { key: server_key, file: server.key, mode: "0600" }
+    - { key: tc_key, file: tc.key, mode: "0600" }
+    - { key: dh_pem, file: dh.pem, mode: "0644" }
+    - { key: crl_pem, file: crl.pem, mode: "0600", owner: nobody, group: nogroup }
+  loop_control:
+    label: "{{ item.file }}"
+  no_log: true
+  when: openvpn_manage_pki | bool
+  notify: Restart openvpn
+
+- name: OpenVPN client template (client-common.txt)
+  ansible.builtin.template:
+    src: client-common.txt.j2
+    dest: /etc/openvpn/server/client-common.txt
+    owner: root
+    group: root
+    mode: "0644"
+  when: openvpn_manage_pki | bool
+
+- name: OpenVPN NAT/forward unit
+  ansible.builtin.template:
+    src: openvpn-iptables.service.j2
+    dest: /etc/systemd/system/openvpn-iptables.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart openvpn-iptables
+
+- name: OpenVPN services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - openvpn-iptables.service
+    - openvpn-server@server.service
+    # openvpn.service is the legacy umbrella unit; enabled today.
+    - openvpn.service
