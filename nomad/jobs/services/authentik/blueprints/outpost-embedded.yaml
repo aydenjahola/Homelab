@@ -33,6 +33,12 @@ entries:
         path: custom/app-ylfm.yaml
       required: true
 
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-docs.yaml
+      required: true
+
   - model: authentik_outposts.outpost
     identifiers:
       managed: goauthentik.io/outposts/embedded
@@ -43,3 +49,4 @@ entries:
         - !Find [authentik_providers_proxy.proxyprovider, [name, asf]]
         - !Find [authentik_providers_proxy.proxyprovider, [name, watchyourlan]]
         - !Find [authentik_providers_proxy.proxyprovider, [name, ylfm]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, docs]]

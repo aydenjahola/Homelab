@@ -212,7 +212,7 @@ endpoints:
   - name: homelab-docs
     group: docs
     url: "https://docs.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: hedgedoc
     group: services
