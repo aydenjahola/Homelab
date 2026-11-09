@@ -85,6 +85,7 @@ EOH
           "/storage/jellyfin/tv:/data/tvshows:rw",
           "/storage/jellyfin/movies:/data/movies:rw",
           "/etc/localtime:/etc/localtime:ro",
+          "local/SSO-Auth.xml:/config/plugins/configurations/SSO-Auth.xml:ro",
         ]
       }
 
@@ -104,6 +105,47 @@ POSTGRES_PASSWORD = {{ key "jellyfin/db/password" }}
 POSTGRES_HOST={{ .Address }}
 POSTGRES_PORT={{ .Port }}
 {{ end }}
+EOH
+      }
+
+      template {
+        destination = "local/SSO-Auth.xml"
+        change_mode = "restart"
+        data        = <<EOH
+<?xml version="1.0" encoding="utf-8"?>
+<PluginConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SamlConfigs />
+  <OidConfigs>
+    <item>
+      <key><string>authentik</string></key>
+      <value>
+        <PluginConfiguration>
+          <OidEndpoint>https://auth.aydenjahola.com/application/o/jellyfin/</OidEndpoint>
+          <OidClientId>{{ key "authentik/oidc/jellyfin/client_id" }}</OidClientId>
+          <OidSecret>{{ key "authentik/oidc/jellyfin/client_secret" }}</OidSecret>
+          <Enabled>true</Enabled>
+          <EnableAuthorization>true</EnableAuthorization>
+          <EnableAllFolders>true</EnableAllFolders>
+          <EnabledFolders />
+          <Roles><string>homelab-admins</string></Roles>
+          <AdminRoles><string>homelab-admins</string></AdminRoles>
+          <RoleClaim>groups</RoleClaim>
+          <EnableFolderRoles>false</EnableFolderRoles>
+          <FolderRoleMappings />
+          <OidScopes><string>openid</string><string>profile</string><string>email</string></OidScopes>
+          <DefaultProvider>Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider</DefaultProvider>
+          <SchemeOverride>https</SchemeOverride>
+          <CanonicalLinks>
+            <item>
+              <key><string>ayden</string></key>
+              <value><guid>49365b3a-5fb8-4a86-a97f-baef0d8fe245</guid></value>
+            </item>
+          </CanonicalLinks>
+        </PluginConfiguration>
+      </value>
+    </item>
+  </OidConfigs>
+</PluginConfiguration>
 EOH
       }
 
