@@ -104,6 +104,14 @@ REDIS_IS_EXTERNAL     = true
 REDIS_HOST={{ .Address }}
 REDIS_PORT={{ .Port }}
 {{ end }}
+
+AUTH_PROVIDERS                             = oidc
+AUTH_OIDC_ISSUER                           = https://auth.aydenjahola.com/application/o/homarr/
+AUTH_OIDC_CLIENT_ID                        = {{ key "authentik/oidc/homarr/client_id" }}
+AUTH_OIDC_CLIENT_SECRET                    = {{ key "authentik/oidc/homarr/client_secret" }}
+AUTH_OIDC_CLIENT_NAME                      = Authentik
+AUTH_OIDC_AUTO_LOGIN                       = true
+AUTH_LOGOUT_REDIRECT_URL                   = https://auth.aydenjahola.com/application/o/homarr/end-session/
 EOH
       }
 

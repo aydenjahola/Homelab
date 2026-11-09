@@ -16,6 +16,8 @@ entries:
       name: {{ key "authentik/user/name" }}
       email: {{ key "authentik/user/email" }}
       is_active: true
+      attributes:
+        email_verified: true
       groups:
         - !KeyOf homelab-admins
         - !Find [authentik_core.group, [name, authentik Admins]]
@@ -37,3 +39,15 @@ entries:
       username: akadmin
     attrs:
       is_active: false
+
+  - model: authentik_providers_oauth2.scopemapping
+    identifiers:
+      name: "homelab: email (verified)"
+    attrs:
+      scope_name: email
+      description: Email address; verified only when an admin set the email_verified attribute
+      expression: |
+        return {
+            "email": request.user.email,
+            "email_verified": bool(request.user.attributes.get("email_verified", False)),
+        }
