@@ -23,6 +23,7 @@ job "prowlarr" {
         "traefik.enable=true",
         "traefik.http.routers.prowl.entrypoints=https",
         "traefik.http.routers.prowl.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.prowl.middlewares=authentik@consulcatalog",
       ]
     }
 
@@ -91,6 +92,7 @@ PROWLARR__POSTGRES__PORT={{ .Port }}
 
 PROWLARR__POSTGRES__USER     = {{ key "prowlarr/db/user" }}
 PROWLARR__POSTGRES__PASSWORD = {{ key "prowlarr/db/password" }}
+PROWLARR__AUTH__METHOD=External
 PROWLARR__POSTGRES__MAINDB   = {{ key "prowlarr/db/main" }}
 PROWLARR__POSTGRES__LOGDB    = {{ key "prowlarr/db/log" }}
 EOH
