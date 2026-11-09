@@ -68,7 +68,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/seerr-team/seerr:latest"
+        image = "ghcr.io/seerr-team/seerr:preview-new-oidc"
         ports = ["http"]
 
         volumes = [
