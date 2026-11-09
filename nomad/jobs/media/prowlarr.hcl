@@ -14,7 +14,7 @@ job "prowlarr" {
       min_healthy_time  = "10s"
       healthy_deadline  = "10m"
       progress_deadline = "15m"
-      auto_revert       = true
+      auto_revert       = false
     }
 
     restart {
@@ -147,7 +147,7 @@ EOH
       min_healthy_time  = "10s"
       healthy_deadline  = "5m"
       progress_deadline = "10m"
-      auto_revert       = true
+      auto_revert       = false
     }
 
     restart {

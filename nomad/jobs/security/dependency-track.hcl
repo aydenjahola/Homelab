@@ -14,7 +14,7 @@ job "dependency-track" {
       min_healthy_time  = "10s"
       healthy_deadline  = "10m"
       progress_deadline = "15m"
-      auto_revert       = true
+      auto_revert       = false
     }
 
     restart {
@@ -62,7 +62,7 @@ job "dependency-track" {
 
         check_restart {
           limit           = 3
-          grace           = "120s"
+          grace           = "300s"
           ignore_warnings = false
         }
       }
@@ -209,7 +209,7 @@ EOH
       min_healthy_time  = "10s"
       healthy_deadline  = "5m"
       progress_deadline = "10m"
-      auto_revert       = true
+      auto_revert       = false
     }
 
     restart {
