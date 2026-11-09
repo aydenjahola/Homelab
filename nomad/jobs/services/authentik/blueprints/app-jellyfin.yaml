@@ -34,6 +34,7 @@ entries:
       provider: !KeyOf jellyfin-provider
       meta_launch_url: https://jellyfin.local.aydenjahola.com/sso/OID/start/authentik
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg
+      group: Media
       open_in_new_tab: true
       policy_engine_mode: any
 
