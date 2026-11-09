@@ -91,7 +91,6 @@ Auth column: **SSO forward-auth** (Traefik middleware, app unaware), **SSO OIDC*
 | FlareSolverr | Cloudflare challenge solver for indexers | none |
 | Homebridge | HomeKit bridge | own login |
 | Cloudflare DDNS | Keeps DNS records current | none |
-| Cars | Own project | basic auth |
 
 ### Monitoring
 
