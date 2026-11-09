@@ -84,7 +84,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 DISABLE_REGISTRATION=true
 
 SECRET_KEY_BASE={{ key "plausible/secret/key" }}
@@ -113,8 +113,9 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 3072
+        cpu        = 500
+        memory     = 960
+        memory_max = 3072
       }
     }
   }
@@ -157,7 +158,7 @@ EOH
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 POSTGRES_USER={{ key "plausible/db/user" }}
 POSTGRES_NAME={{ key "plausible/db/name" }}
 POSTGRES_PASSWORD={{ key "plausible/db/password" }}
@@ -165,8 +166,9 @@ EOH
       }
 
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 200
+        memory     = 128
+        memory_max = 256
       }
     }
 
@@ -188,7 +190,7 @@ EOH
 
       config {
         image = "clickhouse/clickhouse-server:24.12-alpine"
-        ports  = ["clickhouse"]
+        ports = ["clickhouse"]
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/event-data:/var/lib/clickhouse",

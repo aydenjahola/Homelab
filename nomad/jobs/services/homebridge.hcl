@@ -22,13 +22,14 @@ job "homebridge" {
       }
 
       env {
-        TZ = "Europe/Dublin"
+        TZ           = "Europe/Dublin"
         ENABLE_AVAHI = "1"
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 500
+        memory     = 352
+        memory_max = 512
       }
     }
   }

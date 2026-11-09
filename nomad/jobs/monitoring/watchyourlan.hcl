@@ -71,8 +71,9 @@ EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 512
+        cpu        = 300
+        memory     = 64
+        memory_max = 512
       }
     }
   }

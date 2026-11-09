@@ -3,7 +3,7 @@ job "hedgedoc" {
   type        = "service"
 
   meta {
-    domain  = "md.aydenjahola.com"
+    domain = "md.aydenjahola.com"
   }
 
   group "hedgedoc" {
@@ -77,8 +77,9 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
       }
 
       template {
@@ -148,14 +149,15 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 500
+        memory     = 128
+        memory_max = 512
       }
 
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 POSTGRES_USER     = {{ key "hedgedoc/db/user" }}
 POSTGRES_PASSWORD = {{ key "hedgedoc/db/password" }}
 POSTGRES_DB       = {{ key "hedgedoc/db/name" }}

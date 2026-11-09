@@ -51,8 +51,9 @@ EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 512
+        cpu        = 300
+        memory     = 128
+        memory_max = 512
       }
     }
   }
@@ -107,7 +108,7 @@ EOH
         destination = "local/.env"
         env         = true
         change_mode = "restart"
-        data = <<EOH
+        data        = <<EOH
 {{- range service "reactive-resume-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -165,8 +166,9 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 1024
+        cpu        = 500
+        memory     = 256
+        memory_max = 1024
       }
     }
   }

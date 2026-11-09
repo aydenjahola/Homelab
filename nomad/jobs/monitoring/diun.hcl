@@ -71,13 +71,14 @@ EOH
       }
 
       env = {
-        "NOMAD_ADDR" = "http://${attr.unique.network.ip-address}:4646/",
+        "NOMAD_ADDR"           = "http://${attr.unique.network.ip-address}:4646/",
         "DIUN_PROVIDERS_NOMAD" = "true"
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
   }

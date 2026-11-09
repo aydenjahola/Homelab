@@ -43,14 +43,15 @@ job "stirling-pdf" {
       }
 
       resources {
-        cpu    = 500
-        memory = 1024
+        cpu        = 500
+        memory     = 800
+        memory_max = 1024
       }
 
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 DISABLE_ADDITIONAL_FEATURES=false
 LANGS=en_GB
 SECURITY_ENABLELOGIN=true

@@ -42,8 +42,9 @@ job "archisteamfarm" {
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 500
+        memory     = 160
+        memory_max = 512
       }
     }
   }

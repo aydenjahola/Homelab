@@ -55,8 +55,9 @@ EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 512
+        cpu        = 300
+        memory     = 384
+        memory_max = 512
       }
     }
   }
@@ -94,7 +95,7 @@ EOH
         command = "sh"
         args = [
           "-c",
-           "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
+          "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
         ]
       }
 
@@ -147,8 +148,9 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 500
+        memory     = 224
+        memory_max = 512
       }
     }
   }

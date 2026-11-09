@@ -99,8 +99,9 @@ EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 512
+        cpu        = 300
+        memory     = 160
+        memory_max = 512
       }
 
       restart {
@@ -175,8 +176,9 @@ EOH
       }
 
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 200
+        memory     = 128
+        memory_max = 256
       }
     }
   }
