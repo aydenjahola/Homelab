@@ -1,0 +1,101 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Matches the server version running on the cluster (`nomad server members`).
+  NOMAD_VERSION: "2.0.3"
+
+jobs:
+  pre-commit:
+    # trailing whitespace, EOF, yaml/json, merge markers, private keys,
+    # gitleaks, ansible-lint (ansible/ only) and `nomad fmt -check`.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: hashicorp/setup-nomad@v1.0.0
+        with:
+          version: ${{ env.NOMAD_VERSION }}
+      - run: pip install pre-commit==4.3.0
+      - run: pre-commit run --all-files --show-diff-on-failure
+
+  nomad-validate:
+    # `nomad job validate` talks to an agent API, so run against a throwaway
+    # dev agent (no cluster access, no secrets needed; Consul `key` lookups
+    # are only rendered at runtime and are not evaluated by validate).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: hashicorp/setup-nomad@v1.0.0
+        with:
+          version: ${{ env.NOMAD_VERSION }}
+      - name: Start dev agent
+        run: |
+          nohup nomad agent -dev -bind=127.0.0.1 > nomad-dev.log 2>&1 &
+          for _ in $(seq 1 30); do
+            nomad server members >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          cat nomad-dev.log
+          exit 1
+      - name: nomad fmt
+        run: nomad fmt -check -recursive nomad/
+      - name: nomad job validate
+        # Run from nomad/ so any relative file()/fileset paths resolve.
+        working-directory: nomad
+        run: |
+          status=0
+          while IFS= read -r f; do
+            echo "::group::$f"
+            nomad job validate "$f" || status=1
+            echo "::endgroup::"
+          done < <(find jobs -name '*.hcl' | sort)
+          exit "$status"
+
+  ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install ansible
+        run: pip install ansible-core==2.19.4 ansible-lint==26.11.0
+      - name: Install collections
+        run: |
+          if [ -f ansible/requirements.yml ]; then
+            ansible-galaxy collection install -r ansible/requirements.yml
+          fi
+      - name: ansible-lint
+        run: |
+          if [ -d ansible ]; then ansible-lint ansible/; else echo "no ansible/ dir"; fi
+      - name: Syntax check
+        run: |
+          if [ -f ansible/site.yml ]; then
+            inv=ansible/inventory.yml
+            [ -f "$inv" ] || inv=ansible/inventory/hosts.yml
+            ansible-playbook --syntax-check -i "$inv" ansible/site.yml
+          else
+            find ansible/playbooks -name '*.yml' 2>/dev/null | sort | while IFS= read -r p; do
+              ansible-playbook --syntax-check -i localhost, "$p"
+            done
+          fi
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
