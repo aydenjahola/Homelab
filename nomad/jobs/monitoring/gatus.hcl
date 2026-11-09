@@ -201,7 +201,7 @@ endpoints:
   - name: watchyourlan
     group: services
     url: "https://wyl.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   # --- Analytics / Docs ---
   - name: plausible

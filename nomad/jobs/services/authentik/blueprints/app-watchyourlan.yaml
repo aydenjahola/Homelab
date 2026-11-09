@@ -1,0 +1,32 @@
+version: 1
+metadata:
+  name: app-watchyourlan
+entries:
+  - model: authentik_providers_proxy.proxyprovider
+    id: watchyourlan-provider
+    identifiers:
+      name: watchyourlan
+    attrs:
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      mode: forward_single
+      external_host: https://wyl.local.aydenjahola.com
+
+  - model: authentik_core.application
+    id: watchyourlan-app
+    identifiers:
+      slug: watchyourlan
+    attrs:
+      name: WatchYourLAN
+      provider: !KeyOf watchyourlan-provider
+      meta_launch_url: https://wyl.local.aydenjahola.com
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/watchyourlan.png
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf watchyourlan-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0
