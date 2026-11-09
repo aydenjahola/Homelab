@@ -48,6 +48,45 @@ job "grafana" {
       ]
     }
 
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:17-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_MAIN\"; do echo waiting for db; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "grafana/db/user" }}
+DB_MAIN = {{ key "grafana/db/name" }}
+{{ range service "grafana-db" }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
+      }
+    }
+
     task "grafana" {
       driver = "docker"
 
@@ -73,6 +112,13 @@ job "grafana" {
         error_on_missing_key = true
         data                 = <<EOH
 GF_SERVER_ROOT_URL = https://{{ env "NOMAD_META_domain" }}
+
+GF_DATABASE_TYPE     = postgres
+GF_DATABASE_HOST     = {{ range service "grafana-db" }}{{ .Address }}:{{ .Port }}{{ end }}
+GF_DATABASE_NAME     = {{ key "grafana/db/name" }}
+GF_DATABASE_USER     = {{ key "grafana/db/user" }}
+GF_DATABASE_PASSWORD = {{ key "grafana/db/password" }}
+GF_DATABASE_SSL_MODE = disable
 
 GF_PLUGINS_PREINSTALL  = grafana-clock-panel
 GF_USERS_ALLOW_SIGN_UP = false
@@ -130,6 +176,91 @@ EOH
         cpu        = 300
         memory     = 576
         memory_max = 800
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "grafana-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
+      }
+    }
+
+    task "db" {
+      driver = "docker"
+
+      config {
+        image = "postgres:17-alpine"
+        ports = ["db"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
+        ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_USER     = {{ key "grafana/db/user" }}
+POSTGRES_PASSWORD = {{ key "grafana/db/password" }}
+POSTGRES_DB       = {{ key "grafana/db/name" }}
+EOH
+      }
+
+      resources {
+        cpu        = 200
+        memory     = 128
+        memory_max = 256
       }
     }
   }
