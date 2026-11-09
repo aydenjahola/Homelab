@@ -331,7 +331,7 @@ endpoints:
   - name: sonarr
     group: media
     url: "https://sonarr.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: prowlarr
     group: media
