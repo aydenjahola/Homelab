@@ -21,8 +21,8 @@ job "grafana" {
 
       tags = [
         "traefik.enable=true",
+        "traefik.http.routers.grafana.entrypoints=https",
         "traefik.http.routers.grafana.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.grafana.entrypoints=https"
       ]
     }
 

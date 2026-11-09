@@ -26,7 +26,7 @@ job "netronome" {
       ]
 
       check {
-        name     = "netronome-ready"
+        name     = "netronome-tcp"
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
@@ -47,7 +47,7 @@ job "netronome" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$NETRONOME__DB_HOST\" -p \"$NETRONOME__DB_PORT\" -U \"$NETRONOME__DB_USER\"; do echo waiting for db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -55,10 +55,11 @@ job "netronome" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-NETRONOME__DB_USER={{ key "netronome/db/user" }}
+DB_USER={{ key "netronome/db/user" }}
+DB_NAME={{ key "netronome/db/name" }}
 {{ range service "netronome-db" }}
-NETRONOME__DB_HOST={{ .Address }}
-NETRONOME__DB_PORT={{ .Port }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
 {{ end }}
 EOH
       }

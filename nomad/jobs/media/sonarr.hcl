@@ -23,7 +23,7 @@ job "sonarr" {
         "traefik.enable=true",
         "traefik.http.routers.sonarr.entrypoints=https",
         "traefik.http.routers.sonarr.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.sonarr.middlewares=authentik@consulcatalog"
+        "traefik.http.routers.sonarr.middlewares=authentik@consulcatalog",
       ]
 
       check {
@@ -84,7 +84,7 @@ EOH
           "/storage/nomad/${NOMAD_JOB_NAME}/data:/config:rw",
           "/storage/jellyfin/tv:/tv:rw",
           "/storage/jellyfin/downloads:/downloads:rw",
-          "/etc/localtime:/etc/localtime:ro"
+          "/etc/localtime:/etc/localtime:ro",
         ]
       }
 

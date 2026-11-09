@@ -21,8 +21,8 @@ job "plausible" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.plausible.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.plausible.entrypoints=https",
+        "traefik.http.routers.plausible.rule=Host(`${NOMAD_META_domain}`)",
       ]
     }
 
@@ -40,7 +40,7 @@ job "plausible" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\"; do echo waiting for plausible db; sleep 2; done; until wget -qO- \"http://$CH_HOST:$CH_PORT/ping\" >/dev/null 2>&1; do echo waiting for plausible clickhouse; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done; until wget -qO- \"http://$CH_HOST:$CH_PORT/ping\" >/dev/null 2>&1; do echo waiting for clickhouse; sleep 2; done"
         ]
       }
 
@@ -49,7 +49,7 @@ job "plausible" {
         env         = true
         data        = <<EOH
 DB_USER={{ key "plausible/db/user" }}
-
+DB_NAME={{ key "plausible/db/name" }}
 {{ range service "plausible-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -151,7 +151,7 @@ EOH
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/db/data:/var/lib/postgresql/data"
+          "/storage/nomad/${NOMAD_JOB_NAME}/db/data:/var/lib/postgresql/data",
         ]
       }
 
@@ -197,7 +197,7 @@ EOH
           "/storage/nomad/${NOMAD_JOB_NAME}/event-logs:/var/log/clickhouse-server",
           "local/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro",
           "local/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro",
-          "local/clickhouse-ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro"
+          "local/clickhouse-ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro",
         ]
       }
 

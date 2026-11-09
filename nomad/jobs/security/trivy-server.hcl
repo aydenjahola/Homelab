@@ -26,7 +26,7 @@ job "trivy-server" {
       ]
 
       check {
-        name     = "trivy-healthz"
+        name     = "trivy-server-http"
         type     = "http"
         path     = "/healthz"
         interval = "30s"

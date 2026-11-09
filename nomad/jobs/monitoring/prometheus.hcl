@@ -21,8 +21,8 @@ job "prometheus" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.prometheus.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.prometheus.entrypoints=https",
+        "traefik.http.routers.prometheus.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.prometheus.middlewares=authentik@consulcatalog",
       ]
     }

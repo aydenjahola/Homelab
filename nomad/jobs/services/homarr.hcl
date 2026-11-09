@@ -40,7 +40,7 @@ job "homarr" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\"; do echo waiting for db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -49,6 +49,7 @@ job "homarr" {
         env         = true
         data        = <<EOH
 DB_USER={{ key "homarr/db/user" }}
+DB_NAME={{ key "homarr/db/name" }}
 {{ range service "homarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -152,7 +153,7 @@ EOH
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data"
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
         ]
       }
 

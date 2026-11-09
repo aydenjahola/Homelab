@@ -21,8 +21,8 @@ job "archisteamfarm" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.asf.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.asf.entrypoints=https",
+        "traefik.http.routers.asf.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.asf.middlewares=authentik@consulcatalog",
       ]
     }
@@ -37,7 +37,7 @@ job "archisteamfarm" {
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/config:/app/config",
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/logs:/app/logs",
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/plugins:/app/plugins"
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/plugins:/app/plugins",
         ]
       }
 

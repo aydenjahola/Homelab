@@ -14,7 +14,7 @@ job "grafana-alloy" {
       port = "http"
 
       check {
-        name     = "alloy-health"
+        name     = "grafana-alloy-http"
         type     = "http"
         path     = "/-/healthy"
         interval = "10s"
@@ -49,7 +49,7 @@ job "grafana-alloy" {
           "/etc/machine-id:/etc/machine-id:ro",
 
           # Nomad allocation logs.
-          "/opt/nomad:/host/nomad:ro"
+          "/opt/nomad:/host/nomad:ro",
         ]
       }
 

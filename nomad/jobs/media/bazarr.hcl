@@ -141,6 +141,15 @@ EOH
     task "db" {
       driver = "docker"
 
+      config {
+        image = "postgres:17-alpine"
+        ports = ["db"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
+        ]
+      }
+
       template {
         destination = "local/.env"
         env         = true
@@ -149,15 +158,6 @@ POSTGRES_USER     = {{ key "bazarr/db/user" }}
 POSTGRES_PASSWORD = {{ key "bazarr/db/password" }}
 POSTGRES_DB       = {{ key "bazarr/db/name" }}
 EOH
-      }
-
-      config {
-        image = "postgres:17-alpine"
-        ports = ["db"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
-        ]
       }
 
       resources {

@@ -18,14 +18,19 @@ job "cloudflare-ddns" {
       template {
         destination = "local/.env"
         env         = true
-        data        = <<EOF
+        data        = <<EOH
 CLOUDFLARE_API_TOKEN = "{{ key "cloudflare/api/key" }}"
 DOMAINS              = {{ key "cloudflare/zone" }}
 PROXIED              = true
 TZ                   = "Europe/Dublin"
 UPDATE_CRON          = "@every 2m"
 IP6_PROVIDER         = "none"
-EOF
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 64
       }
 
       restart {
@@ -33,11 +38,6 @@ EOF
         interval = "5m"
         delay    = "25s"
         mode     = "delay"
-      }
-
-      resources {
-        cpu    = 100
-        memory = 64
       }
     }
   }

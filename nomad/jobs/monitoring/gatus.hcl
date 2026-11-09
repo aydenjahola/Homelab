@@ -6,58 +6,6 @@ job "gatus" {
     domain = "gatus.aydenjahola.com"
   }
 
-  group "db" {
-    count = 1
-
-    network {
-      port "db" {
-        to = 5432
-      }
-    }
-
-    service {
-      name = "gatus-db"
-      port = "db"
-
-      check {
-        name     = "postgres-tcp"
-        type     = "tcp"
-        port     = "db"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
-    task "db" {
-      driver = "docker"
-
-      config {
-        image = "postgres:17-alpine"
-        ports = ["db"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data"
-        ]
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_DB       = {{ key "gatus/db/name" }}
-POSTGRES_USER     = {{ key "gatus/db/user" }}
-POSTGRES_PASSWORD = {{ key "gatus/db/password" }}
-EOH
-      }
-
-      resources {
-        cpu        = 300
-        memory     = 128
-        memory_max = 512
-      }
-    }
-  }
-
   group "gatus" {
     count = 1
 
@@ -87,23 +35,25 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19.9"
+        image   = "postgres:17-alpine"
         command = "sh"
+
         args = [
           "-c",
-          "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
         destination = "local/.env"
         env         = true
-        change_mode = "restart"
         data        = <<EOH
-{{- range service "gatus-db" }}
+DB_USER={{ key "gatus/db/user" }}
+DB_NAME={{ key "gatus/db/name" }}
+{{ range service "gatus-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
-{{- end }}
+{{ end }}
 EOH
       }
 
@@ -386,6 +336,57 @@ EOH
       resources {
         cpu        = 500
         memory     = 96
+        memory_max = 512
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "gatus-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
+    }
+
+    task "db" {
+      driver = "docker"
+
+      config {
+        image = "postgres:17-alpine"
+        ports = ["db"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+POSTGRES_DB       = {{ key "gatus/db/name" }}
+POSTGRES_USER     = {{ key "gatus/db/user" }}
+POSTGRES_PASSWORD = {{ key "gatus/db/password" }}
+EOH
+      }
+
+      resources {
+        cpu        = 300
+        memory     = 128
         memory_max = 512
       }
     }

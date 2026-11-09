@@ -21,8 +21,8 @@ job "your-lastfm" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.your-lastfm.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.your-lastfm.entrypoints=https",
+        "traefik.http.routers.your-lastfm.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.your-lastfm.middlewares=authentik@consulcatalog",
       ]
     }
@@ -35,7 +35,7 @@ job "your-lastfm" {
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/data"
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/data",
         ]
       }
 

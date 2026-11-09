@@ -21,8 +21,8 @@ job "flaresolverr" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.flaresolverr.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.flaresolverr.entrypoints=https",
+        "traefik.http.routers.flaresolverr.rule=Host(`${NOMAD_META_domain}`)",
       ]
     }
 
@@ -34,11 +34,6 @@ job "flaresolverr" {
         ports = ["http"]
       }
 
-      resources {
-        cpu    = 500
-        memory = 512
-      }
-
       template {
         destination = "local/.env"
         env         = true
@@ -48,6 +43,11 @@ LOG_LEVEL=info
 LOG_HTML=false
 CAPTCHA_SOLVER=none
 EOH
+      }
+
+      resources {
+        cpu    = 500
+        memory = 512
       }
     }
   }

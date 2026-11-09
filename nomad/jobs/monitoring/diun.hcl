@@ -24,6 +24,11 @@ job "diun" {
         ]
       }
 
+      env = {
+        "NOMAD_ADDR"           = "http://${attr.unique.network.ip-address}:4646/",
+        "DIUN_PROVIDERS_NOMAD" = "true"
+      }
+
       template {
         destination = "local/.env"
         env         = true
@@ -68,11 +73,6 @@ notif:
   discord:
     webhookURL: "{{ key "diun/discord/webhook" }}"
 EOH
-      }
-
-      env = {
-        "NOMAD_ADDR"           = "http://${attr.unique.network.ip-address}:4646/",
-        "DIUN_PROVIDERS_NOMAD" = "true"
       }
 
       resources {

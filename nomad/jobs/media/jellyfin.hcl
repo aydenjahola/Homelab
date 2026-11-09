@@ -40,7 +40,7 @@ job "jellyfin" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$POSTGRES_HOST\" -p \"$POSTGRES_PORT\" -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"; do echo waiting for jellyfin db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -48,12 +48,11 @@ job "jellyfin" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-POSTGRES_USER = {{ key "jellyfin/db/user" }}
-POSTGRES_DB   = {{ key "jellyfin/db/name" }}
-
+DB_USER={{ key "jellyfin/db/user" }}
+DB_NAME={{ key "jellyfin/db/name" }}
 {{ range service "jellyfin-db" }}
-POSTGRES_HOST={{ .Address }}
-POSTGRES_PORT={{ .Port }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
 {{ end }}
 EOH
       }

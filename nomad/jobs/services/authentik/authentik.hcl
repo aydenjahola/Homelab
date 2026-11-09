@@ -30,12 +30,12 @@ job "authentik" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.authentik.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.authentik.entrypoints=https",
+        "traefik.http.routers.authentik.rule=Host(`${NOMAD_META_domain}`)",
 
         # Embedded outpost endpoints (login callback, sign_out) on every forward-auth host.
-        "traefik.http.routers.authentik-outpost.rule=PathPrefix(`/outpost.goauthentik.io/`)",
         "traefik.http.routers.authentik-outpost.entrypoints=https",
+        "traefik.http.routers.authentik-outpost.rule=PathPrefix(`/outpost.goauthentik.io/`)",
         "traefik.http.routers.authentik-outpost.priority=1000",
 
         "traefik.http.middlewares.authentik.forwardauth.address=http://${NOMAD_ADDR_http}/outpost.goauthentik.io/auth/traefik",
@@ -44,7 +44,7 @@ job "authentik" {
       ]
 
       check {
-        name     = "authentik-live"
+        name     = "authentik-http"
         type     = "http"
         path     = "/-/health/live/"
         interval = "10s"
@@ -71,7 +71,7 @@ job "authentik" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for authentik db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -81,7 +81,6 @@ job "authentik" {
         data        = <<EOH
 DB_USER={{ key "authentik/db/user" }}
 DB_NAME={{ key "authentik/db/name" }}
-
 {{ range service "authentik-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}

@@ -140,6 +140,16 @@ EOH
     task "db" {
       driver = "docker"
 
+      config {
+        image = "postgres:17-alpine"
+        ports = ["db"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
+          "local/init-radarr-dbs.sh:/docker-entrypoint-initdb.d/init-radarr-dbs.sh:ro",
+        ]
+      }
+
       template {
         destination = "local/init-radarr-dbs.sh"
         perms       = "0755"
@@ -161,16 +171,6 @@ POSTGRES_USER     = {{ key "radarr/db/user" }}
 POSTGRES_PASSWORD = {{ key "radarr/db/password" }}
 POSTGRES_DB       = {{ key "radarr/db/main" }}
 EOH
-      }
-
-      config {
-        image = "postgres:17-alpine"
-        ports = ["db"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
-          "local/init-radarr-dbs.sh:/docker-entrypoint-initdb.d/init-radarr-dbs.sh:ro",
-        ]
       }
 
       resources {

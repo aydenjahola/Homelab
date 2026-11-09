@@ -93,11 +93,6 @@ SCRIPT
         ]
       }
 
-      resources {
-        cpu    = 200
-        memory = 256
-      }
-
       template {
         destination = "local/.env"
         env         = true
@@ -122,6 +117,11 @@ DB_HOST={{ (index $svc 0).Address }}
 DB_PORT={{ (index $svc 0).Port }}
 {{- end -}}
 EOH
+      }
+
+      resources {
+        cpu    = 200
+        memory = 256
       }
     }
 
@@ -226,11 +226,6 @@ SCRIPT
         ]
       }
 
-      resources {
-        cpu    = 250
-        memory = 256
-      }
-
       template {
         destination = "local/.env"
         env         = true
@@ -253,6 +248,11 @@ CH_HOST={{ (index $svc 0).Address }}
 CH_PORT={{ (index $svc 0).Port }}
 {{- end -}}
 EOH
+      }
+
+      resources {
+        cpu    = 250
+        memory = 256
       }
     }
   }

@@ -41,7 +41,7 @@ job "prowlarr" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$PROWLARR__POSTGRES__HOST\" -p \"$PROWLARR__POSTGRES__PORT\" -U \"$PROWLARR__POSTGRES__USER\"; do echo waiting for db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_MAIN\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -49,11 +49,11 @@ job "prowlarr" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-PROWLARR__POSTGRES__USER={{ key "prowlarr/db/user" }}
-
+DB_USER={{ key "prowlarr/db/user" }}
+DB_MAIN={{ key "prowlarr/db/main" }}
 {{ range service "prowlarr-db" }}
-PROWLARR__POSTGRES__HOST={{ .Address }}
-PROWLARR__POSTGRES__PORT={{ .Port }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
 {{ end }}
 EOH
       }

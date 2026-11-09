@@ -3,6 +3,8 @@ job "keepalived" {
   type        = "service"
 
   group "odin" {
+    count = 1
+
     constraint {
       attribute = "${attr.unique.hostname}"
       value     = "odin"
@@ -31,7 +33,7 @@ job "keepalived" {
 
       template {
         destination = "local/keepalived.conf"
-        data        = <<EOF
+        data        = <<EOH
 global_defs {
   router_id odin
   enable_script_security
@@ -60,7 +62,7 @@ vrrp_instance VI_1 {
     192.168.1.240/24
   }
 }
-EOF
+EOH
       }
 
       resources {
@@ -71,6 +73,8 @@ EOF
   }
 
   group "thor" {
+    count = 1
+
     constraint {
       attribute = "${attr.unique.hostname}"
       value     = "thor"
@@ -99,7 +103,7 @@ EOF
 
       template {
         destination = "local/keepalived.conf"
-        data        = <<EOF
+        data        = <<EOH
 global_defs {
   router_id thor
   enable_script_security
@@ -128,7 +132,7 @@ vrrp_instance VI_1 {
     192.168.1.240/24
   }
 }
-EOF
+EOH
       }
 
       resources {
@@ -139,6 +143,8 @@ EOF
   }
 
   group "loki" {
+    count = 1
+
     constraint {
       attribute = "${attr.unique.hostname}"
       value     = "loki"
@@ -167,7 +173,7 @@ EOF
 
       template {
         destination = "local/keepalived.conf"
-        data        = <<EOF
+        data        = <<EOH
 global_defs {
   router_id loki
   enable_script_security
@@ -196,7 +202,7 @@ vrrp_instance VI_1 {
     192.168.1.240/24
   }
 }
-EOF
+EOH
       }
 
       resources {

@@ -40,7 +40,7 @@ job "hedgedoc" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for hedgedoc db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -48,9 +48,8 @@ job "hedgedoc" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-DB_USER = {{ key "hedgedoc/db/user" }}
-DB_NAME = {{ key "hedgedoc/db/name" }}
-
+DB_USER={{ key "hedgedoc/db/user" }}
+DB_NAME={{ key "hedgedoc/db/name" }}
 {{ range service "hedgedoc-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -74,12 +73,6 @@ EOH
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/uploads:/hedgedoc/public/uploads:rw",
         ]
-      }
-
-      resources {
-        cpu        = 500
-        memory     = 256
-        memory_max = 512
       }
 
       template {
@@ -111,6 +104,12 @@ CMD_SESSION_SECRET                        = {{ key "hedgedoc/session/secret" }}
 CMD_PROTOCOL_USESSL                       = true
 CMD_URL_ADDPORT                           = false
 EOH
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
       }
     }
   }
@@ -148,12 +147,6 @@ EOH
         ]
       }
 
-      resources {
-        cpu        = 500
-        memory     = 128
-        memory_max = 512
-      }
-
       template {
         destination = "local/.env"
         env         = true
@@ -162,6 +155,12 @@ POSTGRES_USER     = {{ key "hedgedoc/db/user" }}
 POSTGRES_PASSWORD = {{ key "hedgedoc/db/password" }}
 POSTGRES_DB       = {{ key "hedgedoc/db/name" }}
 EOH
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 128
+        memory_max = 512
       }
     }
   }

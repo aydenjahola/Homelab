@@ -40,7 +40,7 @@ job "seerr" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for seerr db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -48,9 +48,8 @@ job "seerr" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-DB_USER = {{ key "seerr/db/user" }}
-DB_NAME = {{ key "seerr/db/name" }}
-
+DB_USER={{ key "seerr/db/user" }}
+DB_NAME={{ key "seerr/db/name" }}
 {{ range service "seerr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}

@@ -6,60 +6,6 @@ job "dependency-track" {
     domain = "dtrack.local.aydenjahola.com"
   }
 
-  group "db" {
-    count = 1
-
-    network {
-      port "db" {
-        to = 5432
-      }
-    }
-
-    service {
-      name = "dependency-track-db"
-      port = "db"
-
-      check {
-        name     = "postgres-tcp"
-        type     = "tcp"
-        port     = "db"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
-    task "db" {
-      driver = "docker"
-
-      config {
-        image        = "postgres:18-alpine"
-        ports        = ["db"]
-        security_opt = ["no-new-privileges:true"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql:rw",
-        ]
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_DB={{ key "dependency-track/db/name" }}
-POSTGRES_USER={{ key "dependency-track/db/user" }}
-POSTGRES_PASSWORD={{ key "dependency-track/db/password" }}
-TZ=Europe/Dublin
-EOH
-      }
-
-      resources {
-        cpu        = 500
-        memory     = 256
-        memory_max = 1024
-      }
-    }
-  }
-
   group "dependency-track" {
     count = 1
 
@@ -85,7 +31,7 @@ EOH
       ]
 
       check {
-        name     = "dtrack-ready"
+        name     = "dependency-track-http"
         type     = "http"
         port     = "health"
         path     = "/health/ready"
@@ -114,23 +60,25 @@ EOH
       }
 
       config {
-        image   = "alpine:3.22.8"
+        image   = "postgres:17-alpine"
         command = "sh"
+
         args = [
           "-c",
-          "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/db.env"
+        destination = "local/.env"
         env         = true
-        change_mode = "restart"
         data        = <<EOH
-{{- range service "dependency-track-db" }}
+DB_USER={{ key "dependency-track/db/user" }}
+DB_NAME={{ key "dependency-track/db/name" }}
+{{ range service "dependency-track-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
-{{- end }}
+{{ end }}
 EOH
       }
 
@@ -216,6 +164,59 @@ EOH
         cpu        = 100
         memory     = 64
         memory_max = 128
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "dependency-track-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
+    }
+
+    task "db" {
+      driver = "docker"
+
+      config {
+        image        = "postgres:18-alpine"
+        ports        = ["db"]
+        security_opt = ["no-new-privileges:true"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql:rw",
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+POSTGRES_DB={{ key "dependency-track/db/name" }}
+POSTGRES_USER={{ key "dependency-track/db/user" }}
+POSTGRES_PASSWORD={{ key "dependency-track/db/password" }}
+TZ=Europe/Dublin
+EOH
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 1024
       }
     }
   }

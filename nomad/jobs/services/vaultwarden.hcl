@@ -21,8 +21,8 @@ job "vaultwarden" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.vault.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.vault.entrypoints=https",
+        "traefik.http.routers.vault.rule=Host(`${NOMAD_META_domain}`)",
       ]
     }
 
@@ -40,7 +40,7 @@ job "vaultwarden" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for vaultwarden db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
@@ -50,7 +50,6 @@ job "vaultwarden" {
         data        = <<EOH
 DB_USER={{ key "vaultwarden/db/user" }}
 DB_NAME={{ key "vaultwarden/db/name" }}
-
 {{ range service "vaultwarden-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -73,14 +72,8 @@ EOH
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/data:rw",
-          "/etc/localtime:/etc/localtime:ro"
+          "/etc/localtime:/etc/localtime:ro",
         ]
-      }
-
-      resources {
-        cpu        = 500
-        memory     = 160
-        memory_max = 512
       }
 
       template {
@@ -121,6 +114,12 @@ PUSH_INSTALLATION_KEY={{ key "vaultwarden/install/key" }}
 PUSH_RELAY_URI=https://api.bitwarden.eu
 PUSH_IDENTITY_URI=https://identity.bitwarden.eu
 EOH
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 160
+        memory_max = 512
       }
     }
   }

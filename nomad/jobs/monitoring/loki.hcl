@@ -25,12 +25,12 @@ job "loki" {
 
       tags = [
         "traefik.enable=true",
+        "traefik.http.routers.loki.entrypoints=https",
         "traefik.http.routers.loki.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.loki.entrypoints=https"
       ]
 
       check {
-        name     = "loki-ready"
+        name     = "loki-http"
         type     = "http"
         path     = "/ready"
         interval = "10s"
@@ -47,7 +47,7 @@ job "loki" {
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/loki",
-          "local/loki.yml:/etc/loki/loki.yml"
+          "local/loki.yml:/etc/loki/loki.yml",
         ]
 
         args = [
