@@ -90,6 +90,14 @@ ADMIN_TOKEN={{ key "vaultwarden/admin/token" }}
 
 DOMAIN={{ key "vaultwarden/domain" }}
 
+SSO_ENABLED=true
+SSO_ONLY=true
+SSO_SIGNUPS_MATCH_EMAIL=true
+SSO_AUTHORITY=https://auth.aydenjahola.com/application/o/vaultwarden/
+SSO_SCOPES="openid profile email offline_access"
+SSO_CLIENT_ID={{ key "authentik/oidc/vaultwarden/client_id" }}
+SSO_CLIENT_SECRET={{ key "authentik/oidc/vaultwarden/client_secret" }}
+
 WEBSOCKET_ENABLED=true
 
 SIGNUPS_ALLOWED=false
