@@ -7,3 +7,8 @@ docker-compose/vikunja/db/
 docker-compose/discord-bot/
 docker-compose/email-generator/
 config.toml
+
+# Local-only: plans/specs and WIP torrent jobs
+nomad/docs/
+nomad/jobs/media/qbittorent.hcl
+nomad/jobs/media/transmission.hcl
