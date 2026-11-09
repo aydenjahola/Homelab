@@ -69,12 +69,6 @@ entries:
         path: custom/app-prowlarr.yaml
       required: true
 
-  - model: authentik_blueprints.metaapplyblueprint
-    attrs:
-      identifiers:
-        path: custom/app-torr.yaml
-      required: true
-
   - model: authentik_outposts.outpost
     identifiers:
       managed: goauthentik.io/outposts/embedded
@@ -91,4 +85,3 @@ entries:
         - !Find [authentik_providers_proxy.proxyprovider, [name, radarr]]
         - !Find [authentik_providers_proxy.proxyprovider, [name, bazarr]]
         - !Find [authentik_providers_proxy.proxyprovider, [name, prowlarr]]
-        - !Find [authentik_providers_proxy.proxyprovider, [name, torr]]
