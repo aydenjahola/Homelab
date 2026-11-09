@@ -23,6 +23,7 @@ job "radarr" {
         "traefik.enable=true",
         "traefik.http.routers.radarr.entrypoints=https",
         "traefik.http.routers.radarr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.radarr.middlewares=authentik@consulcatalog",
       ]
 
       check {
@@ -100,6 +101,7 @@ RADARR__POSTGRES__HOST={{ range service "radarr-db" }}{{ .Address }}{{ end }}
 RADARR__POSTGRES__PORT={{ range service "radarr-db" }}{{ .Port }}{{ end }}
 RADARR__POSTGRES__USER={{ key "radarr/db/user" }}
 RADARR__POSTGRES__PASSWORD = {{ key "radarr/db/password" }}
+RADARR__AUTH__METHOD=External
 RADARR__POSTGRES__MAINDB   = {{ key "radarr/db/main" }}
 RADARR__POSTGRES__LOGDB    = {{ key "radarr/db/log" }}
 EOH

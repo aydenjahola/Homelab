@@ -326,7 +326,7 @@ endpoints:
   - name: radarr
     group: media
     url: "https://radarr.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: sonarr
     group: media

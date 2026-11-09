@@ -51,6 +51,12 @@ entries:
         path: custom/app-sonarr.yaml
       required: true
 
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-radarr.yaml
+      required: true
+
   - model: authentik_outposts.outpost
     identifiers:
       managed: goauthentik.io/outposts/embedded
@@ -64,3 +70,4 @@ entries:
         - !Find [authentik_providers_proxy.proxyprovider, [name, docs]]
         - !Find [authentik_providers_proxy.proxyprovider, [name, tracearr]]
         - !Find [authentik_providers_proxy.proxyprovider, [name, sonarr]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, radarr]]
