@@ -227,7 +227,7 @@ endpoints:
   - name: your-lastfm
     group: services
     url: "https://ylfm.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: reactive-resume
     group: services

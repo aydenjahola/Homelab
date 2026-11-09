@@ -23,6 +23,7 @@ job "your-lastfm" {
         "traefik.enable=true",
         "traefik.http.routers.your-lastfm.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.your-lastfm.entrypoints=https",
+        "traefik.http.routers.your-lastfm.middlewares=authentik@consulcatalog",
       ]
     }
 
