@@ -71,7 +71,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/plausible/community-edition:latest"
+        image = "ghcr.io/plausible/community-edition:v3.2.1"
         ports = ["http"]
 
         command = "/bin/sh"
@@ -189,7 +189,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "clickhouse/clickhouse-server:24.12-alpine"
+        image = "clickhouse/clickhouse-server:24.12.6.70-alpine"
         ports = ["clickhouse"]
 
         volumes = [

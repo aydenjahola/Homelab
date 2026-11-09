@@ -31,7 +31,7 @@ job "your-lastfm" {
       driver = "docker"
 
       config {
-        image = "gomaink/your-lastfm"
+        image = "gomaink/your-lastfm:1.3.0"
         ports = ["http"]
 
         volumes = [

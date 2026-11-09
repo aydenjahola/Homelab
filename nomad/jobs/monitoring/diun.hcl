@@ -9,7 +9,7 @@ job "diun" {
       driver = "docker"
 
       config {
-        image = "crazymax/diun:latest"
+        image = "crazymax/diun:4.33.1"
         args  = ["serve", "--config", "local/diun.yml"]
 
         auth {

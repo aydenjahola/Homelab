@@ -31,7 +31,7 @@ job "prometheus" {
       driver = "docker"
 
       config {
-        image = "prom/prometheus:latest"
+        image = "prom/prometheus:v3.16.0"
         ports = ["web"]
 
         volumes = [

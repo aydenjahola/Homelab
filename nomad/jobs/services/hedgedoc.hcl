@@ -68,7 +68,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "quay.io/hedgedoc/hedgedoc"
+        image = "quay.io/hedgedoc/hedgedoc:1.12.0"
         ports = ["http"]
 
         volumes = [

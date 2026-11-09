@@ -96,7 +96,7 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19"
+        image   = "alpine:3.19.9"
         command = "sh"
         args = [
           "-c",
@@ -126,7 +126,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/amruthpillai/reactive-resume:latest"
+        image = "ghcr.io/amruthpillai/reactive-resume:v5.3.0"
         ports = ["http"]
 
         volumes = [

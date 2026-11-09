@@ -66,7 +66,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/homarr-labs/homarr:latest"
+        image = "ghcr.io/homarr-labs/homarr:v2.12.0"
         ports = ["http"]
 
         volumes = [
@@ -199,7 +199,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "redis:8-alpine"
+        image = "redis:8.8.0-alpine"
         ports = ["redis"]
 
         volumes = [

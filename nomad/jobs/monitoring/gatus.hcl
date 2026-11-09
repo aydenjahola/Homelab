@@ -87,7 +87,7 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19"
+        image   = "alpine:3.19.9"
         command = "sh"
         args = [
           "-c",
@@ -117,7 +117,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "twinproduction/gatus:latest"
+        image = "twinproduction/gatus:v5.38.0"
         ports = ["http"]
 
         volumes = [

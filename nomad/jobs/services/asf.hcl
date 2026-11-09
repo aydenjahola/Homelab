@@ -31,7 +31,7 @@ job "archisteamfarm" {
       driver = "docker"
 
       config {
-        image = "justarchi/archisteamfarm:latest"
+        image = "justarchi/archisteamfarm:6.3.11.7"
         ports = ["http"]
 
         volumes = [

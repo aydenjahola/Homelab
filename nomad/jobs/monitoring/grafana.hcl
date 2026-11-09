@@ -30,7 +30,7 @@ job "grafana" {
       driver = "docker"
 
       config {
-        image = "grafana/grafana:latest"
+        image = "grafana/grafana:13.3.0"
         ports = ["http"]
 
         volumes = [

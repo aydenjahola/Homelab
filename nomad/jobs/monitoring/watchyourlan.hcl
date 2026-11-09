@@ -43,7 +43,7 @@ job "watchyourlan" {
       driver = "docker"
 
       config {
-        image        = "aceberg/watchyourlan:v2"
+        image        = "aceberg/watchyourlan:2.1.4"
         network_mode = "host"
 
         volumes = [

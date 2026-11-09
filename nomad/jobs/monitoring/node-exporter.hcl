@@ -7,7 +7,7 @@ job "node-exporter" {
       driver = "docker"
 
       config {
-        image = "prom/node-exporter:latest"
+        image = "prom/node-exporter:v1.12.1"
 
         network_mode = "host"
         pid_mode     = "host"

@@ -91,7 +91,7 @@ EOH
       driver = "docker"
 
       config {
-        image   = "redis:8-alpine"
+        image   = "redis:8.10.3-alpine"
         ports   = ["redis"]
         command = "redis-server"
         args    = ["--appendonly", "yes"]
@@ -148,7 +148,7 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19"
+        image   = "alpine:3.19.9"
         command = "sh"
         args = [
           "-c",
@@ -178,7 +178,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/connorgallopo/tracearr:latest"
+        image = "ghcr.io/connorgallopo/tracearr:3.1.7"
         ports = ["http"]
       }
 

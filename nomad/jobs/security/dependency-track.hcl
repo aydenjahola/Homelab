@@ -114,7 +114,7 @@ EOH
       }
 
       config {
-        image   = "alpine:3.22"
+        image   = "alpine:3.22.8"
         command = "sh"
         args = [
           "-c",

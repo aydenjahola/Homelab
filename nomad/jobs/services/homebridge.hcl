@@ -14,7 +14,7 @@ job "homebridge" {
       driver = "docker"
 
       config {
-        image        = "homebridge/homebridge:latest"
+        image        = "homebridge/homebridge:2026-11-02"
         network_mode = "host"
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/homebridge:rw",

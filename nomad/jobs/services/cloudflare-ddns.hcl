@@ -9,7 +9,7 @@ job "cloudflare-ddns" {
       driver = "docker"
 
       config {
-        image           = "favonia/cloudflare-ddns:latest"
+        image           = "favonia/cloudflare-ddns:1.18.0"
         readonly_rootfs = true
         cap_drop        = ["all"]
         security_opt    = ["no-new-privileges:true"]

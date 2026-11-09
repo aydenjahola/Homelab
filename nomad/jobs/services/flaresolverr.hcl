@@ -30,7 +30,7 @@ job "flaresolverr" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/flaresolverr/flaresolverr:latest"
+        image = "ghcr.io/flaresolverr/flaresolverr:v3.5.2"
         ports = ["http"]
       }
 

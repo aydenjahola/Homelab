@@ -77,7 +77,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/radarr:latest"
+        image = "lscr.io/linuxserver/radarr:6.4.4.10685-ls326"
         ports = ["http"]
 
         volumes = [

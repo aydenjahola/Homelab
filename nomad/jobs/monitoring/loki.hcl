@@ -42,7 +42,7 @@ job "loki" {
       driver = "docker"
 
       config {
-        image = "grafana/loki:latest"
+        image = "grafana/loki:3.7.9"
         ports = ["http", "grpc"]
 
         volumes = [

@@ -31,7 +31,7 @@ job "homelab-docs" {
       driver = "docker"
 
       config {
-        image      = "ghcr.io/aydenjahola/homelab-docs:latest"
+        image      = "ghcr.io/aydenjahola/homelab-docs:sha-28a047d"
         force_pull = true
         ports      = ["http"]
 

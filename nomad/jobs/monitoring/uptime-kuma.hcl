@@ -32,7 +32,7 @@ job "uptime-kuma" {
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/mariadb:latest"
+        image = "lscr.io/linuxserver/mariadb:11.8.9-r0-ls239"
         ports = ["db"]
 
         volumes = [
@@ -91,7 +91,7 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19"
+        image   = "alpine:3.19.9"
         command = "sh"
         args = [
           "-c",
@@ -121,7 +121,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "louislam/uptime-kuma:next-slim"
+        image = "louislam/uptime-kuma:2.5.9-slim"
         ports = ["http"]
 
         volumes = [

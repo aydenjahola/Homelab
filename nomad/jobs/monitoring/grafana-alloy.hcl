@@ -26,7 +26,7 @@ job "grafana-alloy" {
       driver = "docker"
 
       config {
-        image = "grafana/alloy:latest"
+        image = "grafana/alloy:v1.21.3"
         ports = ["http"]
 
         args = [

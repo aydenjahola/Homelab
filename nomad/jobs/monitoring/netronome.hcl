@@ -73,7 +73,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/autobrr/netronome:latest"
+        image = "ghcr.io/autobrr/netronome:v0.16.0"
         ports = ["http"]
 
         cap_add = [

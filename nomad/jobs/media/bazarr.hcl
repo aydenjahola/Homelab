@@ -77,7 +77,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/bazarr:latest"
+        image = "lscr.io/linuxserver/bazarr:v1.6.2-ls371"
         ports = ["http"]
 
         volumes = [

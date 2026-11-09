@@ -15,7 +15,7 @@ job "uptime-kuma-db-backup" {
       driver = "docker"
 
       config {
-        image   = "alpine:3.18"
+        image   = "alpine:3.18.12"
         command = "/bin/sh"
         args = [
           "-lc",

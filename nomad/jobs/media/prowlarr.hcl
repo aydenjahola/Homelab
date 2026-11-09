@@ -68,7 +68,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/prowlarr:latest"
+        image = "lscr.io/linuxserver/prowlarr:2.7.0.5723-ls167"
         ports = ["http"]
 
         volumes = [

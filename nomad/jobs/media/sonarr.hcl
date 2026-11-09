@@ -77,7 +77,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/sonarr:latest"
+        image = "lscr.io/linuxserver/sonarr:4.0.20.3014-ls4"
         ports = ["http"]
 
         volumes = [

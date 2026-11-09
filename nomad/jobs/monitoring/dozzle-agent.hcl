@@ -27,7 +27,7 @@ job "dozzle-agent" {
       driver = "docker"
 
       config {
-        image   = "amir20/dozzle:latest"
+        image   = "amir20/dozzle:v11.4.2"
         command = "agent"
         ports   = ["agent"]
 
