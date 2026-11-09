@@ -81,8 +81,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -177,8 +178,9 @@ EOH
       }
 
       resources {
-        cpu    = 1000
-        memory = 2048
+        cpu        = 1000
+        memory     = 1856
+        memory_max = 2048
       }
 
       restart {

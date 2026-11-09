@@ -81,8 +81,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -220,6 +221,12 @@ POSTGRES_NAME     = {{ key "vaultwarden/db/name" }}
 POSTGRES_USER     = {{ key "vaultwarden/db/user" }}
 POSTGRES_PASSWORD = {{ key "vaultwarden/db/password" }}
 EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 128
+        memory_max = 300
       }
     }
   }
