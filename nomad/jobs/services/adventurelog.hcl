@@ -18,10 +18,6 @@ job "adventurelog" {
       port "server" {
         to = 80
       }
-
-      port "db" {
-        to = 5432
-      }
     }
 
     service {
@@ -33,6 +29,44 @@ job "adventurelog" {
         "traefik.http.routers.adventurelog.rule=Host(`${NOMAD_META_frontend}`)",
         "traefik.http.routers.adventurelog.entrypoints=https",
       ]
+    }
+
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:17-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for adventurelog db; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+DB_USER = {{ key "adventurelog/db/user" }}
+DB_NAME = {{ key "adventurelog/db/name" }}
+
+{{ range service "adventurelog-db" }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
     }
 
     task "web" {
@@ -118,8 +152,10 @@ EMAIL_HOST_USER              = {{ key "adventurelog/smtp/user" }}
 EMAIL_HOST_PASSWORD          = {{ key "adventurelog/smtp/password" }}
 DEFAULT_FROM_EMAIL           = {{ key "adventurelog/smtp/from" }}
 
-PGHOST                       = {{ env "NOMAD_IP_db" }}
-PGPORT                       = {{ env "NOMAD_HOST_PORT_db" }}
+{{ range service "adventurelog-db" }}
+PGHOST                       = {{ .Address }}
+PGPORT                       = {{ .Port }}
+{{ end }}
 PGDATABASE                   = {{ key "adventurelog/db/name" }}
 PGUSER                       = {{ key "adventurelog/db/user" }}
 PGPASSWORD                   = {{ key "adventurelog/db/password" }}
@@ -129,10 +165,27 @@ DISABLE_REGISTRATION_MESSAGE = "Registration is disabled for this instance of Ad
 EOH
       }
     }
+  }
+
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
 
     service {
       name = "adventurelog-db"
       port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
     }
 
     task "db" {
@@ -165,4 +218,3 @@ EOH
     }
   }
 }
-

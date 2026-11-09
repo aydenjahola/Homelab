@@ -13,12 +13,6 @@ job "plausible" {
       port "http" {
         to = 8000
       }
-      port "db" {
-        to = "5432"
-      }
-      port "clickhouse" {
-        to = "8123"
-      }
     }
 
     service {
@@ -32,10 +26,121 @@ job "plausible" {
       ]
     }
 
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:16-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\"; do echo waiting for plausible db; sleep 2; done; until wget -qO- \"http://$CH_HOST:$CH_PORT/ping\" >/dev/null 2>&1; do echo waiting for plausible clickhouse; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+DB_USER={{ key "plausible/db/user" }}
+
+{{ range service "plausible-db" }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
+{{ end }}
+{{ range service "plausible-clickhouse" }}
+CH_HOST={{ .Address }}
+CH_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
+    }
+
+    task "plausible" {
+      driver = "docker"
+
+      config {
+        image = "ghcr.io/plausible/community-edition:latest"
+        ports = ["http"]
+
+        command = "/bin/sh"
+        args    = ["-c", "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/data:/var/lib/plausible",
+        ]
+      }
+      template {
+        destination = "local/.env"
+        env         = true
+        data = <<EOH
+DISABLE_REGISTRATION=true
+
+SECRET_KEY_BASE={{ key "plausible/secret/key" }}
+BASE_URL=https://{{ env "NOMAD_META_domain" }}
+TOTP_VAULT_KEY={{ key "plausible/totp/key" }}
+
+MAXMIND_LICENSE_KEY={{ key "plausible/maxmind/license" }}
+MAXMIND_EDITION=GeoLite2-City
+
+GOOGLE_CLIENT_ID={{ key "plausible/google/client/id" }}
+GOOGLE_CLIENT_SECRET={{ key "plausible/google/client/secret" }}
+
+DATABASE_URL=postgres://{{ key "plausible/db/user" }}:{{ key "plausible/db/password" }}@{{ range service "plausible-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "plausible/db/name" }}
+
+CLICKHOUSE_DATABASE_URL=http://{{ range service "plausible-clickhouse" }}{{ .Address }}:{{ .Port }}{{ end }}/plausible_events_db
+
+TMPDIR=/var/lib/plausible/tmp
+
+MAILER_EMAIL={{ key "plausible/smtp/from" }}
+MAILER_NAME={{ key "plausible/smtp/name" }}
+SMTP_HOST_ADDR={{ key "plausible/smtp/host" }}
+SMTP_HOST_PORT={{ key "plausible/smtp/port" }}
+SMTP_USER_NAME={{ key "plausible/smtp/username" }}
+SMTP_USER_PWD={{ key "plausible/smtp/password" }}
+EOH
+      }
+
+      resources {
+        cpu    = 500
+        memory = 3072
+      }
+    }
+  }
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = "5432"
+      }
+      port "clickhouse" {
+        to = "8123"
+      }
+    }
+
     service {
       name = "plausible-db"
       port = "db"
-    }   
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
+    }
 
     task "db" {
       driver = "docker"
@@ -68,6 +173,14 @@ EOH
     service {
       name = "plausible-clickhouse"
       port = "clickhouse"
+
+      check {
+        name     = "clickhouse-ping"
+        type     = "http"
+        path     = "/ping"
+        interval = "10s"
+        timeout  = "2s"
+      }
     }
 
     task "clickhouse" {
@@ -142,57 +255,6 @@ EOH
       resources {
         cpu    = 300
         memory = 800
-      }
-    }
-
-    task "plausible" {
-      driver = "docker"
-
-      config {
-        image = "ghcr.io/plausible/community-edition:latest"
-        ports = ["http"]
-
-        command = "/bin/sh"
-        args    = ["-c", "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/var/lib/plausible",
-        ]
-      }
-      template {
-        destination = "local/.env"
-        env         = true
-        data = <<EOH
-DISABLE_REGISTRATION=true
-
-SECRET_KEY_BASE={{ key "plausible/secret/key" }}
-BASE_URL=https://{{ env "NOMAD_META_domain" }}
-TOTP_VAULT_KEY={{ key "plausible/totp/key" }}
-
-MAXMIND_LICENSE_KEY={{ key "plausible/maxmind/license" }}
-MAXMIND_EDITION=GeoLite2-City
-
-GOOGLE_CLIENT_ID={{ key "plausible/google/client/id" }}
-GOOGLE_CLIENT_SECRET={{ key "plausible/google/client/secret" }}
-
-DATABASE_URL=postgres://{{ key "plausible/db/user" }}:{{ key "plausible/db/password" }}@{{ env "NOMAD_ADDR_db" }}/{{ key "plausible/db/name" }}
-
-CLICKHOUSE_DATABASE_URL=http://{{ env "NOMAD_ADDR_clickhouse" }}/plausible_events_db
-
-TMPDIR=/var/lib/plausible/tmp
-
-MAILER_EMAIL={{ key "plausible/smtp/from" }}
-MAILER_NAME={{ key "plausible/smtp/name" }}
-SMTP_HOST_ADDR={{ key "plausible/smtp/host" }}
-SMTP_HOST_PORT={{ key "plausible/smtp/port" }}
-SMTP_USER_NAME={{ key "plausible/smtp/username" }}
-SMTP_USER_PWD={{ key "plausible/smtp/password" }}
-EOH
-      }
-
-      resources {
-        cpu    = 500
-        memory = 3072
       }
     }
   }

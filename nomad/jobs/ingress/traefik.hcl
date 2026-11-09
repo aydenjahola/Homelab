@@ -86,12 +86,8 @@ entryPoints:
             sans: "*.aydenjahola.com"
           - main: "local.aydenjahola.com"
             sans: "*.local.aydenjahola.com"
-          - main: "inaamessawi.com"
-            sans: "*.inaamessawi.com"
           - main: "katyaphone.com.au"
             sans: "*.katyaphone.com.au"
-          - main: "eqpaintingsolutions.com.au"
-            sans: "*.eqpaintingsolutions.com.au"
 
 certificatesResolvers:
   cloudflare:

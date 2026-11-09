@@ -171,11 +171,6 @@ endpoints:
     url: "https://home.aydenjahola.com"
     <<: *defaults_https
 
-  - name: home-assistant
-    group: services
-    url: "https://ha.local.aydenjahola.com"
-    <<: *defaults_https
-
   - name: adventurelog-web
     group: services
     url: "https://trips.aydenjahola.com"
@@ -244,11 +239,6 @@ endpoints:
     <<: *defaults_https
 
   # --- Cloud / Apps ---
-  - name: forgejo
-    group: services
-    url: "https://git.aydenjahola.com"
-    <<: *defaults_https
-
   - name: netronome
     group: services
     url: "https://netronome.aydenjahola.com"
@@ -386,16 +376,6 @@ endpoints:
   - name: katyaphone
     group: public
     url: "https://katyaphone.com.au"
-    <<: *defaults_https
-
-  - name: eqpainting
-    group: public
-    url: "https://eqpaintingsolutions.com.au"
-    <<: *defaults_https
-
-  - name: inaamessawi
-    group: public
-    url: "https://inaamessawi.com"
     <<: *defaults_https
 EOH
       }

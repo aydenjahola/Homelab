@@ -13,9 +13,6 @@ job "hedgedoc" {
       port "http" {
         to = 3000
       }
-      port "db" {
-        to = 5432
-      }
     }
 
     service {
@@ -27,6 +24,44 @@ job "hedgedoc" {
         "traefik.http.routers.md.entrypoints=https",
         "traefik.http.routers.md.rule=Host(`${NOMAD_META_domain}`)",
       ]
+    }
+
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:13.4-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for hedgedoc db; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+DB_USER = {{ key "hedgedoc/db/user" }}
+DB_NAME = {{ key "hedgedoc/db/name" }}
+
+{{ range service "hedgedoc-db" }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
     }
 
     task "hedgedoc" {
@@ -50,7 +85,7 @@ job "hedgedoc" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-CMD_DB_URL                                = postgres://{{ key "hedgedoc/db/user" }}:{{ key "hedgedoc/db/password"}}@{{ env "NOMAD_ADDR_db" }}/{{ key "hedgedoc/db/name" }}
+CMD_DB_URL                                = postgres://{{ key "hedgedoc/db/user" }}:{{ key "hedgedoc/db/password"}}@{{ range service "hedgedoc-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "hedgedoc/db/name" }}
 CMD_DOMAIN                                = {{ env "NOMAD_META_domain" }}
 CMD_PROTOCOL_USESSL                       = {{ key "hedgedoc/ssl" }}
 CMD_ALLOW_ANONYMOUS                       = {{ key "hedgedoc/allow/annonymous" }}
@@ -75,10 +110,27 @@ CMD_URL_ADDPORT                           = false
 EOH
       }
     }
+  }
+
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
 
     service {
       name = "hedgedoc-db"
       port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
     }
 
     task "postgres" {

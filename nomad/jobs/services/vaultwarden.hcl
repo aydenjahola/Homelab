@@ -13,9 +13,6 @@ job "vaultwarden" {
       port "http" {
         to = 80
       }
-      port "db" {
-        to = 5432
-      }
     }
 
     service {
@@ -27,6 +24,44 @@ job "vaultwarden" {
         "traefik.http.routers.vault.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.vault.entrypoints=https",
       ]
+    }
+
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:17-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for vaultwarden db; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination = "local/.env"
+        env         = true
+        data        = <<EOH
+DB_USER={{ key "vaultwarden/db/user" }}
+DB_NAME={{ key "vaultwarden/db/name" }}
+
+{{ range service "vaultwarden-db" }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
     }
 
     task "vaultwarden" {
@@ -69,7 +104,7 @@ SMTP_USERNAME={{ key "vaultwarden/smtp/username" }}
 SMTP_PASSWORD={{ key "vaultwarden/smtp/password" }}
 
 
-DATABASE_URL=postgresql://{{ key "vaultwarden/db/user" }}:{{ key "vaultwarden/db/password" }}@{{ env "NOMAD_ADDR_db" }}/{{ key "vaultwarden/db/name" }}
+DATABASE_URL=postgresql://{{ key "vaultwarden/db/user" }}:{{ key "vaultwarden/db/password" }}@{{ range service "vaultwarden-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "vaultwarden/db/name" }}
 
 PUSH_ENABLED=true
 PUSH_INSTALLATION_ID={{ key "vaultwarden/install/id" }}
@@ -79,10 +114,27 @@ PUSH_IDENTITY_URI=https://identity.bitwarden.eu
 EOH
       }
     }
+  }
+
+  group "db" {
+    count = 1
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
 
     service {
       name = "vaultwarden-db"
       port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+      }
     }
 
     task "db" {
