@@ -233,11 +233,6 @@ endpoints:
     url: "https://vault.aydenjahola.com"
     <<: *defaults_https
 
-  - name: keycloak
-    group: services
-    url: "https://auth.aydenjahola.com"
-    <<: *defaults_https
-
   # --- Cloud / Apps ---
   - name: netronome
     group: services
