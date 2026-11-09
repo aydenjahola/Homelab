@@ -68,9 +68,9 @@ job "stirling-pdf" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-DISABLE_ADDITIONAL_FEATURES=false
-LANGS=en_GB
-SECURITY_ENABLELOGIN=true
+DISABLE_ADDITIONAL_FEATURES = false
+LANGS                       = en_GB
+SECURITY_ENABLELOGIN        = true
 EOH
       }
 

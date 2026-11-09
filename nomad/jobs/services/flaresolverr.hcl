@@ -60,10 +60,10 @@ job "flaresolverr" {
         destination = "local/.env"
         env         = true
         data        = <<EOH
-TZ=Europe/Dublin
-LOG_LEVEL=info
-LOG_HTML=false
-CAPTCHA_SOLVER=none
+TZ             = Europe/Dublin
+LOG_LEVEL      = info
+LOG_HTML       = false
+CAPTCHA_SOLVER = none
 EOH
       }
 

@@ -86,8 +86,8 @@ job "sonarr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "sonarr/db/user" }}
-DB_MAIN={{ key "sonarr/db/main" }}
+DB_USER = {{ key "sonarr/db/user" }}
+DB_MAIN = {{ key "sonarr/db/main" }}
 {{ range service "sonarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -135,7 +135,7 @@ SONARR__POSTGRES__USER     = {{ key "sonarr/db/user" }}
 SONARR__POSTGRES__PASSWORD = {{ key "sonarr/db/password" }}
 SONARR__POSTGRES__MAINDB   = {{ key "sonarr/db/main" }}
 SONARR__POSTGRES__LOGDB    = {{ key "sonarr/db/log" }}
-SONARR__AUTH__METHOD=External
+SONARR__AUTH__METHOD       = External
 EOH
       }
 

@@ -71,8 +71,8 @@ job "plausible" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "plausible/db/user" }}
-DB_NAME={{ key "plausible/db/name" }}
+DB_USER = {{ key "plausible/db/user" }}
+DB_NAME = {{ key "plausible/db/name" }}
 {{ range service "plausible-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -110,30 +110,30 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-DISABLE_REGISTRATION=true
+DISABLE_REGISTRATION = true
 
-SECRET_KEY_BASE={{ key "plausible/secret/key" }}
-BASE_URL=https://{{ env "NOMAD_META_domain" }}
-TOTP_VAULT_KEY={{ key "plausible/totp/key" }}
+SECRET_KEY_BASE = {{ key "plausible/secret/key" }}
+BASE_URL        = https://{{ env "NOMAD_META_domain" }}
+TOTP_VAULT_KEY  = {{ key "plausible/totp/key" }}
 
-MAXMIND_LICENSE_KEY={{ key "plausible/maxmind/license" }}
-MAXMIND_EDITION=GeoLite2-City
+MAXMIND_LICENSE_KEY = {{ key "plausible/maxmind/license" }}
+MAXMIND_EDITION     = GeoLite2-City
 
-GOOGLE_CLIENT_ID={{ key "plausible/google/client/id" }}
-GOOGLE_CLIENT_SECRET={{ key "plausible/google/client/secret" }}
+GOOGLE_CLIENT_ID     = {{ key "plausible/google/client/id" }}
+GOOGLE_CLIENT_SECRET = {{ key "plausible/google/client/secret" }}
 
-DATABASE_URL=postgres://{{ key "plausible/db/user" }}:{{ key "plausible/db/password" }}@{{ range service "plausible-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "plausible/db/name" }}
+DATABASE_URL = postgres://{{ key "plausible/db/user" }}:{{ key "plausible/db/password" }}@{{ range service "plausible-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "plausible/db/name" }}
 
-CLICKHOUSE_DATABASE_URL=http://{{ range service "plausible-clickhouse" }}{{ .Address }}:{{ .Port }}{{ end }}/plausible_events_db
+CLICKHOUSE_DATABASE_URL = http://{{ range service "plausible-clickhouse" }}{{ .Address }}:{{ .Port }}{{ end }}/plausible_events_db
 
-TMPDIR=/var/lib/plausible/tmp
+TMPDIR = /var/lib/plausible/tmp
 
-MAILER_EMAIL={{ key "plausible/smtp/from" }}
-MAILER_NAME={{ key "plausible/smtp/name" }}
-SMTP_HOST_ADDR={{ key "plausible/smtp/host" }}
-SMTP_HOST_PORT={{ key "plausible/smtp/port" }}
-SMTP_USER_NAME={{ key "plausible/smtp/username" }}
-SMTP_USER_PWD={{ key "plausible/smtp/password" }}
+MAILER_EMAIL   = {{ key "plausible/smtp/from" }}
+MAILER_NAME    = {{ key "plausible/smtp/name" }}
+SMTP_HOST_ADDR = {{ key "plausible/smtp/host" }}
+SMTP_HOST_PORT = {{ key "plausible/smtp/port" }}
+SMTP_USER_NAME = {{ key "plausible/smtp/username" }}
+SMTP_USER_PWD  = {{ key "plausible/smtp/password" }}
 EOH
       }
 
@@ -214,9 +214,9 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-POSTGRES_USER={{ key "plausible/db/user" }}
-POSTGRES_NAME={{ key "plausible/db/name" }}
-POSTGRES_PASSWORD={{ key "plausible/db/password" }}
+POSTGRES_USER     = {{ key "plausible/db/user" }}
+POSTGRES_NAME     = {{ key "plausible/db/name" }}
+POSTGRES_PASSWORD = {{ key "plausible/db/password" }}
 EOH
       }
 
@@ -266,7 +266,7 @@ EOH
         destination = "local/.env"
         env         = true
         data        = <<EOH
-CLICKHOUSE_SKIP_USER_SETUP=1
+CLICKHOUSE_SKIP_USER_SETUP = 1
 EOH
       }
 

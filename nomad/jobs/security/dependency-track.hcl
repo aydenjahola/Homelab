@@ -102,8 +102,8 @@ job "dependency-track" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "dependency-track/db/user" }}
-DB_NAME={{ key "dependency-track/db/name" }}
+DB_USER = {{ key "dependency-track/db/user" }}
+DB_NAME = {{ key "dependency-track/db/name" }}
 {{ range service "dependency-track-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -142,20 +142,20 @@ EOH
 {{- range service "dependency-track-db" }}
 DT_DATASOURCE_URL=jdbc:postgresql://{{ .Address }}:{{ .Port }}/{{ key "dependency-track/db/name" }}
 {{- end }}
-DT_DATASOURCE_USERNAME={{ key "dependency-track/db/user" }}
-DT_DATASOURCE_PASSWORD={{ key "dependency-track/db/password" }}
+DT_DATASOURCE_USERNAME = {{ key "dependency-track/db/user" }}
+DT_DATASOURCE_PASSWORD = {{ key "dependency-track/db/password" }}
 
-DT_OUTBOUND_ALLOWED_DESTINATIONS=external,trivy.local.aydenjahola.com
+DT_OUTBOUND_ALLOWED_DESTINATIONS = external,trivy.local.aydenjahola.com
 
-TZ=Europe/Dublin
+TZ = Europe/Dublin
 
-DT_OIDC_ENABLED=true
-DT_OIDC_ISSUER={{ key "authentik/url" }}/application/o/dependency-track/
-DT_OIDC_CLIENT_ID={{ key "authentik/oidc/dependency-track/client_id" }}
-DT_OIDC_USERNAME_CLAIM=preferred_username
-DT_OIDC_USER_PROVISIONING=true
-DT_OIDC_TEAMS_CLAIM=groups
-DT_OIDC_TEAM_SYNCHRONIZATION=true
+DT_OIDC_ENABLED              = true
+DT_OIDC_ISSUER               = {{ key "authentik/url" }}/application/o/dependency-track/
+DT_OIDC_CLIENT_ID            = {{ key "authentik/oidc/dependency-track/client_id" }}
+DT_OIDC_USERNAME_CLAIM       = preferred_username
+DT_OIDC_USER_PROVISIONING    = true
+DT_OIDC_TEAMS_CLAIM          = groups
+DT_OIDC_TEAM_SYNCHRONIZATION = true
 EOH
       }
 
@@ -188,7 +188,7 @@ EOH
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-OIDC_ISSUER={{ key "authentik/url" }}/application/o/dependency-track/
+OIDC_ISSUER = {{ key "authentik/url" }}/application/o/dependency-track/
 EOH
       }
 
@@ -268,10 +268,10 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-POSTGRES_DB={{ key "dependency-track/db/name" }}
-POSTGRES_USER={{ key "dependency-track/db/user" }}
-POSTGRES_PASSWORD={{ key "dependency-track/db/password" }}
-TZ=Europe/Dublin
+POSTGRES_DB       = {{ key "dependency-track/db/name" }}
+POSTGRES_USER     = {{ key "dependency-track/db/user" }}
+POSTGRES_PASSWORD = {{ key "dependency-track/db/password" }}
+TZ                = Europe/Dublin
 EOH
       }
 

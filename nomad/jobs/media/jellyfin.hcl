@@ -71,8 +71,8 @@ job "jellyfin" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "jellyfin/db/user" }}
-DB_NAME={{ key "jellyfin/db/name" }}
+DB_USER = {{ key "jellyfin/db/user" }}
+DB_NAME = {{ key "jellyfin/db/name" }}
 {{ range service "jellyfin-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -119,8 +119,8 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-TZ=Europe/Dublin
-JELLYFIN_PublishedServerUrl=https://${NOMAD_META_domain}
+TZ                          = Europe/Dublin
+JELLYFIN_PublishedServerUrl = https://${NOMAD_META_domain}
 
 POSTGRES_DB       = {{ key "jellyfin/db/name" }}
 POSTGRES_USER     = {{ key "jellyfin/db/user" }}

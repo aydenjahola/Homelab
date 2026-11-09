@@ -85,17 +85,17 @@ job "watchyourlan" {
         change_mode          = "restart"
         error_on_missing_key = true
         data                 = <<EOH
-TZ=Europe/Dublin
+TZ = Europe/Dublin
 
-HOST=0.0.0.0
-PORT=8840
+HOST = 0.0.0.0
+PORT = 8840
 
-IFACES={{ key "watchyourlan/ifaces" }}
+IFACES = {{ key "watchyourlan/ifaces" }}
 
-THEME=materia
-COLOR=dark
+THEME = materia
+COLOR = dark
 
-SHOUTRRR_URL={{ key "watchyourlan/shoutrrr/url" }}
+SHOUTRRR_URL = {{ key "watchyourlan/shoutrrr/url" }}
 EOH
       }
 

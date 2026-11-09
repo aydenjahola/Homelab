@@ -72,8 +72,8 @@ job "prowlarr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "prowlarr/db/user" }}
-DB_MAIN={{ key "prowlarr/db/main" }}
+DB_USER = {{ key "prowlarr/db/user" }}
+DB_MAIN = {{ key "prowlarr/db/main" }}
 {{ range service "prowlarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -106,9 +106,9 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-PUID=1000
-PGID=1000
-TZ=Europe/Dublin
+PUID = 1000
+PGID = 1000
+TZ   = Europe/Dublin
 
 {{ range service "prowlarr-db" }}
 PROWLARR__POSTGRES__HOST={{ .Address }}
@@ -119,7 +119,7 @@ PROWLARR__POSTGRES__USER     = {{ key "prowlarr/db/user" }}
 PROWLARR__POSTGRES__PASSWORD = {{ key "prowlarr/db/password" }}
 PROWLARR__POSTGRES__MAINDB   = {{ key "prowlarr/db/main" }}
 PROWLARR__POSTGRES__LOGDB    = {{ key "prowlarr/db/log" }}
-PROWLARR__AUTH__METHOD=External
+PROWLARR__AUTH__METHOD       = External
 EOH
       }
 
@@ -210,8 +210,8 @@ POSTGRES_USER     = {{ key "prowlarr/db/user" }}
 POSTGRES_PASSWORD = {{ key "prowlarr/db/password" }}
 POSTGRES_DB       = {{ key "prowlarr/db/main" }}
 
-PROWLARR_MAIN_DB  = {{ key "prowlarr/db/main" }}
-PROWLARR_LOG_DB   = {{ key "prowlarr/db/log" }}
+PROWLARR_MAIN_DB = {{ key "prowlarr/db/main" }}
+PROWLARR_LOG_DB  = {{ key "prowlarr/db/log" }}
 EOH
       }
 

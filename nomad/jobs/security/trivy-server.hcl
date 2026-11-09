@@ -87,8 +87,8 @@ job "trivy-server" {
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-TRIVY_TOKEN={{ key "trivy/server/token" }}
-TMPDIR=/local
+TRIVY_TOKEN = {{ key "trivy/server/token" }}
+TMPDIR      = /local
 EOH
       }
 

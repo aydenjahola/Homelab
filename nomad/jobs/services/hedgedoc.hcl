@@ -71,8 +71,8 @@ job "hedgedoc" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "hedgedoc/db/user" }}
-DB_NAME={{ key "hedgedoc/db/name" }}
+DB_USER = {{ key "hedgedoc/db/user" }}
+DB_NAME = {{ key "hedgedoc/db/name" }}
 {{ range service "hedgedoc-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -124,10 +124,10 @@ CMD_OAUTH2_SCOPE                          = openid profile email
 CMD_ALLOW_GRAVATAR                        = {{ key "hedgedoc/allow/gravatar" }}
 CMD_ENABLE_STATS_API                      = false
 
-CMD_SESSION_SECRET                        = {{ key "hedgedoc/session/secret" }}
+CMD_SESSION_SECRET = {{ key "hedgedoc/session/secret" }}
 
-CMD_PROTOCOL_USESSL                       = true
-CMD_URL_ADDPORT                           = false
+CMD_PROTOCOL_USESSL = true
+CMD_URL_ADDPORT     = false
 EOH
       }
 

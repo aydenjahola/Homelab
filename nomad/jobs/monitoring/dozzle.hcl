@@ -81,14 +81,14 @@ job "dozzle" {
         env         = true
         change_mode = "restart"
         data        = <<EOH
-DOZZLE_HOSTNAME=nomad-cluster
-DOZZLE_REMOTE_AGENT={{- $first := true -}}{{- range service "dozzle-agent" -}}{{- if not $first }},{{ end -}}{{ .Address }}:{{ .Port }}|{{ .Node }}|Nomad{{- $first = false -}}{{- end }}
+DOZZLE_HOSTNAME     = nomad-cluster
+DOZZLE_REMOTE_AGENT = {{- $first := true -}}{{- range service "dozzle-agent" -}}{{- if not $first }},{{ end -}}{{ .Address }}:{{ .Port }}|{{ .Node }}|Nomad{{- $first = false -}}{{- end }}
 
-DOZZLE_AUTH_PROVIDER=forward-proxy
-DOZZLE_AUTH_HEADER_USER=X-Authentik-Username
-DOZZLE_AUTH_HEADER_EMAIL=X-Authentik-Email
-DOZZLE_AUTH_HEADER_NAME=X-Authentik-Name
-DOZZLE_AUTH_LOGOUT_URL=https://{{ env "NOMAD_META_domain" }}/outpost.goauthentik.io/sign_out
+DOZZLE_AUTH_PROVIDER     = forward-proxy
+DOZZLE_AUTH_HEADER_USER  = X-Authentik-Username
+DOZZLE_AUTH_HEADER_EMAIL = X-Authentik-Email
+DOZZLE_AUTH_HEADER_NAME  = X-Authentik-Name
+DOZZLE_AUTH_LOGOUT_URL   = https://{{ env "NOMAD_META_domain" }}/outpost.goauthentik.io/sign_out
 EOH
       }
 

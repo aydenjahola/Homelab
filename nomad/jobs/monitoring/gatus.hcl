@@ -71,8 +71,8 @@ job "gatus" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "gatus/db/user" }}
-DB_NAME={{ key "gatus/db/name" }}
+DB_USER = {{ key "gatus/db/user" }}
+DB_NAME = {{ key "gatus/db/name" }}
 {{ range service "gatus-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}

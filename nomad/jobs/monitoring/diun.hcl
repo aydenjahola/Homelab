@@ -57,8 +57,8 @@ job "diun" {
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-DOCKER_USER={{ key "docker/hub/user" }}
-DOCKER_PASS={{ key "docker/hub/token" }}
+DOCKER_USER = {{ key "docker/hub/user" }}
+DOCKER_PASS = {{ key "docker/hub/token" }}
 EOH
       }
 

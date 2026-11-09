@@ -99,13 +99,13 @@ SCRIPT
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-POSTGRES_USER={{ key "authentik/db/user" }}
-POSTGRES_PASSWORD={{ key "authentik/db/password" }}
-POSTGRES_DB={{ key "authentik/db/name" }}
+POSTGRES_USER     = {{ key "authentik/db/user" }}
+POSTGRES_PASSWORD = {{ key "authentik/db/password" }}
+POSTGRES_DB       = {{ key "authentik/db/name" }}
 
-GPG_RECIPIENT={{ key "backup/gpg/key" }}
-RETENTION_DAYS={{ key "backup/retention/days" }}
-DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
+RETENTION_DAYS      = {{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
 EOH
       }
 

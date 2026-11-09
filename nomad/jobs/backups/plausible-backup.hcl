@@ -99,13 +99,13 @@ SCRIPT
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-POSTGRES_USER={{ key "plausible/db/user" }}
-POSTGRES_PASSWORD={{ key "plausible/db/password" }}
-POSTGRES_DB={{ key "plausible/db/name" }}
+POSTGRES_USER     = {{ key "plausible/db/user" }}
+POSTGRES_PASSWORD = {{ key "plausible/db/password" }}
+POSTGRES_DB       = {{ key "plausible/db/name" }}
 
-GPG_RECIPIENT={{ key "backup/gpg/key" }}
-RETENTION_DAYS={{ key "backup/retention/days" }}
-DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
+RETENTION_DAYS      = {{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
 EOH
       }
 
@@ -233,11 +233,11 @@ SCRIPT
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-CLICKHOUSE_DB=plausible_events_db
+CLICKHOUSE_DB = plausible_events_db
 
-GPG_RECIPIENT={{ key "backup/gpg/key" }}
-RETENTION_DAYS={{ key "backup/retention/days" }}
-DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
+RETENTION_DAYS      = {{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
 EOH
       }
 

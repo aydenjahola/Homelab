@@ -102,7 +102,7 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-UPTIME_KUMA_DB_TYPE     = mariadb
+UPTIME_KUMA_DB_TYPE = mariadb
 
 {{- range service "uptime-kuma-db" }}
 UPTIME_KUMA_DB_HOSTNAME = {{ .Address }}

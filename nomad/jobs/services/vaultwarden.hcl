@@ -71,8 +71,8 @@ job "vaultwarden" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "vaultwarden/db/user" }}
-DB_NAME={{ key "vaultwarden/db/name" }}
+DB_USER = {{ key "vaultwarden/db/user" }}
+DB_NAME = {{ key "vaultwarden/db/name" }}
 {{ range service "vaultwarden-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -105,39 +105,39 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-ADMIN_TOKEN={{ key "vaultwarden/admin/token" }}
+ADMIN_TOKEN = {{ key "vaultwarden/admin/token" }}
 
-DOMAIN={{ key "vaultwarden/domain" }}
+DOMAIN = {{ key "vaultwarden/domain" }}
 
-SSO_ENABLED=true
-SSO_ONLY=true
-SSO_SIGNUPS_MATCH_EMAIL=true
-SSO_AUTHORITY={{ key "authentik/url" }}/application/o/vaultwarden/
-SSO_SCOPES="openid profile email offline_access"
-SSO_CLIENT_ID={{ key "authentik/oidc/vaultwarden/client_id" }}
-SSO_CLIENT_SECRET={{ key "authentik/oidc/vaultwarden/client_secret" }}
+SSO_ENABLED             = true
+SSO_ONLY                = true
+SSO_SIGNUPS_MATCH_EMAIL = true
+SSO_AUTHORITY           = {{ key "authentik/url" }}/application/o/vaultwarden/
+SSO_SCOPES              = "openid profile email offline_access"
+SSO_CLIENT_ID           = {{ key "authentik/oidc/vaultwarden/client_id" }}
+SSO_CLIENT_SECRET       = {{ key "authentik/oidc/vaultwarden/client_secret" }}
 
-WEBSOCKET_ENABLED=true
+WEBSOCKET_ENABLED = true
 
-SIGNUPS_ALLOWED=false
-SIGNUPS_VERIFY=true
-SIGNUPS_VERIFY_RESEND_TIME=3600
-SIGNUPS_VERIFY_RESEND_LIMIT=6
+SIGNUPS_ALLOWED             = false
+SIGNUPS_VERIFY              = true
+SIGNUPS_VERIFY_RESEND_TIME  = 3600
+SIGNUPS_VERIFY_RESEND_LIMIT = 6
 
-SMTP_HOST={{ key "vaultwarden/smtp/host" }}
-SMTP_FROM={{ key "vaultwarden/smtp/from" }}
-SMTP_PORT={{ key "vaultwarden/smtp/port" }}
-SMTP_USERNAME={{ key "vaultwarden/smtp/username" }}
-SMTP_PASSWORD={{ key "vaultwarden/smtp/password" }}
+SMTP_HOST     = {{ key "vaultwarden/smtp/host" }}
+SMTP_FROM     = {{ key "vaultwarden/smtp/from" }}
+SMTP_PORT     = {{ key "vaultwarden/smtp/port" }}
+SMTP_USERNAME = {{ key "vaultwarden/smtp/username" }}
+SMTP_PASSWORD = {{ key "vaultwarden/smtp/password" }}
 
 
-DATABASE_URL=postgresql://{{ key "vaultwarden/db/user" }}:{{ key "vaultwarden/db/password" }}@{{ range service "vaultwarden-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "vaultwarden/db/name" }}
+DATABASE_URL = postgresql://{{ key "vaultwarden/db/user" }}:{{ key "vaultwarden/db/password" }}@{{ range service "vaultwarden-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "vaultwarden/db/name" }}
 
-PUSH_ENABLED=true
-PUSH_INSTALLATION_ID={{ key "vaultwarden/install/id" }}
-PUSH_INSTALLATION_KEY={{ key "vaultwarden/install/key" }}
-PUSH_RELAY_URI=https://api.bitwarden.eu
-PUSH_IDENTITY_URI=https://identity.bitwarden.eu
+PUSH_ENABLED          = true
+PUSH_INSTALLATION_ID  = {{ key "vaultwarden/install/id" }}
+PUSH_INSTALLATION_KEY = {{ key "vaultwarden/install/key" }}
+PUSH_RELAY_URI        = https://api.bitwarden.eu
+PUSH_IDENTITY_URI     = https://identity.bitwarden.eu
 EOH
       }
 
@@ -216,9 +216,9 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-POSTGRES_NAME={{ key "vaultwarden/db/name" }}
-POSTGRES_USER={{ key "vaultwarden/db/user" }}
-POSTGRES_PASSWORD={{ key "vaultwarden/db/password" }}
+POSTGRES_NAME     = {{ key "vaultwarden/db/name" }}
+POSTGRES_USER     = {{ key "vaultwarden/db/user" }}
+POSTGRES_PASSWORD = {{ key "vaultwarden/db/password" }}
 EOH
       }
     }

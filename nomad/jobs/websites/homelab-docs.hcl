@@ -69,8 +69,8 @@ job "homelab-docs" {
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-DOCKER_USER={{ key "docker/ghcr/user" }}
-DOCKER_PASS={{ key "docker/ghcr/token" }}
+DOCKER_USER = {{ key "docker/ghcr/user" }}
+DOCKER_PASS = {{ key "docker/ghcr/token" }}
 EOH
       }
 

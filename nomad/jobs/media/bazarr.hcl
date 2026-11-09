@@ -86,8 +86,8 @@ job "bazarr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "bazarr/db/user" }}
-DB_NAME={{ key "bazarr/db/name" }}
+DB_USER = {{ key "bazarr/db/user" }}
+DB_NAME = {{ key "bazarr/db/name" }}
 {{ range service "bazarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -129,10 +129,10 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-POSTGRES_ENABLED=true
-POSTGRES_USERNAME={{ key "bazarr/db/user" }}
-POSTGRES_PASSWORD={{ key "bazarr/db/password" }}
-POSTGRES_DATABASE={{ key "bazarr/db/name" }}
+POSTGRES_ENABLED  = true
+POSTGRES_USERNAME = {{ key "bazarr/db/user" }}
+POSTGRES_PASSWORD = {{ key "bazarr/db/password" }}
+POSTGRES_DATABASE = {{ key "bazarr/db/name" }}
 
 {{ range service "bazarr-db" }}
 POSTGRES_HOST={{ .Address }}

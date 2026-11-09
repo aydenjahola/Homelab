@@ -84,8 +84,8 @@ job "netronome" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "netronome/db/user" }}
-DB_NAME={{ key "netronome/db/name" }}
+DB_USER = {{ key "netronome/db/user" }}
+DB_NAME = {{ key "netronome/db/name" }}
 {{ range service "netronome-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -121,27 +121,27 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-NETRONOME__HOST=0.0.0.0
-NETRONOME__PORT=7575
-NETRONOME__BASE_URL=/
+NETRONOME__HOST     = 0.0.0.0
+NETRONOME__PORT     = 7575
+NETRONOME__BASE_URL = /
 
-NETRONOME__DB_TYPE=postgres
+NETRONOME__DB_TYPE = postgres
 {{ range service "netronome-db" }}
 NETRONOME__DB_HOST={{ .Address }}
 NETRONOME__DB_PORT={{ .Port }}
 {{ end }}
-NETRONOME__DB_USER={{ key "netronome/db/user" }}
-NETRONOME__DB_PASSWORD={{ key "netronome/db/password" }}
-NETRONOME__DB_NAME={{ key "netronome/db/name" }}
-NETRONOME__DB_SSLMODE=disable
+NETRONOME__DB_USER     = {{ key "netronome/db/user" }}
+NETRONOME__DB_PASSWORD = {{ key "netronome/db/password" }}
+NETRONOME__DB_NAME     = {{ key "netronome/db/name" }}
+NETRONOME__DB_SSLMODE  = disable
 
-NETRONOME__SESSION_SECRET={{ key "netronome/session/secret" }}
+NETRONOME__SESSION_SECRET = {{ key "netronome/session/secret" }}
 
-NETRONOME__OIDC_ISSUER={{ key "authentik/url" }}/application/o/netronome/
-NETRONOME__OIDC_CLIENT_ID={{ key "authentik/oidc/netronome/client_id" }}
-NETRONOME__OIDC_CLIENT_SECRET={{ key "authentik/oidc/netronome/client_secret" }}
-NETRONOME__OIDC_REDIRECT_URL=https://netronome.aydenjahola.com/api/auth/oidc/callback
-NETRONOME__OIDC_SCOPES=openid,profile,email,offline_access
+NETRONOME__OIDC_ISSUER        = {{ key "authentik/url" }}/application/o/netronome/
+NETRONOME__OIDC_CLIENT_ID     = {{ key "authentik/oidc/netronome/client_id" }}
+NETRONOME__OIDC_CLIENT_SECRET = {{ key "authentik/oidc/netronome/client_secret" }}
+NETRONOME__OIDC_REDIRECT_URL  = https://netronome.aydenjahola.com/api/auth/oidc/callback
+NETRONOME__OIDC_SCOPES        = openid,profile,email,offline_access
 EOH
       }
 

@@ -87,8 +87,8 @@ job "tracearr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "tracearr/db/user" }}
-DB_NAME={{ key "tracearr/db/name" }}
+DB_USER = {{ key "tracearr/db/user" }}
+DB_NAME = {{ key "tracearr/db/name" }}
 {{ range service "tracearr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}

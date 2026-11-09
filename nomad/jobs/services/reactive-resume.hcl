@@ -86,8 +86,8 @@ job "reactive-resume" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "reactive-resume/db/user" }}
-DB_NAME={{ key "reactive-resume/db/name" }}
+DB_USER = {{ key "reactive-resume/db/user" }}
+DB_NAME = {{ key "reactive-resume/db/name" }}
 {{ range service "reactive-resume-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -120,22 +120,22 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-TZ=Europe/Dublin
-NODE_ENV=production
+TZ       = Europe/Dublin
+NODE_ENV = production
 
-APP_URL=https://{{ env "NOMAD_META_domain" }}
+APP_URL = https://{{ env "NOMAD_META_domain" }}
 
-AUTH_SECRET={{ key "reactive-resume/auth/secret" }}
+AUTH_SECRET = {{ key "reactive-resume/auth/secret" }}
 
-DATABASE_URL={{- range service "reactive-resume-db" -}}postgresql://{{ key "reactive-resume/db/user" | urlquery }}:{{ key "reactive-resume/db/password" | urlquery }}@{{ .Address }}:{{ .Port }}/{{ key "reactive-resume/db/name" | urlquery }}{{- end }}
+DATABASE_URL = {{- range service "reactive-resume-db" -}}postgresql://{{ key "reactive-resume/db/user" | urlquery }}:{{ key "reactive-resume/db/password" | urlquery }}@{{ .Address }}:{{ .Port }}/{{ key "reactive-resume/db/name" | urlquery }}{{- end }}
 
-FLAG_DISABLE_SIGNUPS=true
-FLAG_DISABLE_EMAIL_AUTH=true
+FLAG_DISABLE_SIGNUPS    = true
+FLAG_DISABLE_EMAIL_AUTH = true
 
-OAUTH_PROVIDER_NAME=Authentik
-OAUTH_CLIENT_ID={{ key "authentik/oidc/reactive-resume/client_id" }}
-OAUTH_CLIENT_SECRET={{ key "authentik/oidc/reactive-resume/client_secret" }}
-OAUTH_DISCOVERY_URL={{ key "authentik/url" }}/application/o/reactive-resume/.well-known/openid-configuration
+OAUTH_PROVIDER_NAME = Authentik
+OAUTH_CLIENT_ID     = {{ key "authentik/oidc/reactive-resume/client_id" }}
+OAUTH_CLIENT_SECRET = {{ key "authentik/oidc/reactive-resume/client_secret" }}
+OAUTH_DISCOVERY_URL = {{ key "authentik/url" }}/application/o/reactive-resume/.well-known/openid-configuration
 
 SMTP_HOST   = {{ key "reactive-resume/smtp/host" }}
 SMTP_PORT   = 465

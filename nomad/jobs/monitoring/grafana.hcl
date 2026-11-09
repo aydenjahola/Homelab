@@ -68,36 +68,36 @@ job "grafana" {
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-GF_SERVER_ROOT_URL=https://{{ env "NOMAD_META_domain" }}
+GF_SERVER_ROOT_URL = https://{{ env "NOMAD_META_domain" }}
 
-GF_PLUGINS_PREINSTALL=grafana-clock-panel
-GF_USERS_ALLOW_SIGN_UP=false
+GF_PLUGINS_PREINSTALL  = grafana-clock-panel
+GF_USERS_ALLOW_SIGN_UP = false
 
-GF_AUTH_ANONYMOUS_ENABLED=false
-GF_AUTH_BASIC_ENABLED=false
+GF_AUTH_ANONYMOUS_ENABLED = false
+GF_AUTH_BASIC_ENABLED     = false
 
-GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP=true
-GF_AUTH_DISABLE_LOGIN_FORM=true
-GF_AUTH_OAUTH_AUTO_LOGIN=true
-GF_AUTH_SIGNOUT_REDIRECT_URL={{ key "authentik/url" }}/application/o/grafana/end-session/
+GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP = true
+GF_AUTH_DISABLE_LOGIN_FORM                = true
+GF_AUTH_OAUTH_AUTO_LOGIN                  = true
+GF_AUTH_SIGNOUT_REDIRECT_URL              = {{ key "authentik/url" }}/application/o/grafana/end-session/
 
-GF_AUTH_GENERIC_OAUTH_NAME=Authentik
-GF_AUTH_GENERIC_OAUTH_ENABLED=true
-GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=false
-GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_PATH=email
-GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH=preferred_username
-GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH=name
-GF_AUTH_GENERIC_OAUTH_GROUPS_ATTRIBUTE_PATH=groups
-GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH="contains(groups, 'homelab-admins') && 'GrafanaAdmin' || 'Viewer'"
-GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN=true
-GF_AUTH_GENERIC_OAUTH_USE_PKCE=true
+GF_AUTH_GENERIC_OAUTH_NAME                       = Authentik
+GF_AUTH_GENERIC_OAUTH_ENABLED                    = true
+GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP              = false
+GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_PATH       = email
+GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH       = preferred_username
+GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH        = name
+GF_AUTH_GENERIC_OAUTH_GROUPS_ATTRIBUTE_PATH      = groups
+GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH        = "contains(groups, 'homelab-admins') && 'GrafanaAdmin' || 'Viewer'"
+GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN = true
+GF_AUTH_GENERIC_OAUTH_USE_PKCE                   = true
 
-GF_AUTH_GENERIC_OAUTH_CLIENT_ID={{ key "authentik/oidc/grafana/client_id" }}
-GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET={{ key "authentik/oidc/grafana/client_secret" }}
-GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email offline_access
-GF_AUTH_GENERIC_OAUTH_AUTH_URL={{ key "authentik/url" }}/application/o/authorize/
-GF_AUTH_GENERIC_OAUTH_TOKEN_URL={{ key "authentik/url" }}/application/o/token/
-GF_AUTH_GENERIC_OAUTH_API_URL={{ key "authentik/url" }}/application/o/userinfo/
+GF_AUTH_GENERIC_OAUTH_CLIENT_ID     = {{ key "authentik/oidc/grafana/client_id" }}
+GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET = {{ key "authentik/oidc/grafana/client_secret" }}
+GF_AUTH_GENERIC_OAUTH_SCOPES        = openid profile email offline_access
+GF_AUTH_GENERIC_OAUTH_AUTH_URL      = {{ key "authentik/url" }}/application/o/authorize/
+GF_AUTH_GENERIC_OAUTH_TOKEN_URL     = {{ key "authentik/url" }}/application/o/token/
+GF_AUTH_GENERIC_OAUTH_API_URL       = {{ key "authentik/url" }}/application/o/userinfo/
 EOH
       }
 

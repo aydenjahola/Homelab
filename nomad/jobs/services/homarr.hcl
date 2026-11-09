@@ -71,8 +71,8 @@ job "homarr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "homarr/db/user" }}
-DB_NAME={{ key "homarr/db/name" }}
+DB_USER = {{ key "homarr/db/user" }}
+DB_NAME = {{ key "homarr/db/name" }}
 {{ range service "homarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -112,32 +112,32 @@ DISABLE_EDIT_MODE     = {{ key "homarr/edit/disable" }}
 DEFAULT_COLOR_SCHEME  = {{ key "homarr/default/color" }}
 SECRET_ENCRYPTION_KEY = {{ key "homarr/encryption/key" }}
 
-DB_DRIVER             = {{ key "homarr/db/driver" }}
-DB_DIALECT            = {{ key "homarr/db/dialect" }}
+DB_DRIVER  = {{ key "homarr/db/driver" }}
+DB_DIALECT = {{ key "homarr/db/dialect" }}
 
 {{ range service "homarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
 {{ end }}
 
-DB_NAME               = {{ key "homarr/db/name" }}
-DB_USER               = {{ key "homarr/db/user" }}
-DB_PASSWORD           = {{ key "homarr/db/password" }}
+DB_NAME     = {{ key "homarr/db/name" }}
+DB_USER     = {{ key "homarr/db/user" }}
+DB_PASSWORD = {{ key "homarr/db/password" }}
 
-REDIS_IS_EXTERNAL     = true
+REDIS_IS_EXTERNAL = true
 
 {{ range service "homarr-redis" }}
 REDIS_HOST={{ .Address }}
 REDIS_PORT={{ .Port }}
 {{ end }}
 
-AUTH_PROVIDERS                             = oidc
-AUTH_OIDC_ISSUER                           = {{ key "authentik/url" }}/application/o/homarr/
-AUTH_OIDC_CLIENT_ID                        = {{ key "authentik/oidc/homarr/client_id" }}
-AUTH_OIDC_CLIENT_SECRET                    = {{ key "authentik/oidc/homarr/client_secret" }}
-AUTH_OIDC_CLIENT_NAME                      = Authentik
-AUTH_OIDC_AUTO_LOGIN                       = true
-AUTH_LOGOUT_REDIRECT_URL                   = {{ key "authentik/url" }}/application/o/homarr/end-session/
+AUTH_PROVIDERS           = oidc
+AUTH_OIDC_ISSUER         = {{ key "authentik/url" }}/application/o/homarr/
+AUTH_OIDC_CLIENT_ID      = {{ key "authentik/oidc/homarr/client_id" }}
+AUTH_OIDC_CLIENT_SECRET  = {{ key "authentik/oidc/homarr/client_secret" }}
+AUTH_OIDC_CLIENT_NAME    = Authentik
+AUTH_OIDC_AUTO_LOGIN     = true
+AUTH_LOGOUT_REDIRECT_URL = {{ key "authentik/url" }}/application/o/homarr/end-session/
 EOH
       }
 

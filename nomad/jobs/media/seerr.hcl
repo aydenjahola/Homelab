@@ -71,8 +71,8 @@ job "seerr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "seerr/db/user" }}
-DB_NAME={{ key "seerr/db/name" }}
+DB_USER = {{ key "seerr/db/user" }}
+DB_NAME = {{ key "seerr/db/name" }}
 {{ range service "seerr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -112,15 +112,15 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-LOG_LEVEL=debug
-TZ=Europe/Dublin
+LOG_LEVEL = debug
+TZ        = Europe/Dublin
 
-DB_TYPE = postgres
-DB_USER = {{ key "seerr/db/user" }}
-DB_PASS = {{ key "seerr/db/password" }}
-DB_NAME = {{ key "seerr/db/name" }}
-DB_POOL_SIZE=10
-DB_LOG_QUERIES=false
+DB_TYPE        = postgres
+DB_USER        = {{ key "seerr/db/user" }}
+DB_PASS        = {{ key "seerr/db/password" }}
+DB_NAME        = {{ key "seerr/db/name" }}
+DB_POOL_SIZE   = 10
+DB_LOG_QUERIES = false
 
 {{ range service "seerr-db" }}
 DB_HOST={{ .Address }}

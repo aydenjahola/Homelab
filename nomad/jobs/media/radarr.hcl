@@ -86,8 +86,8 @@ job "radarr" {
         env                  = true
         error_on_missing_key = true
         data                 = <<EOH
-DB_USER={{ key "radarr/db/user" }}
-DB_MAIN={{ key "radarr/db/main" }}
+DB_USER = {{ key "radarr/db/user" }}
+DB_MAIN = {{ key "radarr/db/main" }}
 {{ range service "radarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -129,13 +129,13 @@ EOH
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-RADARR__POSTGRES__HOST={{ range service "radarr-db" }}{{ .Address }}{{ end }}
-RADARR__POSTGRES__PORT={{ range service "radarr-db" }}{{ .Port }}{{ end }}
-RADARR__POSTGRES__USER={{ key "radarr/db/user" }}
+RADARR__POSTGRES__HOST     = {{ range service "radarr-db" }}{{ .Address }}{{ end }}
+RADARR__POSTGRES__PORT     = {{ range service "radarr-db" }}{{ .Port }}{{ end }}
+RADARR__POSTGRES__USER     = {{ key "radarr/db/user" }}
 RADARR__POSTGRES__PASSWORD = {{ key "radarr/db/password" }}
 RADARR__POSTGRES__MAINDB   = {{ key "radarr/db/main" }}
 RADARR__POSTGRES__LOGDB    = {{ key "radarr/db/log" }}
-RADARR__AUTH__METHOD=External
+RADARR__AUTH__METHOD       = External
 EOH
       }
 
