@@ -219,6 +219,9 @@ entries:
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       client_type: confidential
+      grant_types:
+        - authorization_code
+        - refresh_token
       client_id: {{ key "authentik/oidc/grafana/client_id" }}
       client_secret: {{ key "authentik/oidc/grafana/client_secret" }}
       redirect_uris:
