@@ -148,6 +148,12 @@ AUTH_SECRET={{ key "reactive-resume/auth/secret" }}
 DATABASE_URL={{- range service "reactive-resume-db" -}}postgresql://{{ key "reactive-resume/db/user" | urlquery }}:{{ key "reactive-resume/db/password" | urlquery }}@{{ .Address }}:{{ .Port }}/{{ key "reactive-resume/db/name" | urlquery }}{{- end }}
 
 FLAG_DISABLE_SIGNUPS=true
+FLAG_DISABLE_EMAIL_AUTH=true
+
+OAUTH_PROVIDER_NAME=Authentik
+OAUTH_CLIENT_ID={{ key "authentik/oidc/reactive-resume/client_id" }}
+OAUTH_CLIENT_SECRET={{ key "authentik/oidc/reactive-resume/client_secret" }}
+OAUTH_DISCOVERY_URL=https://auth.aydenjahola.com/application/o/reactive-resume/.well-known/openid-configuration
 
 SMTP_HOST   = {{ key "reactive-resume/smtp/host" }}
 SMTP_PORT   = 465
