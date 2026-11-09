@@ -44,3 +44,7 @@ Full cluster loss: bootstrap new servers, restore Consul first, then Nomad.
 4. Decrypt as above, then run `consul snapshot inspect consul.snap` and `nomad operator snapshot inspect nomad.snap`. Both should print index/term metadata.
 5. Confirm no plaintext `.snap` exists on NFS: `find /storage/nomad/cluster-snapshot-backup -name '*.snap'` returns nothing.
 6. Optional restore drill: start a throwaway single-node `consul agent -dev` and run `consul snapshot restore consul.snap` against it (likewise `nomad agent -dev`). Never test-restore on the live cluster.
+
+## Off-site copy
+
+Each encrypted file is also uploaded to `gdrive:backups/cluster-snapshots` with the host's rclone config, the same as the other backup jobs. The same `backup/retention/days` pruning applies there.

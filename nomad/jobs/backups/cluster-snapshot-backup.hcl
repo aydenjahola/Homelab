@@ -120,20 +120,22 @@ EOH
       driver = "docker"
 
       config {
-        image   = "alpine:3.22"
+        image   = "alpine:3.22.8"
         command = "/bin/sh"
         args = [
           "-lc",
           <<SCRIPT
 set -euo pipefail
 
-echo "==> Installing curl + gnupg + tzdata ..."
-apk add --no-cache curl gnupg tzdata ca-certificates >/dev/null
+echo "==> Installing curl + gnupg + rclone + tzdata ..."
+apk add --no-cache curl gnupg rclone tzdata ca-certificates >/dev/null
 
 : "$GPG_FINGERPRINT"
 : "$RETENTION_DAYS"
 : "$DISCORD_WEBHOOK_URL"
 
+export RCLONE_CONFIG="/local/rclone.conf"
+REMOTE="gdrive:backups/cluster-snapshots"
 DATA="$NOMAD_ALLOC_DIR/data"
 DEST="/backup"
 
@@ -178,10 +180,17 @@ for NAME in consul nomad; do
     --output "$DEST/$NAME/.tmp-$NAME-$STAMP.gpg" --encrypt "$DATA/$NAME.snap"
   [ -s "$DEST/$NAME/.tmp-$NAME-$STAMP.gpg" ]
   mv "$DEST/$NAME/.tmp-$NAME-$STAMP.gpg" "$OUT"
+  echo "==> Uploading $OUT to $REMOTE ..."
+  rclone copy --transfers=4 --checkers=8 --checksum "$OUT" "$REMOTE"
 done
 
 echo "==> Pruning backups older than $RETENTION_DAYS days ..."
 find "$DEST/consul" "$DEST/nomad" -type f -name '*.snap.gpg' -mtime "+$RETENTION_DAYS" -print -delete || true
+
+echo "==> Pruning remote backups older than $RETENTION_DAYS days ..."
+AGE="$(printf '%sd' "$RETENTION_DAYS")"
+rclone delete "$REMOTE" --min-age "$AGE" || true
+rclone rmdirs "$REMOTE" --leave-root || true
 
 echo "==> Backup finished."
 notify_ok "✅ **cluster-snapshot-backup** finished on \`$(hostname)\` at \`$(date +%Y-%m-%dT%H:%M:%S%z)\`. Files: \`consul-$STAMP.snap.gpg\`, \`nomad-$STAMP.snap.gpg\`."
@@ -190,6 +199,7 @@ SCRIPT
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}:/backup:rw",
+          "/home/ayden/.config/rclone/rclone.conf:/local/rclone.conf:ro",
         ]
       }
 
