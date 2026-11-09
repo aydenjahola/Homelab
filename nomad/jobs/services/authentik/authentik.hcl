@@ -157,102 +157,14 @@ AUTHENTIK_POSTGRESQL__PORT={{ .Port }}
 EOH
       }
 
-      template {
-        destination = "local/blueprints/homelab-base.yaml"
-        change_mode = "noop"
-        data        = <<EOH
-version: 1
-metadata:
-  name: homelab-base
-entries:
-  - model: authentik_core.group
-    id: homelab-admins
-    identifiers:
-      name: homelab-admins
-    attrs:
-      is_superuser: true
+      dynamic "template" {
+        for_each = fileset(".", "jobs/services/authentik/blueprints/*.yaml")
 
-  - model: authentik_core.user
-    identifiers:
-      username: {{ key "authentik/user/username" }}
-    attrs:
-      name: {{ key "authentik/user/name" }}
-      email: {{ key "authentik/user/email" }}
-      is_active: true
-      groups:
-        - !KeyOf homelab-admins
-        - !Find [authentik_core.group, [name, authentik Admins]]
-
-  - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
-    identifiers:
-      name: default-authentication-mfa-validation
-    attrs:
-      not_configured_action: configure
-      device_classes:
-        - totp
-        - webauthn
-      configuration_stages:
-        - !Find [authentik_stages_authenticator_totp.authenticatortotpstage, [name, default-authenticator-totp-setup]]
-        - !Find [authentik_stages_authenticator_webauthn.authenticatorwebauthnstage, [name, default-authenticator-webauthn-setup]]
-
-  - model: authentik_core.user
-    identifiers:
-      username: akadmin
-    attrs:
-      is_active: false
-EOH
-      }
-
-      template {
-        destination = "local/blueprints/app-grafana.yaml"
-        change_mode = "noop"
-        data        = <<EOH
-version: 1
-metadata:
-  name: app-grafana
-entries:
-  - model: authentik_providers_oauth2.oauth2provider
-    id: grafana-provider
-    identifiers:
-      name: grafana
-    attrs:
-      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
-      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
-      client_type: confidential
-      grant_types:
-        - authorization_code
-        - refresh_token
-      client_id: {{ key "authentik/oidc/grafana/client_id" }}
-      client_secret: {{ key "authentik/oidc/grafana/client_secret" }}
-      redirect_uris:
-        - matching_mode: strict
-          url: https://grafana.aydenjahola.com/login/generic_oauth
-      signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
-      property_mappings:
-        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
-        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
-        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
-        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-offline_access]]
-
-  - model: authentik_core.application
-    id: grafana-app
-    identifiers:
-      slug: grafana
-    attrs:
-      name: Grafana
-      provider: !KeyOf grafana-provider
-      meta_launch_url: https://grafana.aydenjahola.com
-      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grafana.svg
-      open_in_new_tab: true
-      policy_engine_mode: any
-
-  - model: authentik_policies.policybinding
-    identifiers:
-      target: !KeyOf grafana-app
-      group: !Find [authentik_core.group, [name, homelab-admins]]
-    attrs:
-      order: 0
-EOH
+        content {
+          data        = file(template.value)
+          destination = "local/blueprints/${basename(template.value)}"
+          change_mode = "noop"
+        }
       }
 
       resources {
