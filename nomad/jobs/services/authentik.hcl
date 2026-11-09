@@ -203,6 +203,55 @@ entries:
 EOH
       }
 
+      template {
+        destination = "local/blueprints/app-grafana.yaml"
+        change_mode = "noop"
+        data        = <<EOH
+version: 1
+metadata:
+  name: app-grafana
+entries:
+  - model: authentik_providers_oauth2.oauth2provider
+    id: grafana-provider
+    identifiers:
+      name: grafana
+    attrs:
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      client_type: confidential
+      client_id: {{ key "authentik/oidc/grafana/client_id" }}
+      client_secret: {{ key "authentik/oidc/grafana/client_secret" }}
+      redirect_uris:
+        - matching_mode: strict
+          url: https://grafana.aydenjahola.com/login/generic_oauth
+      signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-email]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-offline_access]]
+
+  - model: authentik_core.application
+    id: grafana-app
+    identifiers:
+      slug: grafana
+    attrs:
+      name: Grafana
+      provider: !KeyOf grafana-provider
+      meta_launch_url: https://grafana.aydenjahola.com
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grafana.svg
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf grafana-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0
+EOH
+      }
+
       resources {
         cpu    = 500
         memory = 1024

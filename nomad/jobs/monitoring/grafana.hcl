@@ -53,21 +53,27 @@ GF_AUTH_ANONYMOUS_ENABLED=false
 GF_AUTH_BASIC_ENABLED=false
 
 GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP=true
+GF_AUTH_DISABLE_LOGIN_FORM=true
+GF_AUTH_OAUTH_AUTO_LOGIN=true
+GF_AUTH_SIGNOUT_REDIRECT_URL=https://auth.aydenjahola.com/application/o/grafana/end-session/
 
-GF_AUTH_GENERIC_OAUTH_NAME=Keycloak
+GF_AUTH_GENERIC_OAUTH_NAME=Authentik
 GF_AUTH_GENERIC_OAUTH_ENABLED=true
-GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
+GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=false
 GF_AUTH_GENERIC_OAUTH_EMAIL_ATTRIBUTE_PATH=email
-GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH=username
-GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH=full_name
-GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || 'Viewer'
+GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH=preferred_username
+GF_AUTH_GENERIC_OAUTH_NAME_ATTRIBUTE_PATH=name
+GF_AUTH_GENERIC_OAUTH_GROUPS_ATTRIBUTE_PATH=groups
+GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(groups, 'homelab-admins') && 'GrafanaAdmin' || 'Viewer'
+GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN=true
+GF_AUTH_GENERIC_OAUTH_USE_PKCE=true
 
-GF_AUTH_GENERIC_OAUTH_CLIENT_ID={{ key "grafana/client/id" }}
-GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET={{ key "grafana/client/secret" }}
-GF_AUTH_GENERIC_OAUTH_SCOPES="openid profile email offline_access roles"
-GF_AUTH_GENERIC_OAUTH_AUTH_URL={{ key "grafana/auth/url" }}
-GF_AUTH_GENERIC_OAUTH_TOKEN_URL={{ key "grafana/token/url" }}
-GF_AUTH_GENERIC_OAUTH_API_URL={{ key "grafana/userinfo/url" }}
+GF_AUTH_GENERIC_OAUTH_CLIENT_ID={{ key "authentik/oidc/grafana/client_id" }}
+GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET={{ key "authentik/oidc/grafana/client_secret" }}
+GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email offline_access
+GF_AUTH_GENERIC_OAUTH_AUTH_URL=https://auth.aydenjahola.com/application/o/authorize/
+GF_AUTH_GENERIC_OAUTH_TOKEN_URL=https://auth.aydenjahola.com/application/o/token/
+GF_AUTH_GENERIC_OAUTH_API_URL=https://auth.aydenjahola.com/application/o/userinfo/
 EOH
       }
 
