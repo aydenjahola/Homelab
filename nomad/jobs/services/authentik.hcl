@@ -181,6 +181,7 @@ entries:
       is_active: true
       groups:
         - !KeyOf homelab-admins
+        - !Find [authentik_core.group, [name, authentik Admins]]
 
   - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
     identifiers:
@@ -193,6 +194,12 @@ entries:
       configuration_stages:
         - !Find [authentik_stages_authenticator_totp.authenticatortotpstage, [name, default-authenticator-totp-setup]]
         - !Find [authentik_stages_authenticator_webauthn.authenticatorwebauthnstage, [name, default-authenticator-webauthn-setup]]
+
+  - model: authentik_core.user
+    identifiers:
+      username: akadmin
+    attrs:
+      is_active: false
 EOH
       }
 
