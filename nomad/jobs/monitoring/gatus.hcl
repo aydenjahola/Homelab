@@ -216,6 +216,16 @@ endpoints:
     url: "https://vault.aydenjahola.com"
     <<: *defaults_https
 
+  - name: dependency-track
+    group: security
+    url: "https://dtrack.local.aydenjahola.com"
+    <<: *defaults_https
+
+  - name: trivy-server
+    group: security
+    url: "https://trivy.local.aydenjahola.com/healthz"
+    <<: *defaults_https
+
   # --- Cloud / Apps ---
   - name: netronome
     group: services
@@ -255,8 +265,13 @@ endpoints:
 
   - name: loki
     group: monitoring
-    url: "https://loki.local.aydenjahola.com"
+    url: "https://loki.local.aydenjahola.com/ready"
     <<: *defaults
+
+  - name: uptime-kuma
+    group: monitoring
+    url: "https://status.aydenjahola.com/status/homelab"
+    <<: *defaults_https
 
   - name: prometheus
     group: monitoring
@@ -270,18 +285,27 @@ endpoints:
 
   - name: dozzle-agent-odin
     group: infra
-    url: "http://192.168.1.100:7007"
+    # gRPC agent, no HTTP endpoint: check the port is accepting connections
+    url: "tcp://192.168.1.100:7007"
     <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
 
   - name: dozzle-agent-thor
     group: infra
-    url: "http://192.168.1.101:7007"
+    # gRPC agent, no HTTP endpoint: check the port is accepting connections
+    url: "tcp://192.168.1.101:7007"
     <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
 
   - name: dozzle-agent-loki
     group: infra
-    url: "http://192.168.1.102:7007"
+    # gRPC agent, no HTTP endpoint: check the port is accepting connections
+    url: "tcp://192.168.1.102:7007"
     <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
 
   # --- Media Stack ---
   - name: bazarr
