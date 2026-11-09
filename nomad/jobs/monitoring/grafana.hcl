@@ -86,7 +86,7 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: https://prometheus.local.aydenjahola.com
+    url: {{ range service "prometheus" }}http://{{ .Address }}:{{ .Port }}{{ end }}
     isDefault: true
     editable: true
 
