@@ -12,7 +12,7 @@ entries:
       mode: forward_single
       external_host: https://torr.local.aydenjahola.com
       skip_path_regex: |
-        ^/transmission/rpc
+        ^/transmission/rpc$
 
   - model: authentik_core.application
     id: torr-app
