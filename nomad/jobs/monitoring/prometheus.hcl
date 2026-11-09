@@ -81,6 +81,11 @@ scrape_configs:
         - "192.168.1.100:12345"
         - "192.168.1.101:12345"
         - "192.168.1.102:12345"
+
+  - job_name: "authentik"
+    consul_sd_configs:
+      - server: "{{ env "attr.unique.network.ip-address" }}:8500"
+        services: ["authentik-metrics"]
 EOH
       }
 

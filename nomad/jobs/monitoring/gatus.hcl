@@ -171,6 +171,14 @@ endpoints:
     url: "https://home.aydenjahola.com"
     <<: *defaults_https
 
+  - name: authentik
+    group: services
+    url: "https://auth.aydenjahola.com/-/health/live/"
+    <<: *defaults
+    conditions:
+      - "[STATUS] < 300"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
+
   - name: adventurelog-web
     group: services
     url: "https://trips.aydenjahola.com"
