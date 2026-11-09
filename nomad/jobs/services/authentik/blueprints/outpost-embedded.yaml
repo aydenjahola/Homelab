@@ -9,9 +9,16 @@ entries:
         path: custom/app-dozzle.yaml
       required: true
 
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-prometheus.yaml
+      required: true
+
   - model: authentik_outposts.outpost
     identifiers:
       managed: goauthentik.io/outposts/embedded
     attrs:
       providers:
         - !Find [authentik_providers_proxy.proxyprovider, [name, dozzle]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, prometheus]]

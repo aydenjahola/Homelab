@@ -285,7 +285,7 @@ endpoints:
   - name: prometheus
     group: monitoring
     url: "https://prometheus.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: traefik
     group: infra
