@@ -104,6 +104,12 @@ NETRONOME__DB_NAME={{ key "netronome/db/name" }}
 NETRONOME__DB_SSLMODE=disable
 
 NETRONOME__SESSION_SECRET={{ key "netronome/session/secret" }}
+
+NETRONOME__OIDC_ISSUER=https://auth.aydenjahola.com/application/o/netronome/
+NETRONOME__OIDC_CLIENT_ID={{ key "authentik/oidc/netronome/client_id" }}
+NETRONOME__OIDC_CLIENT_SECRET={{ key "authentik/oidc/netronome/client_secret" }}
+NETRONOME__OIDC_REDIRECT_URL=https://netronome.aydenjahola.com/api/auth/oidc/callback
+NETRONOME__OIDC_SCOPES=openid,profile,email,offline_access
 EOH
       }
 
