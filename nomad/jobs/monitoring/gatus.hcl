@@ -249,7 +249,7 @@ endpoints:
   - name: tracearr
     group: services
     url: "https://tracearr.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   # --- Monitoring / Infra ---
   - name: gatus
