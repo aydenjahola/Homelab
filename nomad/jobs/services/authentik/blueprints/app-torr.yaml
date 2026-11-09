@@ -1,0 +1,35 @@
+version: 1
+metadata:
+  name: app-torr
+entries:
+  - model: authentik_providers_proxy.proxyprovider
+    id: torr-provider
+    identifiers:
+      name: torr
+    attrs:
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      mode: forward_single
+      external_host: https://torr.local.aydenjahola.com
+      skip_path_regex: |
+        ^/transmission/rpc
+
+  - model: authentik_core.application
+    id: torr-app
+    identifiers:
+      slug: torr
+    attrs:
+      name: Transmission
+      provider: !KeyOf torr-provider
+      meta_launch_url: https://torr.local.aydenjahola.com
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/transmission.svg
+      group: Media
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf torr-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0
