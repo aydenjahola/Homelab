@@ -23,7 +23,6 @@ The repository contains scripts to automate the setup and configuration of vario
 To use the setup files, clone this repository to your local machine and modify the variables and configurations as needed for your specific environment.
 
 ~~For each component, there is a separate directory containing the necessary files for setup. Navigate to the desired directory and run the setup script.~~
-Docker Compose dir is not maintained anymore and all my up-to-date configs lives in the Nomad dir.
 
 ## Contributing
 
