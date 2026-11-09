@@ -116,6 +116,15 @@ EOH
 AUTHENTIK_SECRET_KEY={{ key "authentik/secret/key" }}
 AUTHENTIK_ERROR_REPORTING__ENABLED=false
 
+AUTHENTIK_EMAIL__HOST={{ key "authentik/smtp/host" }}
+AUTHENTIK_EMAIL__PORT={{ key "authentik/smtp/port" }}
+AUTHENTIK_EMAIL__USERNAME={{ key "authentik/smtp/username" }}
+AUTHENTIK_EMAIL__PASSWORD={{ key "authentik/smtp/password" }}
+AUTHENTIK_EMAIL__USE_TLS=true
+AUTHENTIK_EMAIL__USE_SSL=false
+AUTHENTIK_EMAIL__TIMEOUT=10
+AUTHENTIK_EMAIL__FROM="{{ key "authentik/smtp/from" }}"
+
 AUTHENTIK_POSTGRESQL__NAME={{ key "authentik/db/name" }}
 AUTHENTIK_POSTGRESQL__USER={{ key "authentik/db/user" }}
 AUTHENTIK_POSTGRESQL__PASSWORD={{ key "authentik/db/password" }}
@@ -152,6 +161,15 @@ EOH
         data        = <<EOH
 AUTHENTIK_SECRET_KEY={{ key "authentik/secret/key" }}
 AUTHENTIK_ERROR_REPORTING__ENABLED=false
+
+AUTHENTIK_EMAIL__HOST={{ key "authentik/smtp/host" }}
+AUTHENTIK_EMAIL__PORT={{ key "authentik/smtp/port" }}
+AUTHENTIK_EMAIL__USERNAME={{ key "authentik/smtp/username" }}
+AUTHENTIK_EMAIL__PASSWORD={{ key "authentik/smtp/password" }}
+AUTHENTIK_EMAIL__USE_TLS=true
+AUTHENTIK_EMAIL__USE_SSL=false
+AUTHENTIK_EMAIL__TIMEOUT=10
+AUTHENTIK_EMAIL__FROM="{{ key "authentik/smtp/from" }}"
 
 AUTHENTIK_BOOTSTRAP_PASSWORD={{ key "authentik/bootstrap/password" }}
 AUTHENTIK_BOOTSTRAP_EMAIL={{ key "authentik/bootstrap/email" }}
