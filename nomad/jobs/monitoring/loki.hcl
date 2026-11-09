@@ -83,6 +83,10 @@ job "loki" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination = "local/loki.yml"
         data        = <<EOH

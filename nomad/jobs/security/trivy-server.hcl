@@ -80,6 +80,10 @@ job "trivy-server" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "secrets/.env"
         env                  = true

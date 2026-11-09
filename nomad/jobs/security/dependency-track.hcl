@@ -177,6 +177,7 @@ EOH
       }
 
       env = {
+        "TZ"                     = "Europe/Dublin"
         "API_BASE_URL"           = "https://${NOMAD_META_domain}"
         "OIDC_CLIENT_ID"         = "dependency-track"
         "OIDC_SCOPE"             = "openid profile email"

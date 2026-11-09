@@ -63,6 +63,10 @@ job "archisteamfarm" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       resources {
         cpu        = 500
         memory     = 160

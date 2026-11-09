@@ -63,6 +63,10 @@ job "homelab-docs" {
         }
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true

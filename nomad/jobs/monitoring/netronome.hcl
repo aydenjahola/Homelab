@@ -116,6 +116,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true
@@ -213,6 +217,10 @@ EOH
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data:rw",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {

@@ -61,6 +61,10 @@ job "your-lastfm" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true

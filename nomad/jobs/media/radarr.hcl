@@ -209,6 +209,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/init-radarr-dbs.sh"
         perms                = "0755"

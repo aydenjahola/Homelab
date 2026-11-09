@@ -67,6 +67,10 @@ job "prometheus" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination = "local/prometheus.yml"
         data        = <<EOH

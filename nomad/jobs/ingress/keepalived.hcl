@@ -53,6 +53,10 @@ job "keepalived" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/keepalived.conf"
         perms                = "0600"
@@ -147,6 +151,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/keepalived.conf"
         perms                = "0600"
@@ -239,6 +247,10 @@ EOH
           "--log-detail",
           "--dump-conf",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {

@@ -216,6 +216,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/init-sonarr-dbs.sh"
         perms                = "0755"

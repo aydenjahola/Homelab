@@ -99,6 +99,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/config.yaml"
         perms                = "0600"
@@ -449,6 +453,10 @@ EOH
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {

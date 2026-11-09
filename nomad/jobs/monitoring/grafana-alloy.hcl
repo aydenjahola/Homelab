@@ -60,6 +60,10 @@ job "grafana-alloy" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination = "local/config.alloy"
         data        = <<EOH

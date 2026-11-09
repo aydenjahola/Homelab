@@ -102,6 +102,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true
@@ -211,6 +215,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true
@@ -290,6 +298,10 @@ EOH
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/data",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       resources {

@@ -105,6 +105,10 @@ EOH
           "/storage/nomad/${NOMAD_JOB_NAME}/data:/var/lib/plausible",
         ]
       }
+
+      env {
+        TZ = "Europe/Dublin"
+      }
       template {
         destination          = "local/.env"
         env                  = true
@@ -209,6 +213,10 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true
@@ -261,6 +269,10 @@ EOH
           "local/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro",
           "local/clickhouse-ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {

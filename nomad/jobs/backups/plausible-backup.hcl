@@ -93,6 +93,10 @@ SCRIPT
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
         destination          = "local/.env"
         env                  = true
@@ -227,6 +231,10 @@ SCRIPT
           "/home/ayden/.config/rclone/rclone.conf:/local/rclone.conf:ro",
           "/home/ayden/.gnupg:/gnupg:ro",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
