@@ -23,12 +23,13 @@ job "bazarr" {
         "traefik.enable=true",
         "traefik.http.routers.bazarr.entrypoints=https",
         "traefik.http.routers.bazarr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.bazarr.middlewares=authentik@consulcatalog",
       ]
 
       check {
         name     = "bazarr-http"
         type     = "http"
-        path     = "/api/system/status"
+        path     = "/"
         interval = "30s"
         timeout  = "5s"
       }

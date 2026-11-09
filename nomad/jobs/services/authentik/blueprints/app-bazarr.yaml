@@ -1,0 +1,36 @@
+version: 1
+metadata:
+  name: app-bazarr
+entries:
+  - model: authentik_providers_proxy.proxyprovider
+    id: bazarr-provider
+    identifiers:
+      name: bazarr
+    attrs:
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      mode: forward_single
+      external_host: https://bazarr.local.aydenjahola.com
+      skip_path_regex: |
+        ^/api(/|$)
+        ^/feed(/|$)
+
+  - model: authentik_core.application
+    id: bazarr-app
+    identifiers:
+      slug: bazarr
+    attrs:
+      name: Bazarr
+      provider: !KeyOf bazarr-provider
+      meta_launch_url: https://bazarr.local.aydenjahola.com
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/bazarr.svg
+      group: Media
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf bazarr-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0
