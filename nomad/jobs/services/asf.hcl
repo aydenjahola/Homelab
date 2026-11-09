@@ -23,6 +23,7 @@ job "archisteamfarm" {
         "traefik.enable=true",
         "traefik.http.routers.asf.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.asf.entrypoints=https",
+        "traefik.http.routers.asf.middlewares=authentik@consulcatalog",
       ]
     }
 

@@ -191,7 +191,7 @@ endpoints:
   - name: archisteamfarm
     group: services
     url: "https://asf.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: dozzle
     group: services
