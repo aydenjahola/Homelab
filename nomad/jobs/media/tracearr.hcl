@@ -49,8 +49,8 @@ job "tracearr" {
       driver = "docker"
 
       config {
-        image   = "timescale/timescaledb-ha:pg18.1-ts2.25.0"
-        ports   = ["db"]
+        image = "timescale/timescaledb-ha:pg18.1-ts2.25.0"
+        ports = ["db"]
 
         command = "postgres"
         args = [

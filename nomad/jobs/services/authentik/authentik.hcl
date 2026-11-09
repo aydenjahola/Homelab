@@ -39,7 +39,7 @@ job "authentik" {
         "traefik.http.routers.authentik-outpost.priority=1000",
 
         "traefik.http.middlewares.authentik.forwardauth.address=http://${NOMAD_ADDR_http}/outpost.goauthentik.io/auth/traefik",
-        "traefik.http.middlewares.authentik.forwardauth.trustForwardHeader=true",
+        "traefik.http.middlewares.authentik.forwardauth.trustForwardHeader=false",
         "traefik.http.middlewares.authentik.forwardauth.authResponseHeaders=X-authentik-username,X-authentik-groups,X-authentik-entitlements,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version",
       ]
 

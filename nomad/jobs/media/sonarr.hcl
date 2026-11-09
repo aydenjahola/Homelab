@@ -101,9 +101,9 @@ SONARR__POSTGRES__HOST     = {{ range service "sonarr-db" }}{{ .Address }}{{ end
 SONARR__POSTGRES__PORT     = {{ range service "sonarr-db" }}{{ .Port }}{{ end }}
 SONARR__POSTGRES__USER     = {{ key "sonarr/db/user" }}
 SONARR__POSTGRES__PASSWORD = {{ key "sonarr/db/password" }}
-SONARR__AUTH__METHOD=External
 SONARR__POSTGRES__MAINDB   = {{ key "sonarr/db/main" }}
 SONARR__POSTGRES__LOGDB    = {{ key "sonarr/db/log" }}
+SONARR__AUTH__METHOD=External
 EOH
       }
 
