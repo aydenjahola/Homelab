@@ -179,16 +179,6 @@ endpoints:
       - "[STATUS] < 300"
       - "[CERTIFICATE_EXPIRATION] > 48h"
 
-  - name: adventurelog-web
-    group: services
-    url: "https://trips.aydenjahola.com"
-    <<: *defaults
-
-  - name: adventurelog-server
-    group: services
-    url: "https://trips-api.aydenjahola.com"
-    <<: *defaults
-
   - name: archisteamfarm
     group: services
     url: "https://asf.local.aydenjahola.com"
