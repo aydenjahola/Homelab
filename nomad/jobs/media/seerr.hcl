@@ -69,22 +69,18 @@ EOH
 
       config {
         image = "ghcr.io/seerr-team/seerr:preview-new-oidc"
-        ports = ["http"]
+
+        # Preview builds report version "develop-<full sha>" (48 chars), which overflows
+        # Jellyfin's Devices.AppVersion varchar(32) and breaks Jellyfin login. Give it a
+        # short version instead; the commit tag stays intact so the UI doesn't nag to reload.
+        command = "sh"
+        args    = ["-c", "sed -i 's/\"version\": \"0.1.0\"/\"version\": \"preview-oidc\"/' /app/package.json && exec npm start"]
+        ports   = ["http"]
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/config:rw",
           "/etc/localtime:/etc/localtime:ro",
-          # Preview builds report version "develop-<full sha>" (48 chars), which overflows
-          # Jellyfin's Devices.AppVersion varchar(32) and breaks Jellyfin login. Shorten it.
-          "local/committag.json:/app/committag.json:ro",
         ]
-      }
-
-      template {
-        destination = "local/committag.json"
-        data        = <<EOH
-{"commitTag": "b1312cc"}
-EOH
       }
 
       template {
