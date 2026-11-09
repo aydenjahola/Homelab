@@ -5,6 +5,28 @@ job "keepalived" {
   group "odin" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     constraint {
       attribute = "${attr.unique.hostname}"
       value     = "odin"
@@ -32,8 +54,10 @@ job "keepalived" {
       }
 
       template {
-        destination = "local/keepalived.conf"
-        data        = <<EOH
+        destination          = "local/keepalived.conf"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 global_defs {
   router_id odin
   enable_script_security
@@ -75,6 +99,28 @@ EOH
   group "thor" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     constraint {
       attribute = "${attr.unique.hostname}"
       value     = "thor"
@@ -102,8 +148,10 @@ EOH
       }
 
       template {
-        destination = "local/keepalived.conf"
-        data        = <<EOH
+        destination          = "local/keepalived.conf"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 global_defs {
   router_id thor
   enable_script_security
@@ -145,6 +193,28 @@ EOH
   group "loki" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     constraint {
       attribute = "${attr.unique.hostname}"
       value     = "loki"
@@ -172,8 +242,10 @@ EOH
       }
 
       template {
-        destination = "local/keepalived.conf"
-        data        = <<EOH
+        destination          = "local/keepalived.conf"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 global_defs {
   router_id loki
   enable_script_security

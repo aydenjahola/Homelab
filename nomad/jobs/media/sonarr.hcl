@@ -9,6 +9,28 @@ job "sonarr" {
   group "sonarr" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 8989
@@ -32,6 +54,12 @@ job "sonarr" {
         path     = "/ping"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -54,9 +82,10 @@ job "sonarr" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 DB_USER={{ key "sonarr/db/user" }}
 DB_MAIN={{ key "sonarr/db/main" }}
 {{ range service "sonarr-db" }}
@@ -95,9 +124,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 SONARR__POSTGRES__HOST     = {{ range service "sonarr-db" }}{{ .Address }}{{ end }}
 SONARR__POSTGRES__PORT     = {{ range service "sonarr-db" }}{{ .Port }}{{ end }}
 SONARR__POSTGRES__USER     = {{ key "sonarr/db/user" }}
@@ -126,6 +157,28 @@ EOH
   group "db" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "db" {
         to = 5432
@@ -141,6 +194,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -158,9 +217,10 @@ EOH
       }
 
       template {
-        destination = "local/init-sonarr-dbs.sh"
-        perms       = "0755"
-        data        = <<EOH
+        destination          = "local/init-sonarr-dbs.sh"
+        perms                = "0755"
+        error_on_missing_key = true
+        data                 = <<EOH
 #!/bin/sh
 set -eu
 
@@ -171,9 +231,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER     = {{ key "sonarr/db/user" }}
 POSTGRES_PASSWORD = {{ key "sonarr/db/password" }}
 POSTGRES_DB       = {{ key "sonarr/db/main" }}

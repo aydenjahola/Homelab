@@ -94,9 +94,11 @@ SCRIPT
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER={{ key "vaultwarden/db/user" }}
 POSTGRES_PASSWORD={{ key "vaultwarden/db/password" }}
 POSTGRES_DB={{ key "vaultwarden/db/name" }}

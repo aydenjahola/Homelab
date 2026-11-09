@@ -94,9 +94,11 @@ SCRIPT
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER={{ key "authentik/db/user" }}
 POSTGRES_PASSWORD={{ key "authentik/db/password" }}
 POSTGRES_DB={{ key "authentik/db/name" }}

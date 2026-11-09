@@ -7,6 +7,13 @@ job "traefik" {
   }
 
   group "traefik" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     network {
       port "http" {
         static = 80
@@ -50,9 +57,11 @@ job "traefik" {
 
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 CF_API_EMAIL = {{ key "traefik/cf/email" }}
 CF_API_KEY   = {{ key "traefik/cf/api" }}
 EOH

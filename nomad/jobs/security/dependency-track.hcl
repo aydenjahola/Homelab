@@ -9,6 +9,28 @@ job "dependency-track" {
   group "dependency-track" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "api" {
         to = 8080
@@ -37,6 +59,12 @@ job "dependency-track" {
         path     = "/health/ready"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -70,9 +98,10 @@ job "dependency-track" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 DB_USER={{ key "dependency-track/db/user" }}
 DB_NAME={{ key "dependency-track/db/name" }}
 {{ range service "dependency-track-db" }}
@@ -104,10 +133,12 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        change_mode          = "restart"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 {{- range service "dependency-track-db" }}
 DT_DATASOURCE_URL=jdbc:postgresql://{{ .Address }}:{{ .Port }}/{{ key "dependency-track/db/name" }}
 {{- end }}
@@ -153,9 +184,10 @@ EOH
       }
 
       template {
-        destination = "local/oidc.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/oidc.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 OIDC_ISSUER={{ key "authentik/url" }}/application/o/dependency-track/
 EOH
       }
@@ -170,6 +202,28 @@ EOH
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -186,6 +240,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -203,9 +263,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_DB={{ key "dependency-track/db/name" }}
 POSTGRES_USER={{ key "dependency-track/db/user" }}
 POSTGRES_PASSWORD={{ key "dependency-track/db/password" }}

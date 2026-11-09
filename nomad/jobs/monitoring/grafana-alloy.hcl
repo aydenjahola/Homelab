@@ -3,6 +3,13 @@ job "grafana-alloy" {
   type        = "system"
 
   group "grafana-alloy" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     network {
       port "http" {
         static = 12345

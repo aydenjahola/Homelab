@@ -5,6 +5,28 @@ job "diun" {
   group "diun" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     task "diun" {
       driver = "docker"
 
@@ -30,17 +52,21 @@ job "diun" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 DOCKER_USER={{ key "docker/hub/user" }}
 DOCKER_PASS={{ key "docker/hub/token" }}
 EOH
       }
 
       template {
-        destination = "local/diun.yml"
-        data        = <<EOH
+        destination          = "local/diun.yml"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 db:
   path: /data/diun.db
 

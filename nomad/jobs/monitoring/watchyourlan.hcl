@@ -9,6 +9,28 @@ job "watchyourlan" {
   group "watchyourlan" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       mode = "host"
 
@@ -36,6 +58,12 @@ job "watchyourlan" {
         port     = "http"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -52,10 +80,11 @@ job "watchyourlan" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        change_mode          = "restart"
+        error_on_missing_key = true
+        data                 = <<EOH
 TZ=Europe/Dublin
 
 HOST=0.0.0.0

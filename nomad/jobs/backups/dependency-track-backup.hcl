@@ -94,9 +94,11 @@ SCRIPT
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER={{ key "dependency-track/db/user" }}
 POSTGRES_PASSWORD={{ key "dependency-track/db/password" }}
 POSTGRES_DB={{ key "dependency-track/db/name" }}

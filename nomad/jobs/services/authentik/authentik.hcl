@@ -12,6 +12,23 @@ job "authentik" {
     update {
       healthy_deadline  = "10m"
       progress_deadline = "15m"
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
     }
 
     network {
@@ -49,6 +66,12 @@ job "authentik" {
         path     = "/-/health/live/"
         interval = "10s"
         timeout  = "3s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -76,9 +99,10 @@ job "authentik" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 DB_USER={{ key "authentik/db/user" }}
 DB_NAME={{ key "authentik/db/name" }}
 {{ range service "authentik-db" }}
@@ -110,9 +134,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 AUTHENTIK_SECRET_KEY={{ key "authentik/secret/key" }}
 AUTHENTIK_ERROR_REPORTING__ENABLED=false
 
@@ -156,9 +182,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 AUTHENTIK_SECRET_KEY={{ key "authentik/secret/key" }}
 AUTHENTIK_ERROR_REPORTING__ENABLED=false
 
@@ -188,9 +216,10 @@ EOH
         for_each = fileset(".", "jobs/services/authentik/blueprints/*.yaml")
 
         content {
-          data        = file(template.value)
-          destination = "local/blueprints/${basename(template.value)}"
-          change_mode = "noop"
+          error_on_missing_key = true
+          data                 = file(template.value)
+          destination          = "local/blueprints/${basename(template.value)}"
+          change_mode          = "noop"
         }
       }
 
@@ -204,6 +233,28 @@ EOH
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -220,6 +271,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -236,9 +293,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_DB       = {{ key "authentik/db/name" }}
 POSTGRES_USER     = {{ key "authentik/db/user" }}
 POSTGRES_PASSWORD = {{ key "authentik/db/password" }}

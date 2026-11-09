@@ -3,6 +3,13 @@ job "node-exporter" {
   type        = "system"
 
   group "node-exporter" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     task "node-exporter" {
       driver = "docker"
 

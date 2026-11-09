@@ -94,9 +94,11 @@ SCRIPT
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 MYSQL_ROOT_PASSWORD={{ key "uptime-kuma/db/root/password" }}
 MYSQL_DATABASE={{ key "uptime-kuma/db/name" }}
 MYSQL_USER={{ key "uptime-kuma/db/user" }}

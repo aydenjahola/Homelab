@@ -3,6 +3,13 @@ job "dozzle-agent" {
   type        = "system"
 
   group "dozzle-agent" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     network {
       port "agent" {
         static = 7007

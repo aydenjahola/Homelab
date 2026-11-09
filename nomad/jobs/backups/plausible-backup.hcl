@@ -94,9 +94,11 @@ SCRIPT
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER={{ key "plausible/db/user" }}
 POSTGRES_PASSWORD={{ key "plausible/db/password" }}
 POSTGRES_DB={{ key "plausible/db/name" }}
@@ -227,9 +229,10 @@ SCRIPT
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 CLICKHOUSE_DB=plausible_events_db
 
 GPG_RECIPIENT={{ key "backup/gpg/key" }}

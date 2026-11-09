@@ -9,6 +9,28 @@ job "reactive-resume" {
   group "reactive-resume" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 3000
@@ -32,6 +54,12 @@ job "reactive-resume" {
         port     = "http"
         interval = "30s"
         timeout  = "10s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -54,9 +82,10 @@ job "reactive-resume" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 DB_USER={{ key "reactive-resume/db/user" }}
 DB_NAME={{ key "reactive-resume/db/name" }}
 {{ range service "reactive-resume-db" }}
@@ -85,10 +114,12 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        change_mode          = "restart"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 TZ=Europe/Dublin
 NODE_ENV=production
 
@@ -126,6 +157,28 @@ EOH
   group "db" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "db" {
         to = 5432
@@ -141,6 +194,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -157,9 +216,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_DB       = {{ key "reactive-resume/db/name" }}
 POSTGRES_USER     = {{ key "reactive-resume/db/user" }}
 POSTGRES_PASSWORD = {{ key "reactive-resume/db/password" }}
