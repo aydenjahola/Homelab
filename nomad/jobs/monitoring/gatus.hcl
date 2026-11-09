@@ -43,7 +43,7 @@ job "gatus" {
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
+        data        = <<EOH
 POSTGRES_DB       = {{ key "gatus/db/name" }}
 POSTGRES_USER     = {{ key "gatus/db/user" }}
 POSTGRES_PASSWORD = {{ key "gatus/db/password" }}
@@ -98,7 +98,7 @@ EOH
         destination = "local/.env"
         env         = true
         change_mode = "restart"
-        data = <<EOH
+        data        = <<EOH
 {{- range service "gatus-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -182,7 +182,7 @@ endpoints:
 
   - name: authentik
     group: services
-    url: "https://auth.aydenjahola.com/-/health/live/"
+    url: "{{ key "authentik/url" }}/-/health/live/"
     <<: *defaults
     conditions:
       - "[STATUS] < 300"

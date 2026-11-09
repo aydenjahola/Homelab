@@ -85,6 +85,7 @@ EOH
           "/storage/jellyfin/tv:/data/tvshows:rw",
           "/storage/jellyfin/movies:/data/movies:rw",
           "/etc/localtime:/etc/localtime:ro",
+          # Managed by Nomad (read-only): plugin UI saves and auto-linking new SSO users fail; add users to CanonicalLinks below.
           "local/SSO-Auth.xml:/config/plugins/configurations/SSO-Auth.xml:ro",
         ]
       }
@@ -120,7 +121,7 @@ EOH
       <key><string>authentik</string></key>
       <value>
         <PluginConfiguration>
-          <OidEndpoint>https://auth.aydenjahola.com/application/o/jellyfin/</OidEndpoint>
+          <OidEndpoint>{{ key "authentik/url" }}/application/o/jellyfin/</OidEndpoint>
           <OidClientId>{{ key "authentik/oidc/jellyfin/client_id" }}</OidClientId>
           <OidSecret>{{ key "authentik/oidc/jellyfin/client_secret" }}</OidSecret>
           <Enabled>true</Enabled>

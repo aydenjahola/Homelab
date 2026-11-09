@@ -17,7 +17,7 @@ entries:
       client_secret: {{ key "authentik/oidc/grafana/client_secret" }}
       redirect_uris:
         - matching_mode: strict
-          url: https://grafana.aydenjahola.com/login/generic_oauth
+          url: https://grafana.{{ key "homelab/domain" }}/login/generic_oauth
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
       property_mappings:
         - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
@@ -32,7 +32,7 @@ entries:
     attrs:
       name: Grafana
       provider: !KeyOf grafana-provider
-      meta_launch_url: https://grafana.aydenjahola.com
+      meta_launch_url: https://grafana.{{ key "homelab/domain" }}
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grafana.svg
       group: Monitoring
       open_in_new_tab: true

@@ -10,7 +10,7 @@ entries:
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       mode: forward_single
-      external_host: https://ylfm.local.aydenjahola.com
+      external_host: https://ylfm.{{ key "homelab/domain_local" }}
 
   - model: authentik_core.application
     id: ylfm-app
@@ -19,7 +19,7 @@ entries:
     attrs:
       name: Your Last.fm
       provider: !KeyOf ylfm-provider
-      meta_launch_url: https://ylfm.local.aydenjahola.com
+      meta_launch_url: https://ylfm.{{ key "homelab/domain_local" }}
       meta_icon: https://cdn.jsdelivr.net/gh/selfhst/icons/svg/last-fm.svg
       group: Services
       open_in_new_tab: true

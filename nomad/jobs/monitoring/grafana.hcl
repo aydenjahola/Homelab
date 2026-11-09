@@ -55,7 +55,7 @@ GF_AUTH_BASIC_ENABLED=false
 GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP=true
 GF_AUTH_DISABLE_LOGIN_FORM=true
 GF_AUTH_OAUTH_AUTO_LOGIN=true
-GF_AUTH_SIGNOUT_REDIRECT_URL=https://auth.aydenjahola.com/application/o/grafana/end-session/
+GF_AUTH_SIGNOUT_REDIRECT_URL={{ key "authentik/url" }}/application/o/grafana/end-session/
 
 GF_AUTH_GENERIC_OAUTH_NAME=Authentik
 GF_AUTH_GENERIC_OAUTH_ENABLED=true
@@ -71,9 +71,9 @@ GF_AUTH_GENERIC_OAUTH_USE_PKCE=true
 GF_AUTH_GENERIC_OAUTH_CLIENT_ID={{ key "authentik/oidc/grafana/client_id" }}
 GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET={{ key "authentik/oidc/grafana/client_secret" }}
 GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email offline_access
-GF_AUTH_GENERIC_OAUTH_AUTH_URL=https://auth.aydenjahola.com/application/o/authorize/
-GF_AUTH_GENERIC_OAUTH_TOKEN_URL=https://auth.aydenjahola.com/application/o/token/
-GF_AUTH_GENERIC_OAUTH_API_URL=https://auth.aydenjahola.com/application/o/userinfo/
+GF_AUTH_GENERIC_OAUTH_AUTH_URL={{ key "authentik/url" }}/application/o/authorize/
+GF_AUTH_GENERIC_OAUTH_TOKEN_URL={{ key "authentik/url" }}/application/o/token/
+GF_AUTH_GENERIC_OAUTH_API_URL={{ key "authentik/url" }}/application/o/userinfo/
 EOH
       }
 

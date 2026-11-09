@@ -10,7 +10,7 @@ entries:
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       mode: forward_single
-      external_host: https://sonarr.local.aydenjahola.com
+      external_host: https://sonarr.{{ key "homelab/domain_local" }}
       skip_path_regex: |
         ^/api(/|$)
         ^/feed(/|$)
@@ -22,7 +22,7 @@ entries:
     attrs:
       name: Sonarr
       provider: !KeyOf sonarr-provider
-      meta_launch_url: https://sonarr.local.aydenjahola.com
+      meta_launch_url: https://sonarr.{{ key "homelab/domain_local" }}
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg
       group: Media
       open_in_new_tab: true

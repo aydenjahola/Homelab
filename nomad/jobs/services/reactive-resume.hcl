@@ -153,7 +153,7 @@ FLAG_DISABLE_EMAIL_AUTH=true
 OAUTH_PROVIDER_NAME=Authentik
 OAUTH_CLIENT_ID={{ key "authentik/oidc/reactive-resume/client_id" }}
 OAUTH_CLIENT_SECRET={{ key "authentik/oidc/reactive-resume/client_secret" }}
-OAUTH_DISCOVERY_URL=https://auth.aydenjahola.com/application/o/reactive-resume/.well-known/openid-configuration
+OAUTH_DISCOVERY_URL={{ key "authentik/url" }}/application/o/reactive-resume/.well-known/openid-configuration
 
 SMTP_HOST   = {{ key "reactive-resume/smtp/host" }}
 SMTP_PORT   = 465

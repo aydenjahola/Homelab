@@ -170,7 +170,7 @@ DT_OUTBOUND_ALLOWED_DESTINATIONS=external,trivy.local.aydenjahola.com
 TZ=Europe/Dublin
 
 DT_OIDC_ENABLED=true
-DT_OIDC_ISSUER=https://auth.aydenjahola.com/application/o/dependency-track/
+DT_OIDC_ISSUER={{ key "authentik/url" }}/application/o/dependency-track/
 DT_OIDC_CLIENT_ID={{ key "authentik/oidc/dependency-track/client_id" }}
 DT_OIDC_USERNAME_CLAIM=preferred_username
 DT_OIDC_USER_PROVISIONING=true
@@ -197,10 +197,17 @@ EOH
 
       env = {
         "API_BASE_URL"           = "https://${NOMAD_META_domain}"
-        "OIDC_ISSUER"            = "https://auth.aydenjahola.com/application/o/dependency-track/"
         "OIDC_CLIENT_ID"         = "dependency-track"
         "OIDC_SCOPE"             = "openid profile email"
         "OIDC_LOGIN_BUTTON_TEXT" = "Login with Authentik"
+      }
+
+      template {
+        destination = "local/oidc.env"
+        env         = true
+        data        = <<EOH
+OIDC_ISSUER={{ key "authentik/url" }}/application/o/dependency-track/
+EOH
       }
 
       resources {

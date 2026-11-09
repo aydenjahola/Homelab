@@ -17,10 +17,10 @@ entries:
       client_secret: {{ key "authentik/oidc/seerr/client_secret" }}
       redirect_uris:
         - matching_mode: strict
-          url: https://seerr.local.aydenjahola.com/login
+          url: https://seerr.{{ key "homelab/domain_local" }}/login
           redirect_uri_type: authorization
         - matching_mode: strict
-          url: https://seerr.local.aydenjahola.com/profile/settings/linked-accounts
+          url: https://seerr.{{ key "homelab/domain_local" }}/profile/settings/linked-accounts
           redirect_uri_type: authorization
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
       property_mappings:
@@ -35,7 +35,7 @@ entries:
     attrs:
       name: Seerr
       provider: !KeyOf seerr-provider
-      meta_launch_url: https://seerr.local.aydenjahola.com
+      meta_launch_url: https://seerr.{{ key "homelab/domain_local" }}
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyseerr.svg
       group: Media
       open_in_new_tab: true

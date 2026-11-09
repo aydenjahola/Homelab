@@ -18,7 +18,7 @@ entries:
       client_secret: {{ key "authentik/oidc/vaultwarden/client_secret" }}
       redirect_uris:
         - matching_mode: strict
-          url: https://vault.aydenjahola.com/identity/connect/oidc-signin
+          url: https://vault.{{ key "homelab/domain" }}/identity/connect/oidc-signin
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, authentik Self-signed Certificate]]
       property_mappings:
         - !Find [authentik_providers_oauth2.scopemapping, [managed, goauthentik.io/providers/oauth2/scope-openid]]
@@ -33,7 +33,7 @@ entries:
     attrs:
       name: Vaultwarden
       provider: !KeyOf vaultwarden-provider
-      meta_launch_url: https://vault.aydenjahola.com
+      meta_launch_url: https://vault.{{ key "homelab/domain" }}
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg
       group: Services
       open_in_new_tab: true
