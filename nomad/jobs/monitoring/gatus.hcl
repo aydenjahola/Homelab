@@ -311,7 +311,7 @@ endpoints:
   - name: bazarr
     group: media
     url: "https://bazarr.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: jellyfin
     group: media
@@ -336,7 +336,7 @@ endpoints:
   - name: prowlarr
     group: media
     url: "https://prowl.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: flaresolverr
     group: media
