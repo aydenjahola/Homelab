@@ -1,0 +1,17 @@
+version: 1
+metadata:
+  name: outpost-embedded
+entries:
+  # Apply each app blueprint first so the providers below exist.
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-dozzle.yaml
+      required: true
+
+  - model: authentik_outposts.outpost
+    identifiers:
+      managed: goauthentik.io/outposts/embedded
+    attrs:
+      providers:
+        - !Find [authentik_providers_proxy.proxyprovider, [name, dozzle]]

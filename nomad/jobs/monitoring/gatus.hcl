@@ -164,6 +164,15 @@ defaults_https: &defaults_https
     - "[STATUS] == 200"
     - "[CERTIFICATE_EXPIRATION] > 48h"
 
+# Forward-auth apps: Traefik + Authentik answer with a redirect to the login page.
+defaults_sso: &defaults_sso
+  <<: *defaults
+  client:
+    ignore-redirect: true
+  conditions:
+    - "[STATUS] == 302"
+    - "[CERTIFICATE_EXPIRATION] > 48h"
+
 endpoints:
   # --- Core / Home ---
   - name: homarr
@@ -187,7 +196,7 @@ endpoints:
   - name: dozzle
     group: services
     url: "https://dozzle.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: watchyourlan
     group: services

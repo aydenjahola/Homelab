@@ -23,12 +23,13 @@ job "dozzle" {
         "traefik.enable=true",
         "traefik.http.routers.dozzle.entrypoints=https",
         "traefik.http.routers.dozzle.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.dozzle.middlewares=authentik@consulcatalog",
       ]
 
       check {
         name     = "dozzle-http"
         type     = "http"
-        path     = "/"
+        path     = "/healthcheck"
         port     = "http"
         interval = "30s"
         timeout  = "5s"
@@ -54,6 +55,12 @@ job "dozzle" {
         data        = <<EOH
 DOZZLE_HOSTNAME=nomad-cluster
 DOZZLE_REMOTE_AGENT={{- $first := true -}}{{- range service "dozzle-agent" -}}{{- if not $first }},{{ end -}}{{ .Address }}:{{ .Port }}|{{ .Node }}|Nomad{{- $first = false -}}{{- end }}
+
+DOZZLE_AUTH_PROVIDER=forward-proxy
+DOZZLE_AUTH_HEADER_USER=X-Authentik-Username
+DOZZLE_AUTH_HEADER_EMAIL=X-Authentik-Email
+DOZZLE_AUTH_HEADER_NAME=X-Authentik-Name
+DOZZLE_AUTH_LOGOUT_URL=https://{{ env "NOMAD_META_domain" }}/outpost.goauthentik.io/sign_out
 EOH
       }
 
