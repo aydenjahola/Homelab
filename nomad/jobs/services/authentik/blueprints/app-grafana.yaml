@@ -34,6 +34,7 @@ entries:
       provider: !KeyOf grafana-provider
       meta_launch_url: https://grafana.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grafana.svg
+      group: Monitoring
       open_in_new_tab: true
       policy_engine_mode: any
 

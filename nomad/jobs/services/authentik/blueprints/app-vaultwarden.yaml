@@ -35,6 +35,7 @@ entries:
       provider: !KeyOf vaultwarden-provider
       meta_launch_url: https://vault.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/vaultwarden.svg
+      group: Services
       open_in_new_tab: true
       policy_engine_mode: any
 

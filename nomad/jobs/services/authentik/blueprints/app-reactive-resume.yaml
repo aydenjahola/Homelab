@@ -34,6 +34,7 @@ entries:
       provider: !KeyOf reactive-resume-provider
       meta_launch_url: https://resume.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/reactive-resume.svg
+      group: Services
       open_in_new_tab: true
       policy_engine_mode: any
 

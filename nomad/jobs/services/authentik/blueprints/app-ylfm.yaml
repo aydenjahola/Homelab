@@ -21,6 +21,7 @@ entries:
       provider: !KeyOf ylfm-provider
       meta_launch_url: https://ylfm.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/selfhst/icons/svg/last-fm.svg
+      group: Services
       open_in_new_tab: true
       policy_engine_mode: any
 

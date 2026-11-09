@@ -34,6 +34,7 @@ entries:
       provider: !KeyOf netronome-provider
       meta_launch_url: https://netronome.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/netronome.png
+      group: Monitoring
       open_in_new_tab: true
       policy_engine_mode: any
 

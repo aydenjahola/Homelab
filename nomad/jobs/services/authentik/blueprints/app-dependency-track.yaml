@@ -33,6 +33,7 @@ entries:
       provider: !KeyOf dependency-track-provider
       meta_launch_url: https://dtrack.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dependency-track.svg
+      group: Security
       open_in_new_tab: true
       policy_engine_mode: any
 

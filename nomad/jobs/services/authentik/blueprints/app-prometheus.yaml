@@ -21,6 +21,7 @@ entries:
       provider: !KeyOf prometheus-provider
       meta_launch_url: https://prometheus.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prometheus.svg
+      group: Monitoring
       open_in_new_tab: true
       policy_engine_mode: any
 

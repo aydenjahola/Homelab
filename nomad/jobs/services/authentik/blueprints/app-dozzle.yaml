@@ -21,6 +21,7 @@ entries:
       provider: !KeyOf dozzle-provider
       meta_launch_url: https://dozzle.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dozzle.svg
+      group: Monitoring
       open_in_new_tab: true
       policy_engine_mode: any
 

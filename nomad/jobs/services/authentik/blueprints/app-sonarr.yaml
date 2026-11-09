@@ -24,6 +24,7 @@ entries:
       provider: !KeyOf sonarr-provider
       meta_launch_url: https://sonarr.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg
+      group: Media
       open_in_new_tab: true
       policy_engine_mode: any
 

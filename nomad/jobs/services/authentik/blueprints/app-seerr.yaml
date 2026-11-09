@@ -37,6 +37,7 @@ entries:
       provider: !KeyOf seerr-provider
       meta_launch_url: https://seerr.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyseerr.svg
+      group: Media
       open_in_new_tab: true
       policy_engine_mode: any
 

@@ -21,6 +21,7 @@ entries:
       provider: !KeyOf asf-provider
       meta_launch_url: https://asf.local.aydenjahola.com
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/archisteamfarm.png
+      group: Services
       open_in_new_tab: true
       policy_engine_mode: any
 
