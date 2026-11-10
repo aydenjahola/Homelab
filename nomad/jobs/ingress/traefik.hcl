@@ -95,8 +95,6 @@ entryPoints:
             sans: "*.aydenjahola.com"
           - main: "local.aydenjahola.com"
             sans: "*.local.aydenjahola.com"
-          - main: "katyaphone.com.au"
-            sans: "*.katyaphone.com.au"
 
 certificatesResolvers:
   cloudflare:
