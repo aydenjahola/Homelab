@@ -27,7 +27,7 @@ job "cluster-snapshot-backup" {
       }
 
       config {
-        image      = "hashicorp/consul:2.0.0"
+        image      = "hashicorp/consul:2.1.0"
         entrypoint = ["/bin/sh"]
         args = [
           "-c",
