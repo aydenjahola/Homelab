@@ -195,7 +195,7 @@ EOH
 
         check_restart {
           limit           = 3
-          grace           = "60s"
+          grace           = "300s"
           ignore_warnings = false
         }
       }
@@ -249,7 +249,7 @@ EOH
 
         check_restart {
           limit           = 3
-          grace           = "60s"
+          grace           = "300s"
           ignore_warnings = false
         }
       }
