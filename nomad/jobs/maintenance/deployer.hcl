@@ -418,12 +418,28 @@ deploy_branches() {
   done
 }
 
+mark_other_prs() {
+  # "deploy" is a required check, but only renovate/* branches are deployed
+  # before merge. Other same-repo PRs get a success status saying so.
+  prs="$(ghapi GET "/repos/$REPO/pulls?state=open&per_page=100")" || return 0
+  echo "$prs" | jq -r --arg r "$REPO" \
+    '.[] | select(.head.repo.full_name == $r and (.head.ref | startswith("renovate/") | not)) | .head.sha' \
+    | while read -r sha; do
+      [ -n "$sha" ] || continue
+      has="$(ghapi GET "/repos/$REPO/commits/$sha/status" | jq -r '[.statuses[] | select(.context == "deploy")] | length')" || continue
+      if [ "$has" = 0 ]; then
+        set_status "$sha" success "Not deployed before merge; deploys from main after merge"
+      fi
+    done
+}
+
 run_once() {
   # set -e does not apply here (called from an if), so check each step
   git -C "$SRC" fetch --quiet --prune origin || return 1
   finish_branches
   deploy_main
   deploy_branches
+  mark_other_prs
 }
 
 if [ ! -d "$SRC/.git" ]; then

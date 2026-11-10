@@ -26,12 +26,103 @@ job "renovate" {
       unlimited = false
     }
 
+    # Mints a GitHub App installation token for this run (valid 1 hour). Renovate
+    # acts as the app, not as the repo admin, so the main ruleset's required
+    # checks (including "deploy") are enforced on its merges.
+    task "github-app-token" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image        = "alpine:3.22.8"
+        command      = "/bin/sh"
+        security_opt = ["no-new-privileges:true"]
+        args = [
+          "-c",
+          <<SCRIPT
+set -eu
+
+apk add --no-cache curl jq openssl >/dev/null
+
+: "$APP_ID"
+: "$REPO"
+
+b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
+
+gh() {
+  # gh TOKEN [curl args...]
+  t="$1"; shift
+  curl -fsS -H "Authorization: Bearer $t" -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" "$@"
+}
+
+now="$(date +%s)"
+header="$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)"
+payload="$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((now - 60))" "$((now + 540))" "$APP_ID" | b64url)"
+sig="$(printf '%s.%s' "$header" "$payload" | openssl dgst -sha256 -sign /secrets/app.pem | b64url)"
+jwt="$header.$payload.$sig"
+
+installation="$(gh "$jwt" "https://api.github.com/repos/$REPO/installation" | jq -r '.id')"
+token="$(gh "$jwt" -X POST "https://api.github.com/app/installations/$installation/access_tokens" | jq -r '.token')"
+slug="$(gh "$jwt" "https://api.github.com/app" | jq -r '.slug')"
+bot="$slug"'[bot]'
+bot_id="$(curl -fsS "https://api.github.com/users/$slug%5Bbot%5D" | jq -r '.id')"
+
+umask 077
+cat > /alloc/data/renovate.env <<EOF
+RENOVATE_TOKEN='$token'
+RENOVATE_GITHUB_COM_TOKEN='$token'
+RENOVATE_USERNAME='$bot'
+RENOVATE_GIT_AUTHOR='$bot <$bot_id+$bot@users.noreply.github.com>'
+EOF
+chown 1000:1000 /alloc/data/renovate.env
+echo "==> token minted for $bot (installation $installation)"
+SCRIPT
+        ]
+      }
+
+      env = {
+        "REPO" = "${NOMAD_META_repository}"
+      }
+
+      template {
+        destination          = "secrets/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+APP_ID = {{ key "renovate/github-app/id" }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/app.pem"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+{{ key "renovate/github-app/private-key" }}
+EOH
+      }
+
+      resources {
+        cpu    = 100
+        memory = 64
+      }
+    }
+
     task "renovate" {
       driver = "docker"
       user   = "1000:1000"
 
       config {
-        image        = "renovate/renovate:44.224.2"
+        image = "renovate/renovate:44.224.2"
+        # Keep the image entrypoint; load the app token minted by the prestart task
+        command      = "sh"
+        args         = ["-c", "set -a && . /alloc/data/renovate.env && set +a && exec renovate"]
         security_opt = ["no-new-privileges:true"]
         cap_drop     = ["all"]
 
@@ -49,7 +140,6 @@ job "renovate" {
         "RENOVATE_REPOSITORIES"      = "${NOMAD_META_repository}"
         "RENOVATE_ONBOARDING"        = "false"
         "RENOVATE_REQUIRE_CONFIG"    = "required"
-        "RENOVATE_GIT_AUTHOR"        = "Renovate Bot <renovate@local.aydenjahola.com>"
         "RENOVATE_BASE_DIR"          = "/cache/base"
         "RENOVATE_CACHE_DIR"         = "/cache/cache"
         "RENOVATE_REPOSITORY_CACHE"  = "enabled"
@@ -64,9 +154,7 @@ job "renovate" {
         perms                = "0600"
         error_on_missing_key = true
         data                 = <<EOH
-RENOVATE_TOKEN            = {{ key "renovate/github/token" }}
-RENOVATE_GITHUB_COM_TOKEN = {{ key "renovate/github/token" }}
-RENOVATE_HOST_RULES       = [{"matchHost":"docker.io","hostType":"docker","username":"{{ key "docker/hub/user" }}","password":"{{ key "docker/hub/token" }}"},{"matchHost":"ghcr.io","hostType":"docker","username":"{{ key "docker/ghcr/user" }}","password":"{{ key "docker/ghcr/token" }}"}]
+RENOVATE_HOST_RULES =  [{"matchHost":"docker.io","hostType":"docker","username":"{{ key "docker/hub/user" }}","password":"{{ key "docker/hub/token" }}"},{"matchHost":"ghcr.io","hostType":"docker","username":"{{ key "docker/ghcr/user" }}","password":"{{ key "docker/ghcr/token" }}"}]
 EOH
       }
 
