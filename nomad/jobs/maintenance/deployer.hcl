@@ -331,9 +331,13 @@ deploy_main() {
       log "main: $main waiting for CI"
       return 0 ;;
     failure)
-      set_status "$main" failure "CI failed, not deployed"
-      notify "❌ <@367293674981294086> **deployer**: CI failed on main \`$main\`, not deployed. The cluster stays on \`$last\`."
-      kv_put main/sha "$main"
+      # Keep main/sha where it is: once a later commit fixes CI, every job
+      # changed since the last good deploy goes out together. Alert once per commit.
+      if [ "$(kv_get main/failed)" != "$main" ]; then
+        set_status "$main" failure "CI failed, not deployed"
+        notify "❌ <@367293674981294086> **deployer**: CI failed on main \`$main\`, not deployed. The cluster stays on \`$last\` until CI passes."
+        kv_put main/failed "$main"
+      fi
       return 0 ;;
   esac
 
