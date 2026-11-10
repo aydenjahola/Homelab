@@ -254,12 +254,12 @@ EOH
       driver = "docker"
 
       config {
-        image        = "postgres:18-alpine"
+        image        = "postgres:17-alpine"
         ports        = ["db"]
         security_opt = ["no-new-privileges:true"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}-pg17:/var/lib/postgresql/data:rw",
         ]
       }
 
