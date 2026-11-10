@@ -7,6 +7,13 @@ job "traefik" {
   }
 
   group "traefik" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     network {
       port "http" {
         static = 80
@@ -37,7 +44,7 @@ job "traefik" {
       driver = "docker"
 
       config {
-        image        = "traefik:latest"
+        image        = "traefik:v3.7.17"
         network_mode = "host"
 
         volumes = [
@@ -50,9 +57,11 @@ job "traefik" {
 
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 CF_API_EMAIL = {{ key "traefik/cf/email" }}
 CF_API_KEY   = {{ key "traefik/cf/api" }}
 EOH
@@ -86,12 +95,6 @@ entryPoints:
             sans: "*.aydenjahola.com"
           - main: "local.aydenjahola.com"
             sans: "*.local.aydenjahola.com"
-          - main: "inaamessawi.com"
-            sans: "*.inaamessawi.com"
-          - main: "katyaphone.com.au"
-            sans: "*.katyaphone.com.au"
-          - main: "eqpaintingsolutions.com.au"
-            sans: "*.eqpaintingsolutions.com.au"
 
 certificatesResolvers:
   cloudflare:
@@ -118,8 +121,9 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 200
+        memory     = 96
+        memory_max = 512
       }
     }
   }

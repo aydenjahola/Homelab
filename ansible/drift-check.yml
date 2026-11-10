@@ -1,0 +1,24 @@
+---
+# Forced check mode: reports what site.yml WOULD change and changes
+# nothing, even if you forget --check. Use --diff to see the differences:
+#   ansible-playbook drift-check.yml --diff
+# Zero "changed" means the hosts still match this repo.
+# Keep the role list in sync with site.yml.
+- name: Drift check
+  hosts: homelab
+  become: true
+  check_mode: true
+  diff: true
+  roles:
+    - role: packages
+    - role: base
+    - role: network
+    - role: users
+    - role: storage
+    - role: docker
+    - role: cni
+    - role: virt
+    - role: openvpn
+      when: openvpn_enabled | bool
+    - role: consul
+    - role: nomad

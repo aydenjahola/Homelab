@@ -1,0 +1,10 @@
+title = "homelab"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Consul template references are not secrets"
+regexes = [
+  '''\{\{-?\s*(key|keyOrDefault|with secret|secret)\s+"[^"]+"[^}]*\}\}''',
+]

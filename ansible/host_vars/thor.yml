@@ -1,0 +1,15 @@
+---
+# thor - Dell OptiPlex 5060, SK hynix PC601 512G NVMe, 6 cores, 32G RAM
+host_ip: 192.168.1.101
+
+packages_extra:
+  - gnupg-utils
+  - openssl
+  - openvpn
+  - tmux
+  # Installed but unused: the zfs kernel module is not built/loaded
+  # (no zfs-dkms) and there are no pools.
+  - zfsutils-linux
+
+openvpn_enabled: true
+openvpn_port: 1195

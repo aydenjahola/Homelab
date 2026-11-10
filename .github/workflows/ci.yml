@@ -1,0 +1,105 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  # Matches the server version running on the cluster (`nomad server members`).
+  NOMAD_VERSION: "2.0.3"
+
+jobs:
+  pre-commit:
+    # trailing whitespace, EOF, yaml/json, merge markers, private keys,
+    # gitleaks and `nomad fmt -check` (ansible-lint runs in the `ansible` job).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: hashicorp/setup-nomad@ceba9087d4322dbdd7b35dafac5a87a8c459a157 # v1.0.0
+        with:
+          version: ${{ env.NOMAD_VERSION }}
+      - run: pip install pre-commit==4.3.0
+      # The hook's venv has no Ansible collections, so ansible-lint fails to
+      # resolve modules here; the `ansible` job installs them and lints.
+      - run: pre-commit run --all-files --show-diff-on-failure
+        env:
+          SKIP: ansible-lint
+
+  nomad-validate:
+    # `nomad job validate` talks to an agent API, so run against a throwaway
+    # dev agent (no cluster access, no secrets needed; Consul `key` lookups
+    # are only rendered at runtime and are not evaluated by validate).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: hashicorp/setup-nomad@ceba9087d4322dbdd7b35dafac5a87a8c459a157 # v1.0.0
+        with:
+          version: ${{ env.NOMAD_VERSION }}
+      - name: Start dev agent
+        run: |
+          nohup nomad agent -dev -bind=127.0.0.1 > nomad-dev.log 2>&1 &
+          for _ in $(seq 1 30); do
+            nomad server members >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          cat nomad-dev.log
+          exit 1
+      - name: nomad fmt
+        run: nomad fmt -check -recursive nomad/
+      - name: nomad job validate
+        # Run from nomad/ so any relative file()/fileset paths resolve.
+        working-directory: nomad
+        run: |
+          status=0
+          while IFS= read -r f; do
+            echo "::group::$f"
+            nomad job validate "$f" || status=1
+            echo "::endgroup::"
+          done < <(find jobs -name '*.hcl' | sort)
+          exit "$status"
+
+  ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install ansible
+        run: pip install ansible-core==2.19.4 ansible-lint==26.11.0
+      - name: Install collections
+        run: |
+          if [ -f ansible/requirements.yml ]; then
+            ansible-galaxy collection install -r ansible/requirements.yml
+          fi
+      - name: ansible-lint
+        run: |
+          if [ -d ansible ]; then ansible-lint ansible/; else echo "no ansible/ dir"; fi
+      - name: Syntax check
+        run: |
+          if [ -f ansible/site.yml ]; then
+            inv=ansible/inventory.yml
+            [ -f "$inv" ] || inv=ansible/inventory/hosts.yml
+            ansible-playbook --syntax-check -i "$inv" ansible/site.yml
+          else
+            find ansible/playbooks -name '*.yml' 2>/dev/null | sort | while IFS= read -r p; do
+              ansible-playbook --syntax-check -i localhost, "$p"
+            done
+          fi
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml

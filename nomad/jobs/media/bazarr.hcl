@@ -9,6 +9,28 @@ job "bazarr" {
   group "bazarr" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 6767
@@ -23,14 +45,21 @@ job "bazarr" {
         "traefik.enable=true",
         "traefik.http.routers.bazarr.entrypoints=https",
         "traefik.http.routers.bazarr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.bazarr.middlewares=authentik@consulcatalog",
       ]
 
       check {
         name     = "bazarr-http"
         type     = "http"
-        path     = "/api/system/status"
+        path     = "/"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -53,11 +82,12 @@ job "bazarr" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-DB_USER={{ key "bazarr/db/user" }}
-DB_NAME={{ key "bazarr/db/name" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "bazarr/db/user" }}
+DB_NAME = {{ key "bazarr/db/name" }}
 {{ range service "bazarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -66,8 +96,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -75,7 +106,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/bazarr:latest"
+        image = "lscr.io/linuxserver/bazarr:v1.6.2-ls371"
         ports = ["http"]
 
         volumes = [
@@ -93,13 +124,15 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_ENABLED=true
-POSTGRES_USERNAME={{ key "bazarr/db/user" }}
-POSTGRES_PASSWORD={{ key "bazarr/db/password" }}
-POSTGRES_DATABASE={{ key "bazarr/db/name" }}
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_ENABLED  = true
+POSTGRES_USERNAME = {{ key "bazarr/db/user" }}
+POSTGRES_PASSWORD = {{ key "bazarr/db/password" }}
+POSTGRES_DATABASE = {{ key "bazarr/db/name" }}
 
 {{ range service "bazarr-db" }}
 POSTGRES_HOST={{ .Address }}
@@ -109,14 +142,37 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 100
+        memory     = 480
+        memory_max = 512
       }
     }
   }
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -133,21 +189,17 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
     task "db" {
       driver = "docker"
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_USER     = {{ key "bazarr/db/user" }}
-POSTGRES_PASSWORD = {{ key "bazarr/db/password" }}
-POSTGRES_DB       = {{ key "bazarr/db/name" }}
-EOH
-      }
 
       config {
         image = "postgres:17-alpine"
@@ -158,9 +210,26 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_USER     = {{ key "bazarr/db/user" }}
+POSTGRES_PASSWORD = {{ key "bazarr/db/password" }}
+POSTGRES_DB       = {{ key "bazarr/db/name" }}
+EOH
+      }
+
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 100
+        memory     = 128
+        memory_max = 256
       }
     }
   }

@@ -3,6 +3,13 @@ job "grafana-alloy" {
   type        = "system"
 
   group "grafana-alloy" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     network {
       port "http" {
         static = 12345
@@ -14,7 +21,7 @@ job "grafana-alloy" {
       port = "http"
 
       check {
-        name     = "alloy-health"
+        name     = "grafana-alloy-http"
         type     = "http"
         path     = "/-/healthy"
         interval = "10s"
@@ -26,7 +33,7 @@ job "grafana-alloy" {
       driver = "docker"
 
       config {
-        image = "grafana/alloy:latest"
+        image = "grafana/alloy:v1.21.3"
         ports = ["http"]
 
         args = [
@@ -49,8 +56,12 @@ job "grafana-alloy" {
           "/etc/machine-id:/etc/machine-id:ro",
 
           # Nomad allocation logs.
-          "/opt/nomad:/host/nomad:ro"
+          "/opt/nomad:/host/nomad:ro",
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
@@ -153,8 +164,9 @@ EOH
       }
 
       resources {
-        cpu    = 200
-        memory = 500
+        cpu        = 500
+        memory     = 256
+        memory_max = 500
       }
     }
   }

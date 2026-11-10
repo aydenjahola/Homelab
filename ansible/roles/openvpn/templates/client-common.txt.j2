@@ -1,0 +1,12 @@
+client
+dev tun
+proto udp
+remote {{ vault_openvpn_remote[inventory_hostname] }}
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+auth SHA512
+ignore-unknown-option block-outside-dns
+verb 3

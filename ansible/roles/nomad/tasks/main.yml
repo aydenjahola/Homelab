@@ -1,0 +1,73 @@
+---
+# nomad 2.0.3-1 and nomad-driver-virt are installed (pinned) by the
+# packages role. The stock unit runs as root with no drop-ins and an
+# empty /etc/nomad.d/nomad.env.
+- name: Kernel modules for Nomad bridge networking
+  ansible.builtin.copy:
+    src: nomad-cni.conf
+    dest: /etc/modules-load.d/nomad-cni.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Load bridge modules now
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - bridge
+    - br_netfilter
+
+- name: Nomad config directory
+  ansible.builtin.file:
+    path: "{{ nomad_config_dir }}"
+    state: directory
+    owner: nomad
+    group: nomad
+    mode: "0755"
+
+- name: Nomad data directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop: "{{ nomad_dirs + nomad_extra_dirs }}"
+  loop_control:
+    label: "{{ item.path }}"
+  vars:
+    nomad_dirs:
+      - { path: "{{ nomad_data_dir }}", owner: root, group: root, mode: "0755" }
+      # data/ and data/plugins/ are empty leftovers of the package's
+      # default data_dir (/opt/nomad/data); kept for parity.
+      - { path: "{{ nomad_data_dir }}/data", owner: nomad, group: nomad, mode: "0755" }
+      - { path: "{{ nomad_data_dir }}/data/plugins", owner: root, group: root, mode: "0755" }
+      - { path: "{{ nomad_plugin_dir }}", owner: root, group: root, mode: "0755" }
+
+# The package ships the driver at /usr/bin/nomad-driver-virt; Nomad loads
+# it from plugin_dir, where it was copied by hand (identical sha256).
+- name: Install nomad-driver-virt into plugin_dir
+  ansible.builtin.copy:
+    src: /usr/bin/nomad-driver-virt
+    dest: "{{ nomad_plugin_dir }}/nomad-driver-virt"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Restart nomad
+
+- name: Render nomad.hcl
+  ansible.builtin.template:
+    src: nomad.hcl.j2
+    dest: "{{ nomad_config_dir }}/nomad.hcl"
+    owner: nomad
+    group: nomad
+    mode: "0644"
+  notify: Restart nomad
+
+- name: Nomad service
+  ansible.builtin.systemd_service:
+    name: nomad
+    enabled: true
+    state: started

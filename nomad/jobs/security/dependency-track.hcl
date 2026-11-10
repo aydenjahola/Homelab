@@ -6,61 +6,30 @@ job "dependency-track" {
     domain = "dtrack.local.aydenjahola.com"
   }
 
-  group "db" {
-    count = 1
-
-    network {
-      port "db" {
-        to = 5432
-      }
-    }
-
-    service {
-      name = "dependency-track-db"
-      port = "db"
-
-      check {
-        name     = "postgres-tcp"
-        type     = "tcp"
-        port     = "db"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
-    task "db" {
-      driver = "docker"
-
-      config {
-        image        = "postgres:18-alpine"
-        ports        = ["db"]
-        security_opt = ["no-new-privileges:true"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql:rw",
-        ]
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_DB={{ key "dependency-track/db/name" }}
-POSTGRES_USER={{ key "dependency-track/db/user" }}
-POSTGRES_PASSWORD={{ key "dependency-track/db/password" }}
-TZ=Europe/Dublin
-EOH
-      }
-
-      resources {
-        cpu    = 500
-        memory = 1024
-      }
-    }
-  }
-
   group "dependency-track" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "api" {
@@ -84,12 +53,18 @@ EOH
       ]
 
       check {
-        name     = "dtrack-ready"
+        name     = "dependency-track-http"
         type     = "http"
         port     = "health"
         path     = "/health/ready"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -113,23 +88,26 @@ EOH
       }
 
       config {
-        image   = "alpine:3.22"
+        image   = "postgres:17-alpine"
         command = "sh"
+
         args = [
           "-c",
-          "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/db.env"
-        env         = true
-        change_mode = "restart"
-        data        = <<EOH
-{{- range service "dependency-track-db" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "dependency-track/db/user" }}
+DB_NAME = {{ key "dependency-track/db/name" }}
+{{ range service "dependency-track-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
-{{- end }}
+{{ end }}
 EOH
       }
 
@@ -155,25 +133,36 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        change_mode          = "restart"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 {{- range service "dependency-track-db" }}
 DT_DATASOURCE_URL=jdbc:postgresql://{{ .Address }}:{{ .Port }}/{{ key "dependency-track/db/name" }}
 {{- end }}
-DT_DATASOURCE_USERNAME={{ key "dependency-track/db/user" }}
-DT_DATASOURCE_PASSWORD={{ key "dependency-track/db/password" }}
+DT_DATASOURCE_USERNAME = {{ key "dependency-track/db/user" }}
+DT_DATASOURCE_PASSWORD = {{ key "dependency-track/db/password" }}
 
-DT_OUTBOUND_ALLOWED_DESTINATIONS=external,trivy.local.aydenjahola.com
+DT_OUTBOUND_ALLOWED_DESTINATIONS = external,trivy.local.aydenjahola.com
 
-TZ=Europe/Dublin
+TZ = Europe/Dublin
+
+DT_OIDC_ENABLED              = true
+DT_OIDC_ISSUER               = {{ key "authentik/url" }}/application/o/dependency-track/
+DT_OIDC_CLIENT_ID            = {{ key "authentik/oidc/dependency-track/client_id" }}
+DT_OIDC_USERNAME_CLAIM       = preferred_username
+DT_OIDC_USER_PROVISIONING    = true
+DT_OIDC_TEAMS_CLAIM          = groups
+DT_OIDC_TEAM_SYNCHRONIZATION = true
 EOH
       }
 
       resources {
-        cpu    = 1500
-        memory = 3072
+        cpu        = 700
+        memory     = 864
+        memory_max = 3072
       }
     }
 
@@ -188,12 +177,109 @@ EOH
       }
 
       env = {
-        "API_BASE_URL" = "https://${NOMAD_META_domain}"
+        "TZ"                     = "Europe/Dublin"
+        "API_BASE_URL"           = "https://${NOMAD_META_domain}"
+        "OIDC_CLIENT_ID"         = "dependency-track"
+        "OIDC_SCOPE"             = "openid profile email"
+        "OIDC_LOGIN_BUTTON_TEXT" = "Login with Authentik"
+      }
+
+      template {
+        destination          = "local/oidc.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+OIDC_ISSUER = {{ key "authentik/url" }}/application/o/dependency-track/
+EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "dependency-track-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
+      }
+    }
+
+    task "db" {
+      driver = "docker"
+
+      config {
+        image        = "postgres:17-alpine"
+        ports        = ["db"]
+        security_opt = ["no-new-privileges:true"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}-pg17:/var/lib/postgresql/data:rw",
+        ]
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_DB       = {{ key "dependency-track/db/name" }}
+POSTGRES_USER     = {{ key "dependency-track/db/user" }}
+POSTGRES_PASSWORD = {{ key "dependency-track/db/password" }}
+TZ                = Europe/Dublin
+EOH
+      }
+
+      resources {
+        cpu        = 200
+        memory     = 256
+        memory_max = 1024
       }
     }
   }

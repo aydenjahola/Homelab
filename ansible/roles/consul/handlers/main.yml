@@ -1,0 +1,33 @@
+---
+# site.yml runs serial: 1, so these fire on one host at a time and the
+# play does not move on until this agent is back as an alive member and
+# the cluster has a leader again (quorum kept: 2 of 3 always up).
+- name: Restart consul
+  ansible.builtin.systemd_service:
+    name: consul
+    state: restarted
+  notify: Wait for consul
+
+- name: Wait for consul
+  ansible.builtin.uri:
+    url: "{{ consul_http }}/v1/agent/members"
+    return_content: true
+  register: consul_members
+  check_mode: false
+  until: >-
+    consul_members.status == 200
+    and (consul_members.json | selectattr('Name', 'equalto', inventory_hostname)
+         | selectattr('Status', 'equalto', 1) | list | length) == 1
+  retries: "{{ health_retries }}"
+  delay: "{{ health_delay }}"
+  notify: Wait for consul leader
+
+- name: Wait for consul leader
+  ansible.builtin.uri:
+    url: "{{ consul_http }}/v1/status/leader"
+    return_content: true
+  register: consul_leader
+  check_mode: false
+  until: consul_leader.status == 200 and (consul_leader.json | length) > 0
+  retries: "{{ health_retries }}"
+  delay: "{{ health_delay }}"

@@ -1,0 +1,24 @@
+local {{ host_ip }}
+port {{ openvpn_port }}
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+auth SHA512
+tls-crypt tc.key
+topology subnet
+server 10.8.0.0 255.255.255.0
+push "redirect-gateway def1 bypass-dhcp"
+ifconfig-pool-persist ipp.txt
+push "dhcp-option DNS 192.168.1.1"
+push "block-outside-dns"
+keepalive 10 120
+user nobody
+group nogroup
+persist-key
+persist-tun
+verb 3
+crl-verify crl.pem
+explicit-exit-notify

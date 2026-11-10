@@ -1,0 +1,30 @@
+---
+# odin - Dell OptiPlex 5060, Samsung PM981 512G NVMe, 6 cores, 32G RAM
+host_ip: 192.168.1.100
+
+nomad_hcl_layout: odin
+# Empty dir owned by nomad, only on odin (leftover, kept for parity).
+nomad_extra_dirs:
+  - { path: /opt/nomad/qemu-images, owner: nomad, group: nomad, mode: "0755" }
+
+packages_extra:
+  - dosfstools
+  - fastfetch
+  - ffmpeg
+  - jq
+  - net-tools
+  - nmap
+  - openssl
+  - openvpn
+  - pgloader
+  - sqlite3
+  - tmux
+  - unzip
+# check-mk-agent 2.4.0p13-1 is also installed on odin, from a .deb fetched
+# from the Checkmk server (not in any apt repo) - not reproduced here.
+
+users_admin_cron_lines:
+  - "0 */3 * * * /storage/jellyfin/movies/cleanup.sh"
+
+openvpn_enabled: true
+openvpn_port: 1194

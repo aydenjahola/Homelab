@@ -6,59 +6,30 @@ job "reactive-resume" {
     domain = "resume.local.aydenjahola.com"
   }
 
-  group "db" {
-    count = 1
-
-    network {
-      port "db" {
-        to = 5432
-      }
-    }
-
-    service {
-      name = "reactive-resume-db"
-      port = "db"
-
-      check {
-        name     = "postgres-tcp"
-        type     = "tcp"
-        port     = "db"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
-    task "db" {
-      driver = "docker"
-
-      config {
-        image = "postgres:17-alpine"
-        ports = ["db"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data"
-        ]
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_DB       = {{ key "reactive-resume/db/name" }}
-POSTGRES_USER     = {{ key "reactive-resume/db/user" }}
-POSTGRES_PASSWORD = {{ key "reactive-resume/db/password" }}
-EOH
-      }
-
-      resources {
-        cpu    = 300
-        memory = 512
-      }
-    }
-  }
-
   group "reactive-resume" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "http" {
@@ -83,6 +54,12 @@ EOH
         port     = "http"
         interval = "30s"
         timeout  = "10s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -95,23 +72,26 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19"
+        image   = "postgres:17-alpine"
         command = "sh"
+
         args = [
           "-c",
-          "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data = <<EOH
-{{- range service "reactive-resume-db" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "reactive-resume/db/user" }}
+DB_NAME = {{ key "reactive-resume/db/name" }}
+{{ range service "reactive-resume-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
-{{- end }}
+{{ end }}
 EOH
       }
 
@@ -125,7 +105,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/amruthpillai/reactive-resume:latest"
+        image = "ghcr.io/amruthpillai/reactive-resume:v5.3.0"
         ports = ["http"]
 
         volumes = [
@@ -134,20 +114,28 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data        = <<EOH
-TZ=Europe/Dublin
-NODE_ENV=production
+        destination          = "local/.env"
+        env                  = true
+        change_mode          = "restart"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+TZ       = Europe/Dublin
+NODE_ENV = production
 
-APP_URL=https://{{ env "NOMAD_META_domain" }}
+APP_URL = https://{{ env "NOMAD_META_domain" }}
 
-AUTH_SECRET={{ key "reactive-resume/auth/secret" }}
+AUTH_SECRET = {{ key "reactive-resume/auth/secret" }}
 
-DATABASE_URL={{- range service "reactive-resume-db" -}}postgresql://{{ key "reactive-resume/db/user" | urlquery }}:{{ key "reactive-resume/db/password" | urlquery }}@{{ .Address }}:{{ .Port }}/{{ key "reactive-resume/db/name" | urlquery }}{{- end }}
+DATABASE_URL = {{- range service "reactive-resume-db" -}}postgresql://{{ key "reactive-resume/db/user" | urlquery }}:{{ key "reactive-resume/db/password" | urlquery }}@{{ .Address }}:{{ .Port }}/{{ key "reactive-resume/db/name" | urlquery }}{{- end }}
 
-FLAG_DISABLE_SIGNUPS=true
+FLAG_DISABLE_SIGNUPS    = true
+FLAG_DISABLE_EMAIL_AUTH = true
+
+OAUTH_PROVIDER_NAME = Authentik
+OAUTH_CLIENT_ID     = {{ key "authentik/oidc/reactive-resume/client_id" }}
+OAUTH_CLIENT_SECRET = {{ key "authentik/oidc/reactive-resume/client_secret" }}
+OAUTH_DISCOVERY_URL = {{ key "authentik/url" }}/application/o/reactive-resume/.well-known/openid-configuration
 
 SMTP_HOST   = {{ key "reactive-resume/smtp/host" }}
 SMTP_PORT   = 465
@@ -159,8 +147,94 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 1024
+        cpu        = 500
+        memory     = 256
+        memory_max = 1024
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "reactive-resume-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
+      }
+    }
+
+    task "db" {
+      driver = "docker"
+
+      config {
+        image = "postgres:17-alpine"
+        ports = ["db"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
+        ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_DB       = {{ key "reactive-resume/db/name" }}
+POSTGRES_USER     = {{ key "reactive-resume/db/user" }}
+POSTGRES_PASSWORD = {{ key "reactive-resume/db/password" }}
+EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 128
+        memory_max = 512
       }
     }
   }

@@ -1,0 +1,11 @@
+---
+all:
+  children:
+    homelab:
+      hosts:
+        odin:
+          ansible_host: 192.168.1.100
+        thor:
+          ansible_host: 192.168.1.101
+        loki:
+          ansible_host: 192.168.1.102

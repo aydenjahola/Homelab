@@ -9,6 +9,28 @@ job "sonarr" {
   group "sonarr" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 8989
@@ -22,7 +44,8 @@ job "sonarr" {
       tags = [
         "traefik.enable=true",
         "traefik.http.routers.sonarr.entrypoints=https",
-        "traefik.http.routers.sonarr.rule=Host(`${NOMAD_META_domain}`)"
+        "traefik.http.routers.sonarr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.sonarr.middlewares=authentik@consulcatalog",
       ]
 
       check {
@@ -31,6 +54,12 @@ job "sonarr" {
         path     = "/ping"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -53,11 +82,12 @@ job "sonarr" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-DB_USER={{ key "sonarr/db/user" }}
-DB_MAIN={{ key "sonarr/db/main" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "sonarr/db/user" }}
+DB_MAIN = {{ key "sonarr/db/main" }}
 {{ range service "sonarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -66,8 +96,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -75,14 +106,14 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/sonarr:latest"
+        image = "lscr.io/linuxserver/sonarr:4.0.20.3014-ls4"
         ports = ["http"]
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/data:/config:rw",
           "/storage/jellyfin/tv:/tv:rw",
           "/storage/jellyfin/downloads:/downloads:rw",
-          "/etc/localtime:/etc/localtime:ro"
+          "/etc/localtime:/etc/localtime:ro",
         ]
       }
 
@@ -93,21 +124,25 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 SONARR__POSTGRES__HOST     = {{ range service "sonarr-db" }}{{ .Address }}{{ end }}
 SONARR__POSTGRES__PORT     = {{ range service "sonarr-db" }}{{ .Port }}{{ end }}
 SONARR__POSTGRES__USER     = {{ key "sonarr/db/user" }}
 SONARR__POSTGRES__PASSWORD = {{ key "sonarr/db/password" }}
 SONARR__POSTGRES__MAINDB   = {{ key "sonarr/db/main" }}
 SONARR__POSTGRES__LOGDB    = {{ key "sonarr/db/log" }}
+SONARR__AUTH__METHOD       = External
 EOH
       }
 
       resources {
-        cpu    = 1000
-        memory = 1024
+        cpu        = 100
+        memory     = 256
+        memory_max = 1024
       }
 
       restart {
@@ -121,6 +156,28 @@ EOH
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -137,6 +194,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -153,10 +216,15 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
-        destination = "local/init-sonarr-dbs.sh"
-        perms       = "0755"
-        data        = <<EOH
+        destination          = "local/init-sonarr-dbs.sh"
+        perms                = "0755"
+        error_on_missing_key = true
+        data                 = <<EOH
 #!/bin/sh
 set -eu
 
@@ -167,9 +235,11 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER     = {{ key "sonarr/db/user" }}
 POSTGRES_PASSWORD = {{ key "sonarr/db/password" }}
 POSTGRES_DB       = {{ key "sonarr/db/main" }}
@@ -177,8 +247,9 @@ EOH
       }
 
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 100
+        memory     = 128
+        memory_max = 256
       }
     }
   }

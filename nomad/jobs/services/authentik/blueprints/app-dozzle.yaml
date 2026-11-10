@@ -1,0 +1,33 @@
+version: 1
+metadata:
+  name: app-dozzle
+entries:
+  - model: authentik_providers_proxy.proxyprovider
+    id: dozzle-provider
+    identifiers:
+      name: dozzle
+    attrs:
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      mode: forward_single
+      external_host: https://dozzle.{{ key "homelab/domain_local" }}
+
+  - model: authentik_core.application
+    id: dozzle-app
+    identifiers:
+      slug: dozzle
+    attrs:
+      name: Dozzle
+      provider: !KeyOf dozzle-provider
+      meta_launch_url: https://dozzle.{{ key "homelab/domain_local" }}
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/dozzle.svg
+      group: Monitoring
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf dozzle-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0

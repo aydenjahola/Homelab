@@ -6,59 +6,30 @@ job "gatus" {
     domain = "gatus.aydenjahola.com"
   }
 
-  group "db" {
-    count = 1
-
-    network {
-      port "db" {
-        to = 5432
-      }
-    }
-
-    service {
-      name = "gatus-db"
-      port = "db"
-
-      check {
-        name     = "postgres-tcp"
-        type     = "tcp"
-        port     = "db"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
-    task "db" {
-      driver = "docker"
-
-      config {
-        image = "postgres:17-alpine"
-        ports = ["db"]
-
-        volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data"
-        ]
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data = <<EOH
-POSTGRES_DB       = {{ key "gatus/db/name" }}
-POSTGRES_USER     = {{ key "gatus/db/user" }}
-POSTGRES_PASSWORD = {{ key "gatus/db/password" }}
-EOH
-      }
-
-      resources {
-        cpu    = 300
-        memory = 512
-      }
-    }
-  }
-
   group "gatus" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "http" {
@@ -86,23 +57,26 @@ EOH
       }
 
       config {
-        image   = "alpine:3.19"
+        image   = "postgres:17-alpine"
         command = "sh"
+
         args = [
           "-c",
-          "while ! nc -z \"$DB_HOST\" \"$DB_PORT\"; do echo 'Waiting for DB...'; sleep 1; done; echo 'DB is ready!'"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        change_mode = "restart"
-        data = <<EOH
-{{- range service "gatus-db" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "gatus/db/user" }}
+DB_NAME = {{ key "gatus/db/name" }}
+{{ range service "gatus-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
-{{- end }}
+{{ end }}
 EOH
       }
 
@@ -116,7 +90,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "twinproduction/gatus:latest"
+        image = "twinproduction/gatus:v5.38.0"
         ports = ["http"]
 
         volumes = [
@@ -125,9 +99,15 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
-        destination = "local/config.yaml"
-        data        = <<EOH
+        destination          = "local/config.yaml"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 ui:
   title: "Homelab Status"
   description: "Status and uptime for my homelab"
@@ -164,6 +144,15 @@ defaults_https: &defaults_https
     - "[STATUS] == 200"
     - "[CERTIFICATE_EXPIRATION] > 48h"
 
+# Forward-auth apps: Traefik + Authentik answer with a redirect to the login page.
+defaults_sso: &defaults_sso
+  <<: *defaults
+  client:
+    ignore-redirect: true
+  conditions:
+    - "[STATUS] == 302"
+    - "[CERTIFICATE_EXPIRATION] > 48h"
+
 endpoints:
   # --- Core / Home ---
   - name: homarr
@@ -171,35 +160,28 @@ endpoints:
     url: "https://home.aydenjahola.com"
     <<: *defaults_https
 
-  - name: home-assistant
+  - name: authentik
     group: services
-    url: "https://ha.local.aydenjahola.com"
-    <<: *defaults_https
-
-  - name: adventurelog-web
-    group: services
-    url: "https://trips.aydenjahola.com"
+    url: "{{ key "authentik/url" }}/-/health/live/"
     <<: *defaults
-
-  - name: adventurelog-server
-    group: services
-    url: "https://trips-api.aydenjahola.com"
-    <<: *defaults
+    conditions:
+      - "[STATUS] < 300"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
 
   - name: archisteamfarm
     group: services
     url: "https://asf.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: dozzle
     group: services
     url: "https://dozzle.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: watchyourlan
     group: services
     url: "https://wyl.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   # --- Analytics / Docs ---
   - name: plausible
@@ -210,7 +192,7 @@ endpoints:
   - name: homelab-docs
     group: docs
     url: "https://docs.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: hedgedoc
     group: services
@@ -225,7 +207,7 @@ endpoints:
   - name: your-lastfm
     group: services
     url: "https://ylfm.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: reactive-resume
     group: services
@@ -238,17 +220,17 @@ endpoints:
     url: "https://vault.aydenjahola.com"
     <<: *defaults_https
 
-  - name: keycloak
-    group: services
-    url: "https://auth.aydenjahola.com"
+  - name: dependency-track
+    group: security
+    url: "https://dtrack.local.aydenjahola.com"
+    <<: *defaults_https
+
+  - name: trivy-server
+    group: security
+    url: "https://trivy.local.aydenjahola.com/healthz"
     <<: *defaults_https
 
   # --- Cloud / Apps ---
-  - name: forgejo
-    group: services
-    url: "https://git.aydenjahola.com"
-    <<: *defaults_https
-
   - name: netronome
     group: services
     url: "https://netronome.aydenjahola.com"
@@ -257,7 +239,7 @@ endpoints:
   - name: tracearr
     group: services
     url: "https://tracearr.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   # --- Monitoring / Infra ---
   - name: gatus
@@ -287,13 +269,18 @@ endpoints:
 
   - name: loki
     group: monitoring
-    url: "https://loki.local.aydenjahola.com"
+    url: "https://loki.local.aydenjahola.com/ready"
     <<: *defaults
+
+  - name: uptime-kuma
+    group: monitoring
+    url: "https://status.aydenjahola.com/status/homelab"
+    <<: *defaults_https
 
   - name: prometheus
     group: monitoring
     url: "https://prometheus.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: traefik
     group: infra
@@ -302,24 +289,33 @@ endpoints:
 
   - name: dozzle-agent-odin
     group: infra
-    url: "http://192.168.1.100:7007"
+    # gRPC agent, no HTTP endpoint: check the port is accepting connections
+    url: "tcp://192.168.1.100:7007"
     <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
 
   - name: dozzle-agent-thor
     group: infra
-    url: "http://192.168.1.101:7007"
+    # gRPC agent, no HTTP endpoint: check the port is accepting connections
+    url: "tcp://192.168.1.101:7007"
     <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
 
   - name: dozzle-agent-loki
     group: infra
-    url: "http://192.168.1.102:7007"
+    # gRPC agent, no HTTP endpoint: check the port is accepting connections
+    url: "tcp://192.168.1.102:7007"
     <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
 
   # --- Media Stack ---
   - name: bazarr
     group: media
     url: "https://bazarr.local.aydenjahola.com"
-    <<: *defaults
+    <<: *defaults_sso
 
   - name: jellyfin
     group: media
@@ -334,17 +330,17 @@ endpoints:
   - name: radarr
     group: media
     url: "https://radarr.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: sonarr
     group: media
     url: "https://sonarr.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: prowlarr
     group: media
     url: "https://prowl.local.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   - name: flaresolverr
     group: media
@@ -387,22 +383,98 @@ endpoints:
     group: public
     url: "https://katyaphone.com.au"
     <<: *defaults_https
-
-  - name: eqpainting
-    group: public
-    url: "https://eqpaintingsolutions.com.au"
-    <<: *defaults_https
-
-  - name: inaamessawi
-    group: public
-    url: "https://inaamessawi.com"
-    <<: *defaults_https
 EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 100
+        memory     = 96
+        memory_max = 512
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
+    network {
+      port "db" {
+        to = 5432
+      }
+    }
+
+    service {
+      name = "gatus-db"
+      port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
+      }
+    }
+
+    task "db" {
+      driver = "docker"
+
+      config {
+        image = "postgres:17-alpine"
+        ports = ["db"]
+
+        volumes = [
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/postgresql/data",
+        ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_DB       = {{ key "gatus/db/name" }}
+POSTGRES_USER     = {{ key "gatus/db/user" }}
+POSTGRES_PASSWORD = {{ key "gatus/db/password" }}
+EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 128
+        memory_max = 512
       }
     }
   }

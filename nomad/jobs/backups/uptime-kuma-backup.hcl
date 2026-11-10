@@ -15,7 +15,7 @@ job "uptime-kuma-db-backup" {
       driver = "docker"
 
       config {
-        image   = "alpine:3.18"
+        image   = "alpine:3.18.12"
         command = "/bin/sh"
         args = [
           "-lc",
@@ -93,23 +93,24 @@ SCRIPT
         ]
       }
 
-      resources {
-        cpu    = 200
-        memory = 256
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-MYSQL_ROOT_PASSWORD={{ key "uptime-kuma/db/root/password" }}
-MYSQL_DATABASE={{ key "uptime-kuma/db/name" }}
-MYSQL_USER={{ key "uptime-kuma/db/user" }}
-MYSQL_PASSWORD={{ key "uptime-kuma/db/password" }}
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+MYSQL_ROOT_PASSWORD = {{ key "uptime-kuma/db/root/password" }}
+MYSQL_DATABASE      = {{ key "uptime-kuma/db/name" }}
+MYSQL_USER          = {{ key "uptime-kuma/db/user" }}
+MYSQL_PASSWORD      = {{ key "uptime-kuma/db/password" }}
 
-GPG_RECIPIENT={{ key "backup/gpg/key" }}
-RETENTION_DAYS={{ key "backup/retention/days" }}
-DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
+RETENTION_DAYS      = {{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
 EOH
       }
 
@@ -123,6 +124,12 @@ DB_HOST={{ (index $svc 0).Address }}
 DB_PORT={{ (index $svc 0).Port }}
 {{- end -}}
 EOH
+      }
+
+      resources {
+        cpu        = 200
+        memory     = 64
+        memory_max = 256
       }
     }
   }

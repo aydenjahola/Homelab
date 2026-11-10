@@ -9,6 +9,28 @@ job "prometheus" {
   group "prometheus" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "web" {
         to = 9090
@@ -21,8 +43,9 @@ job "prometheus" {
 
       tags = [
         "traefik.enable=true",
+        "traefik.http.routers.prometheus.entrypoints=https",
         "traefik.http.routers.prometheus.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.prometheus.entrypoints=https"
+        "traefik.http.routers.prometheus.middlewares=authentik@consulcatalog",
       ]
     }
 
@@ -30,7 +53,7 @@ job "prometheus" {
       driver = "docker"
 
       config {
-        image = "prom/prometheus:latest"
+        image = "prom/prometheus:v3.16.0"
         ports = ["web"]
 
         volumes = [
@@ -42,6 +65,10 @@ job "prometheus" {
           "--config.file=/prometheus/prometheus.yml",
           "--storage.tsdb.path=/prometheus"
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
@@ -81,12 +108,18 @@ scrape_configs:
         - "192.168.1.100:12345"
         - "192.168.1.101:12345"
         - "192.168.1.102:12345"
+
+  - job_name: "authentik"
+    consul_sd_configs:
+      - server: "{{ env "attr.unique.network.ip-address" }}:8500"
+        services: ["authentik-metrics"]
 EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 200
+        memory     = 288
+        memory_max = 512
       }
     }
   }

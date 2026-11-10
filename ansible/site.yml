@@ -1,0 +1,48 @@
+---
+# Reproduces odin, thor and loki as they were on 2026-11-09.
+#
+#   Drift check (read-only):  ansible-playbook site.yml --check --diff
+#   Apply:                    ansible-playbook site.yml --diff
+#
+# serial: 1 rolls through one host at a time. Handlers are flushed at the
+# end of each host, and the consul/nomad restart handlers block until the
+# agent is back (Consul member alive + leader, Nomad node ready + leader)
+# before the next host starts, so Raft quorum (2 of 3) is never lost.
+- name: Homelab hosts
+  hosts: homelab
+  serial: 1
+  any_errors_fatal: true
+  max_fail_percentage: 0
+  become: true
+  pre_tasks:
+    - name: Assert we are on the expected platform
+      ansible.builtin.assert:
+        that:
+          - ansible_facts["distribution"] == "Debian"
+          - ansible_facts["distribution_major_version"] == "13"
+          - ansible_facts["architecture"] == "x86_64"
+        quiet: true
+  roles:
+    - role: packages
+      tags: [packages]
+    - role: base
+      tags: [base]
+    - role: network
+      tags: [network]
+    - role: users
+      tags: [users]
+    - role: storage
+      tags: [storage]
+    - role: docker
+      tags: [docker]
+    - role: cni
+      tags: [cni, nomad]
+    - role: virt
+      tags: [virt, nomad]
+    - role: openvpn
+      tags: [openvpn]
+      when: openvpn_enabled | bool
+    - role: consul
+      tags: [consul]
+    - role: nomad
+      tags: [nomad]

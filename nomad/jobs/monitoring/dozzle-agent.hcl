@@ -3,6 +3,13 @@ job "dozzle-agent" {
   type        = "system"
 
   group "dozzle-agent" {
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
     network {
       port "agent" {
         static = 7007
@@ -27,7 +34,7 @@ job "dozzle-agent" {
       driver = "docker"
 
       config {
-        image   = "amir20/dozzle:latest"
+        image   = "amir20/dozzle:v11.4.2"
         command = "agent"
         ports   = ["agent"]
 
@@ -36,9 +43,14 @@ job "dozzle-agent" {
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
   }

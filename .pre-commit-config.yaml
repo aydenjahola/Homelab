@@ -1,0 +1,35 @@
+# Setup: `brew install pre-commit nomad` (nomad is required for the nomad-fmt hook),
+# then `pre-commit install`. Run everything with `pre-commit run --all-files`.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        # Authentik blueprints use custom tags (!Find, !KeyOf, ...)
+        exclude: ^nomad/jobs/services/authentik/blueprints/
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v26.11.0
+    hooks:
+      - id: ansible-lint
+        files: ^ansible/
+        args: [ansible/]
+
+  - repo: local
+    hooks:
+      - id: nomad-fmt
+        name: nomad fmt -check
+        entry: nomad fmt -check
+        language: system
+        files: ^nomad/.*\.hcl$

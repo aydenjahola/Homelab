@@ -9,6 +9,28 @@ job "stirling-pdf" {
   group "stirling-pdf" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 8080
@@ -30,7 +52,7 @@ job "stirling-pdf" {
       driver = "docker"
 
       config {
-        image = "docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest-fat"
+        image = "docker.stirlingpdf.com/stirlingtools/stirling-pdf:2.5.3-fat"
         ports = ["http"]
 
         volumes = [
@@ -42,19 +64,24 @@ job "stirling-pdf" {
         ]
       }
 
-      resources {
-        cpu    = 500
-        memory = 1024
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
         destination = "local/.env"
         env         = true
-        data = <<EOH
-DISABLE_ADDITIONAL_FEATURES=false
-LANGS=en_GB
-SECURITY_ENABLELOGIN=true
+        data        = <<EOH
+DISABLE_ADDITIONAL_FEATURES = false
+LANGS                       = en_GB
+SECURITY_ENABLELOGIN        = true
 EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 800
+        memory_max = 1024
       }
     }
   }

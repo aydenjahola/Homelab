@@ -5,11 +5,33 @@ job "diun" {
   group "diun" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     task "diun" {
       driver = "docker"
 
       config {
-        image = "crazymax/diun:latest"
+        image = "crazymax/diun:4.33.1"
         args  = ["serve", "--config", "local/diun.yml"]
 
         auth {
@@ -24,18 +46,27 @@ job "diun" {
         ]
       }
 
+      env = {
+        "NOMAD_ADDR"           = "http://${attr.unique.network.ip-address}:4646/",
+        "DIUN_PROVIDERS_NOMAD" = "true"
+      }
+
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-DOCKER_USER={{ key "docker/hub/user" }}
-DOCKER_PASS={{ key "docker/hub/token" }}
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+DOCKER_USER = {{ key "docker/hub/user" }}
+DOCKER_PASS = {{ key "docker/hub/token" }}
 EOH
       }
 
       template {
-        destination = "local/diun.yml"
-        data        = <<EOH
+        destination          = "local/diun.yml"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 db:
   path: /data/diun.db
 
@@ -70,14 +101,10 @@ notif:
 EOH
       }
 
-      env = {
-        "NOMAD_ADDR" = "http://${attr.unique.network.ip-address}:4646/",
-        "DIUN_PROVIDERS_NOMAD" = "true"
-      }
-
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
   }

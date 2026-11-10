@@ -9,6 +9,28 @@ job "loki" {
   group "loki" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 3100
@@ -25,16 +47,22 @@ job "loki" {
 
       tags = [
         "traefik.enable=true",
+        "traefik.http.routers.loki.entrypoints=https",
         "traefik.http.routers.loki.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.loki.entrypoints=https"
       ]
 
       check {
-        name     = "loki-ready"
+        name     = "loki-http"
         type     = "http"
         path     = "/ready"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "60s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -42,17 +70,21 @@ job "loki" {
       driver = "docker"
 
       config {
-        image = "grafana/loki:latest"
+        image = "grafana/loki:3.7.9"
         ports = ["http", "grpc"]
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/loki",
-          "local/loki.yml:/etc/loki/loki.yml"
+          "local/loki.yml:/etc/loki/loki.yml",
         ]
 
         args = [
           "-config.file=/etc/loki/loki.yml"
         ]
+      }
+
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
@@ -112,8 +144,9 @@ EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 800
+        cpu        = 200
+        memory     = 352
+        memory_max = 800
       }
     }
   }

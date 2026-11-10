@@ -1,0 +1,60 @@
+---
+# Only the NFS line in /etc/fstab is managed. The root/EFI/swap lines are
+# written by the Debian installer with per-disk UUIDs and the commented-out
+# historic NFS lines are left alone.
+- name: NFS client packages
+  ansible.builtin.apt:
+    name: nfs-common
+    state: present
+
+- name: NFS mounts
+  ansible.posix.mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.fstype }}"
+    opts: "{{ item.opts }}"
+    dump: "{{ item.dump }}"
+    passno: "{{ item.passno }}"
+    state: mounted
+  loop: "{{ storage_mounts }}"
+
+- name: Enable NFS client target
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+  loop:
+    - nfs-client.target
+    - remote-fs.target
+    - rpcbind.service
+
+# The export is shared by all three hosts and lives on the NAS, so the
+# layout is only checked by default (root squash may also refuse chown).
+- name: Check /storage top-level layout
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  loop: "{{ storage_layout }}"
+  register: storage_layout_stat
+  when: not storage_manage_layout | bool
+
+- name: Report /storage layout drift
+  ansible.builtin.debug:
+    msg: "{{ item.item.path }} missing or differs: {{ item.stat.pw_name | default(item.stat.uid | default('?')) }} {{ item.stat.mode | default('?') }}"
+  loop: "{{ storage_layout_stat.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.path }}"
+  when:
+    - not storage_manage_layout | bool
+    - >-
+      not item.stat.exists
+      or item.stat.mode != item.item.mode
+      or (item.stat.pw_name | default(item.stat.uid | string)) != item.item.owner
+
+- name: Create /storage top-level layout (opt-in, for a fresh export)
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop: "{{ storage_layout }}"
+  when: storage_manage_layout | bool

@@ -15,7 +15,7 @@ job "plausible-backup" {
       driver = "docker"
 
       config {
-        image   = "postgres:16-alpine"
+        image   = "postgres:17-alpine"
         command = "/bin/sh"
         args = [
           "-lc",
@@ -93,22 +93,23 @@ SCRIPT
         ]
       }
 
-      resources {
-        cpu    = 200
-        memory = 256
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_USER={{ key "plausible/db/user" }}
-POSTGRES_PASSWORD={{ key "plausible/db/password" }}
-POSTGRES_DB={{ key "plausible/db/name" }}
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_USER     = {{ key "plausible/db/user" }}
+POSTGRES_PASSWORD = {{ key "plausible/db/password" }}
+POSTGRES_DB       = {{ key "plausible/db/name" }}
 
-GPG_RECIPIENT={{ key "backup/gpg/key" }}
-RETENTION_DAYS={{ key "backup/retention/days" }}
-DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
+RETENTION_DAYS      = {{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
 EOH
       }
 
@@ -123,13 +124,19 @@ DB_PORT={{ (index $svc 0).Port }}
 {{- end -}}
 EOH
       }
+
+      resources {
+        cpu        = 200
+        memory     = 64
+        memory_max = 256
+      }
     }
 
     task "plausible-clickhouse-backup" {
       driver = "docker"
 
       config {
-        image   = "alpine:3.20"
+        image   = "alpine:3.20.10"
         command = "/bin/sh"
         args = [
           "-lc",
@@ -226,20 +233,20 @@ SCRIPT
         ]
       }
 
-      resources {
-        cpu    = 250
-        memory = 256
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-CLICKHOUSE_DB=plausible_events_db
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+CLICKHOUSE_DB = plausible_events_db
 
-GPG_RECIPIENT={{ key "backup/gpg/key" }}
-RETENTION_DAYS={{ key "backup/retention/days" }}
-DISCORD_WEBHOOK_URL={{ key "backup/webhook/discord" }}
+GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
+RETENTION_DAYS      = {{ key "backup/retention/days" }}
+DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
 EOH
       }
 
@@ -253,6 +260,12 @@ CH_HOST={{ (index $svc 0).Address }}
 CH_PORT={{ (index $svc 0).Port }}
 {{- end -}}
 EOH
+      }
+
+      resources {
+        cpu        = 250
+        memory     = 64
+        memory_max = 256
       }
     }
   }

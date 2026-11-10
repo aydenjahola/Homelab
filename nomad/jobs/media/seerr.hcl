@@ -9,6 +9,28 @@ job "seerr" {
   group "seerr" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 5055
@@ -40,17 +62,17 @@ job "seerr" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for seerr db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
 DB_USER = {{ key "seerr/db/user" }}
 DB_NAME = {{ key "seerr/db/name" }}
-
 {{ range service "seerr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -59,8 +81,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -68,8 +91,14 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/seerr-team/seerr:latest"
-        ports = ["http"]
+        image = "ghcr.io/seerr-team/seerr:preview-new-oidc"
+
+        # Preview builds report version "develop-<full sha>" (48 chars), which overflows
+        # Jellyfin's Devices.AppVersion varchar(32) and breaks Jellyfin login. Give it a
+        # short version instead; the commit tag stays intact so the UI doesn't nag to reload.
+        command = "sh"
+        args    = ["-c", "sed -i 's/\"version\": \"0.1.0\"/\"version\": \"preview-oidc\"/' /app/package.json && exec npm start"]
+        ports   = ["http"]
 
         volumes = [
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/app/config:rw",
@@ -78,18 +107,20 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-LOG_LEVEL=debug
-TZ=Europe/Dublin
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+LOG_LEVEL = debug
+TZ        = Europe/Dublin
 
-DB_TYPE = postgres
-DB_USER = {{ key "seerr/db/user" }}
-DB_PASS = {{ key "seerr/db/password" }}
-DB_NAME = {{ key "seerr/db/name" }}
-DB_POOL_SIZE=10
-DB_LOG_QUERIES=false
+DB_TYPE        = postgres
+DB_USER        = {{ key "seerr/db/user" }}
+DB_PASS        = {{ key "seerr/db/password" }}
+DB_NAME        = {{ key "seerr/db/name" }}
+DB_POOL_SIZE   = 10
+DB_LOG_QUERIES = false
 
 {{ range service "seerr-db" }}
 DB_HOST={{ .Address }}
@@ -99,14 +130,37 @@ EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 900
+        cpu        = 500
+        memory     = 288
+        memory_max = 900
       }
     }
   }
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -123,6 +177,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -138,10 +198,16 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER     = {{ key "seerr/db/user" }}
 POSTGRES_DB       = {{ key "seerr/db/name" }}
 POSTGRES_PASSWORD = {{ key "seerr/db/password" }}
@@ -149,8 +215,9 @@ EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 512
+        cpu        = 100
+        memory     = 128
+        memory_max = 512
       }
     }
   }

@@ -1,0 +1,36 @@
+version: 1
+metadata:
+  name: app-radarr
+entries:
+  - model: authentik_providers_proxy.proxyprovider
+    id: radarr-provider
+    identifiers:
+      name: radarr
+    attrs:
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      mode: forward_single
+      external_host: https://radarr.{{ key "homelab/domain_local" }}
+      skip_path_regex: |
+        ^/api(/|$)
+        ^/feed(/|$)
+
+  - model: authentik_core.application
+    id: radarr-app
+    identifiers:
+      slug: radarr
+    attrs:
+      name: Radarr
+      provider: !KeyOf radarr-provider
+      meta_launch_url: https://radarr.{{ key "homelab/domain_local" }}
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg
+      group: Media
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf radarr-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0

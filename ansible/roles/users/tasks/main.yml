@@ -1,0 +1,37 @@
+---
+# nomad (988), consul (987) and docker (989) are created by their packages.
+- name: Admin user and supplementary groups
+  ansible.builtin.user:
+    name: "{{ users_admin }}"
+    groups: "{{ users_admin_groups }}"
+    append: true
+    shell: /bin/bash
+
+- name: Admin authorized keys (public keys only)
+  ansible.posix.authorized_key:
+    user: "{{ users_admin }}"
+    key: "{{ item }}"
+    state: present
+    exclusive: false
+  loop: "{{ lookup('ansible.builtin.file', users_admin_authorized_keys_file).splitlines() | select | list }}"
+  loop_control:
+    label: "{{ item.split(' ')[2] | default('(no comment)') }}"
+
+- name: Passwordless sudo for %sudo (changed from Debian default)
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^%sudo\s'
+    line: "{{ users_sudo_group_line }}"
+    validate: /usr/sbin/visudo -cf %s
+
+# Written into the crontab spool directly (instead of the cron module) so
+# no "#Ansible:" marker gets added to the existing crontab.
+- name: Admin user crontab lines
+  ansible.builtin.lineinfile:
+    path: "/var/spool/cron/crontabs/{{ users_admin }}"
+    line: "{{ item }}"
+    create: true
+    owner: "{{ users_admin }}"
+    group: crontab
+    mode: "0600"
+  loop: "{{ users_admin_cron_lines }}"

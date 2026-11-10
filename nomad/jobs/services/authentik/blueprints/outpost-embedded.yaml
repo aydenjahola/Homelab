@@ -1,0 +1,87 @@
+version: 1
+metadata:
+  name: outpost-embedded
+entries:
+  # Apply each app blueprint first so the providers below exist.
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-dozzle.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-prometheus.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-asf.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-watchyourlan.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-ylfm.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-docs.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-tracearr.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-sonarr.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-radarr.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-bazarr.yaml
+      required: true
+
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-prowlarr.yaml
+      required: true
+
+  - model: authentik_outposts.outpost
+    identifiers:
+      managed: goauthentik.io/outposts/embedded
+    attrs:
+      providers:
+        - !Find [authentik_providers_proxy.proxyprovider, [name, dozzle]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, prometheus]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, asf]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, watchyourlan]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, ylfm]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, docs]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, tracearr]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, sonarr]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, radarr]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, bazarr]]
+        - !Find [authentik_providers_proxy.proxyprovider, [name, prowlarr]]

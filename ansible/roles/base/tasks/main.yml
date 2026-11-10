@@ -1,0 +1,52 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+    use: systemd
+
+- name: Render /etc/hosts
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ base_timezone }}"
+
+- name: Generate locale
+  community.general.locale_gen:
+    name: "{{ base_locale }}"
+    state: present
+
+# /etc/default/locale is a symlink to ../locale.conf on these hosts.
+- name: Install /etc/locale.conf
+  ansible.builtin.copy:
+    src: locale.conf
+    dest: /etc/locale.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Link /etc/default/locale to /etc/locale.conf
+  ansible.builtin.file:
+    src: ../locale.conf
+    dest: /etc/default/locale
+    state: link
+    force: true
+
+- name: Install keyboard layout (gb, pc105)
+  ansible.builtin.copy:
+    src: keyboard
+    dest: /etc/default/keyboard
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable time sync (stock systemd-timesyncd)
+  ansible.builtin.systemd_service:
+    name: systemd-timesyncd
+    enabled: true
+    state: started

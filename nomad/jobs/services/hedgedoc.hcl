@@ -3,18 +3,37 @@ job "hedgedoc" {
   type        = "service"
 
   meta {
-    domain  = "md.aydenjahola.com"
+    domain = "md.aydenjahola.com"
   }
 
   group "hedgedoc" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 3000
-      }
-      port "db" {
-        to = 5432
       }
     }
 
@@ -29,11 +48,50 @@ job "hedgedoc" {
       ]
     }
 
+    task "wait-for-db" {
+      driver = "docker"
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = false
+      }
+
+      config {
+        image   = "postgres:13.4-alpine"
+        command = "sh"
+
+        args = [
+          "-c",
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
+        ]
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "hedgedoc/db/user" }}
+DB_NAME = {{ key "hedgedoc/db/name" }}
+{{ range service "hedgedoc-db" }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
+{{ end }}
+EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
+      }
+    }
+
     task "hedgedoc" {
       driver = "docker"
 
       config {
-        image = "quay.io/hedgedoc/hedgedoc"
+        image = "quay.io/hedgedoc/hedgedoc:1.12.0"
         ports = ["http"]
 
         volumes = [
@@ -41,71 +99,132 @@ job "hedgedoc" {
         ]
       }
 
-      resources {
-        cpu    = 500
-        memory = 512
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-CMD_DB_URL                                = postgres://{{ key "hedgedoc/db/user" }}:{{ key "hedgedoc/db/password"}}@{{ env "NOMAD_ADDR_db" }}/{{ key "hedgedoc/db/name" }}
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+CMD_DB_URL                                = postgres://{{ key "hedgedoc/db/user" }}:{{ key "hedgedoc/db/password"}}@{{ range service "hedgedoc-db" }}{{ .Address }}:{{ .Port }}{{ end }}/{{ key "hedgedoc/db/name" }}
 CMD_DOMAIN                                = {{ env "NOMAD_META_domain" }}
 CMD_PROTOCOL_USESSL                       = {{ key "hedgedoc/ssl" }}
 CMD_ALLOW_ANONYMOUS                       = {{ key "hedgedoc/allow/annonymous" }}
-CMD_ALLOW_EMAIL_REGISTER                  = {{ key "hedgedoc/allow/email" }}
-CMD_ALLOW_GRAVATAR                        = {{ key "hedgedoc/allow/gravatar" }}
-CMD_ENABLE_STATS_API                      = false
-
-CMD_SESSION_SECRET                        = {{ key "hedgedoc/session/secret" }}
-
-CMD_OAUTH2_PROVIDERNAME                   = Keycloak
-CMD_OAUTH2_AUTHORIZATION_URL              = {{ key "hedgedoc/auth/url" }}
-CMD_OAUTH2_TOKEN_URL                      = {{ key "hedgedoc/token/url" }}
-CMD_OAUTH2_USER_PROFILE_URL               = {{ key "hedgedoc/profile/url" }}
+CMD_ALLOW_EMAIL_REGISTER                  = false
+CMD_EMAIL                                 = false
+CMD_OAUTH2_PROVIDERNAME                   = Authentik
+CMD_OAUTH2_AUTHORIZATION_URL              = {{ key "authentik/url" }}/application/o/authorize/
+CMD_OAUTH2_TOKEN_URL                      = {{ key "authentik/url" }}/application/o/token/
+CMD_OAUTH2_USER_PROFILE_URL               = {{ key "authentik/url" }}/application/o/userinfo/
+CMD_OAUTH2_USER_PROFILE_ID_ATTR           = preferred_username
 CMD_OAUTH2_USER_PROFILE_USERNAME_ATTR     = preferred_username
 CMD_OAUTH2_USER_PROFILE_DISPLAY_NAME_ATTR = name
 CMD_OAUTH2_USER_PROFILE_EMAIL_ATTR        = email
-CMD_OAUTH2_CLIENT_ID                      = {{ key "hedgedoc/client/id" }}
-CMD_OAUTH2_CLIENT_SECRET                  = {{ key "hedgedoc/client/secret" }}
+CMD_OAUTH2_CLIENT_ID                      = {{ key "authentik/oidc/hedgedoc/client_id" }}
+CMD_OAUTH2_CLIENT_SECRET                  = {{ key "authentik/oidc/hedgedoc/client_secret" }}
 CMD_OAUTH2_SCOPE                          = openid profile email
-CMD_PROTOCOL_USESSL                       = true
-CMD_URL_ADDPORT                           = false
+CMD_ALLOW_GRAVATAR                        = {{ key "hedgedoc/allow/gravatar" }}
+CMD_ENABLE_STATS_API                      = false
+
+CMD_SESSION_SECRET = {{ key "hedgedoc/session/secret" }}
+
+CMD_PROTOCOL_USESSL = true
+CMD_URL_ADDPORT     = false
 EOH
+      }
+
+      resources {
+        cpu        = 200
+        memory     = 256
+        memory_max = 512
+      }
+    }
+  }
+
+  group "db" {
+    count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
+    network {
+      port "db" {
+        to = 5432
       }
     }
 
     service {
       name = "hedgedoc-db"
       port = "db"
+
+      check {
+        name     = "postgres-ready"
+        type     = "tcp"
+        interval = "10s"
+        timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
+      }
     }
 
     task "postgres" {
       driver = "docker"
 
       config {
-        image = "postgres:13.4-alpine"
+        image = "postgres:17-alpine"
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/db:/var/lib/postgresql/data:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/db-pg17:/var/lib/postgresql/data:rw",
         ]
       }
 
-      resources {
-        cpu    = 500
-        memory = 512
+      env {
+        TZ = "Europe/Dublin"
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER     = {{ key "hedgedoc/db/user" }}
 POSTGRES_PASSWORD = {{ key "hedgedoc/db/password" }}
 POSTGRES_DB       = {{ key "hedgedoc/db/name" }}
 EOH
+      }
+
+      resources {
+        cpu        = 100
+        memory     = 128
+        memory_max = 512
       }
     }
   }

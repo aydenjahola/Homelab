@@ -1,0 +1,32 @@
+---
+# Restarting the Nomad agent does not stop allocations (KillMode=process,
+# client state is restored on start), so no drain is needed for a config
+# reload. serial: 1 in site.yml keeps 2 of 3 servers up at all times.
+- name: Restart nomad
+  ansible.builtin.systemd_service:
+    name: nomad
+    state: restarted
+  notify: Wait for nomad
+
+- name: Wait for nomad
+  ansible.builtin.uri:
+    url: "{{ nomad_http }}/v1/nodes?filter={{ ('Name == \"' ~ inventory_hostname ~ '\"') | urlencode }}"
+    return_content: true
+  register: nomad_nodes
+  check_mode: false
+  until: >-
+    nomad_nodes.status == 200
+    and (nomad_nodes.json | selectattr('Status', 'equalto', 'ready') | list | length) == 1
+  retries: "{{ health_retries }}"
+  delay: "{{ health_delay }}"
+  notify: Wait for nomad leader
+
+- name: Wait for nomad leader
+  ansible.builtin.uri:
+    url: "{{ nomad_http }}/v1/status/leader"
+    return_content: true
+  register: nomad_leader
+  check_mode: false
+  until: nomad_leader.status == 200 and (nomad_leader.json | length) > 0
+  retries: "{{ health_retries }}"
+  delay: "{{ health_delay }}"

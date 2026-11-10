@@ -9,6 +9,28 @@ job "prowlarr" {
   group "prowlarr" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 9696
@@ -23,6 +45,7 @@ job "prowlarr" {
         "traefik.enable=true",
         "traefik.http.routers.prowl.entrypoints=https",
         "traefik.http.routers.prowl.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.prowl.middlewares=authentik@consulcatalog",
       ]
     }
 
@@ -40,26 +63,28 @@ job "prowlarr" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$PROWLARR__POSTGRES__HOST\" -p \"$PROWLARR__POSTGRES__PORT\" -U \"$PROWLARR__POSTGRES__USER\"; do echo waiting for db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_MAIN\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-PROWLARR__POSTGRES__USER={{ key "prowlarr/db/user" }}
-
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "prowlarr/db/user" }}
+DB_MAIN = {{ key "prowlarr/db/main" }}
 {{ range service "prowlarr-db" }}
-PROWLARR__POSTGRES__HOST={{ .Address }}
-PROWLARR__POSTGRES__PORT={{ .Port }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
 {{ end }}
 EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -67,7 +92,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/prowlarr:latest"
+        image = "lscr.io/linuxserver/prowlarr:2.7.0.5723-ls167"
         ports = ["http"]
 
         volumes = [
@@ -77,12 +102,14 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-PUID=1000
-PGID=1000
-TZ=Europe/Dublin
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+PUID = 1000
+PGID = 1000
+TZ   = Europe/Dublin
 
 {{ range service "prowlarr-db" }}
 PROWLARR__POSTGRES__HOST={{ .Address }}
@@ -93,12 +120,14 @@ PROWLARR__POSTGRES__USER     = {{ key "prowlarr/db/user" }}
 PROWLARR__POSTGRES__PASSWORD = {{ key "prowlarr/db/password" }}
 PROWLARR__POSTGRES__MAINDB   = {{ key "prowlarr/db/main" }}
 PROWLARR__POSTGRES__LOGDB    = {{ key "prowlarr/db/log" }}
+PROWLARR__AUTH__METHOD       = External
 EOH
       }
 
       resources {
-        cpu    = 300
-        memory = 512
+        cpu        = 100
+        memory     = 160
+        memory_max = 512
       }
 
       restart {
@@ -112,6 +141,28 @@ EOH
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -128,6 +179,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -144,16 +201,22 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER     = {{ key "prowlarr/db/user" }}
 POSTGRES_PASSWORD = {{ key "prowlarr/db/password" }}
 POSTGRES_DB       = {{ key "prowlarr/db/main" }}
 
-PROWLARR_MAIN_DB  = {{ key "prowlarr/db/main" }}
-PROWLARR_LOG_DB   = {{ key "prowlarr/db/log" }}
+PROWLARR_MAIN_DB = {{ key "prowlarr/db/main" }}
+PROWLARR_LOG_DB  = {{ key "prowlarr/db/log" }}
 EOH
       }
 
@@ -173,8 +236,9 @@ EOH
       }
 
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 100
+        memory     = 128
+        memory_max = 256
       }
     }
   }

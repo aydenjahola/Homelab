@@ -9,6 +9,28 @@ job "netronome" {
   group "netronome" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 7575
@@ -26,10 +48,16 @@ job "netronome" {
       ]
 
       check {
-        name     = "netronome-ready"
+        name     = "netronome-tcp"
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -47,25 +75,28 @@ job "netronome" {
 
         args = [
           "-c",
-          "until pg_isready -h \"$NETRONOME__DB_HOST\" -p \"$NETRONOME__DB_PORT\" -U \"$NETRONOME__DB_USER\"; do echo waiting for db; sleep 2; done"
+          "until pg_isready -h \"$DB_HOST\" -p \"$DB_PORT\" -U \"$DB_USER\" -d \"$DB_NAME\"; do echo waiting for db; sleep 2; done"
         ]
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-NETRONOME__DB_USER={{ key "netronome/db/user" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "netronome/db/user" }}
+DB_NAME = {{ key "netronome/db/name" }}
 {{ range service "netronome-db" }}
-NETRONOME__DB_HOST={{ .Address }}
-NETRONOME__DB_PORT={{ .Port }}
+DB_HOST={{ .Address }}
+DB_PORT={{ .Port }}
 {{ end }}
 EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -73,7 +104,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "ghcr.io/autobrr/netronome:latest"
+        image = "ghcr.io/autobrr/netronome:v0.16.0"
         ports = ["http"]
 
         cap_add = [
@@ -85,37 +116,72 @@ EOH
         ]
       }
 
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-NETRONOME__HOST=0.0.0.0
-NETRONOME__PORT=7575
-NETRONOME__BASE_URL=/
+      env {
+        TZ = "Europe/Dublin"
+      }
 
-NETRONOME__DB_TYPE=postgres
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+NETRONOME__HOST     = 0.0.0.0
+NETRONOME__PORT     = 7575
+NETRONOME__BASE_URL = /
+
+NETRONOME__DB_TYPE = postgres
 {{ range service "netronome-db" }}
 NETRONOME__DB_HOST={{ .Address }}
 NETRONOME__DB_PORT={{ .Port }}
 {{ end }}
-NETRONOME__DB_USER={{ key "netronome/db/user" }}
-NETRONOME__DB_PASSWORD={{ key "netronome/db/password" }}
-NETRONOME__DB_NAME={{ key "netronome/db/name" }}
-NETRONOME__DB_SSLMODE=disable
+NETRONOME__DB_USER     = {{ key "netronome/db/user" }}
+NETRONOME__DB_PASSWORD = {{ key "netronome/db/password" }}
+NETRONOME__DB_NAME     = {{ key "netronome/db/name" }}
+NETRONOME__DB_SSLMODE  = disable
 
-NETRONOME__SESSION_SECRET={{ key "netronome/session/secret" }}
+NETRONOME__SESSION_SECRET = {{ key "netronome/session/secret" }}
+
+NETRONOME__OIDC_ISSUER        = {{ key "authentik/url" }}/application/o/netronome/
+NETRONOME__OIDC_CLIENT_ID     = {{ key "authentik/oidc/netronome/client_id" }}
+NETRONOME__OIDC_CLIENT_SECRET = {{ key "authentik/oidc/netronome/client_secret" }}
+NETRONOME__OIDC_REDIRECT_URL  = https://netronome.aydenjahola.com/api/auth/oidc/callback
+NETRONOME__OIDC_SCOPES        = openid,profile,email,offline_access
 EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 200
+        memory     = 64
+        memory_max = 512
       }
     }
   }
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -132,6 +198,12 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -147,10 +219,16 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
 POSTGRES_USER     = {{ key "netronome/db/user" }}
 POSTGRES_DB       = {{ key "netronome/db/name" }}
 POSTGRES_PASSWORD = {{ key "netronome/db/password" }}
@@ -158,8 +236,9 @@ EOH
       }
 
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 100
+        memory     = 128
+        memory_max = 256
       }
     }
   }

@@ -9,6 +9,28 @@ job "radarr" {
   group "radarr" {
     count = 1
 
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
+
     network {
       port "http" {
         to = 7878
@@ -23,6 +45,7 @@ job "radarr" {
         "traefik.enable=true",
         "traefik.http.routers.radarr.entrypoints=https",
         "traefik.http.routers.radarr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.radarr.middlewares=authentik@consulcatalog",
       ]
 
       check {
@@ -31,6 +54,12 @@ job "radarr" {
         path     = "/ping"
         interval = "30s"
         timeout  = "5s"
+
+        check_restart {
+          limit           = 3
+          grace           = "120s"
+          ignore_warnings = false
+        }
       }
     }
 
@@ -53,11 +82,12 @@ job "radarr" {
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-DB_USER={{ key "radarr/db/user" }}
-DB_MAIN={{ key "radarr/db/main" }}
+        destination          = "local/.env"
+        env                  = true
+        error_on_missing_key = true
+        data                 = <<EOH
+DB_USER = {{ key "radarr/db/user" }}
+DB_MAIN = {{ key "radarr/db/main" }}
 {{ range service "radarr-db" }}
 DB_HOST={{ .Address }}
 DB_PORT={{ .Port }}
@@ -66,8 +96,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu        = 100
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -75,7 +106,7 @@ EOH
       driver = "docker"
 
       config {
-        image = "lscr.io/linuxserver/radarr:latest"
+        image = "lscr.io/linuxserver/radarr:6.4.4.10685-ls326"
         ports = ["http"]
 
         volumes = [
@@ -93,27 +124,53 @@ EOH
       }
 
       template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-RADARR__POSTGRES__HOST={{ range service "radarr-db" }}{{ .Address }}{{ end }}
-RADARR__POSTGRES__PORT={{ range service "radarr-db" }}{{ .Port }}{{ end }}
-RADARR__POSTGRES__USER={{ key "radarr/db/user" }}
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+RADARR__POSTGRES__HOST     = {{ range service "radarr-db" }}{{ .Address }}{{ end }}
+RADARR__POSTGRES__PORT     = {{ range service "radarr-db" }}{{ .Port }}{{ end }}
+RADARR__POSTGRES__USER     = {{ key "radarr/db/user" }}
 RADARR__POSTGRES__PASSWORD = {{ key "radarr/db/password" }}
 RADARR__POSTGRES__MAINDB   = {{ key "radarr/db/main" }}
 RADARR__POSTGRES__LOGDB    = {{ key "radarr/db/log" }}
+RADARR__AUTH__METHOD       = External
 EOH
       }
 
       resources {
-        cpu    = 500
-        memory = 512
+        cpu        = 500
+        memory     = 256
+        memory_max = 512
       }
     }
   }
 
   group "db" {
     count = 1
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = false
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      delay          = "30s"
+      delay_function = "exponential"
+      max_delay      = "10m"
+      unlimited      = true
+    }
 
     network {
       port "db" {
@@ -130,34 +187,17 @@ EOH
         type     = "tcp"
         interval = "10s"
         timeout  = "2s"
+
+        check_restart {
+          limit           = 3
+          grace           = "300s"
+          ignore_warnings = false
+        }
       }
     }
 
     task "db" {
       driver = "docker"
-
-      template {
-        destination = "local/init-radarr-dbs.sh"
-        perms       = "0755"
-        data        = <<EOH
-#!/bin/sh
-set -eu
-
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<EOSQL
-CREATE DATABASE "{{ key "radarr/db/log" }}" OWNER "{{ key "radarr/db/user" }}";
-EOSQL
-EOH
-      }
-
-      template {
-        destination = "local/.env"
-        env         = true
-        data        = <<EOH
-POSTGRES_USER     = {{ key "radarr/db/user" }}
-POSTGRES_PASSWORD = {{ key "radarr/db/password" }}
-POSTGRES_DB       = {{ key "radarr/db/main" }}
-EOH
-      }
 
       config {
         image = "postgres:17-alpine"
@@ -169,9 +209,40 @@ EOH
         ]
       }
 
+      env {
+        TZ = "Europe/Dublin"
+      }
+
+      template {
+        destination          = "local/init-radarr-dbs.sh"
+        perms                = "0755"
+        error_on_missing_key = true
+        data                 = <<EOH
+#!/bin/sh
+set -eu
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<EOSQL
+CREATE DATABASE "{{ key "radarr/db/log" }}" OWNER "{{ key "radarr/db/user" }}";
+EOSQL
+EOH
+      }
+
+      template {
+        destination          = "local/.env"
+        env                  = true
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+POSTGRES_USER     = {{ key "radarr/db/user" }}
+POSTGRES_PASSWORD = {{ key "radarr/db/password" }}
+POSTGRES_DB       = {{ key "radarr/db/main" }}
+EOH
+      }
+
       resources {
-        cpu    = 200
-        memory = 256
+        cpu        = 100
+        memory     = 128
+        memory_max = 256
       }
     }
   }
