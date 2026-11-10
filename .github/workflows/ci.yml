@@ -25,7 +25,11 @@ jobs:
         with:
           version: ${{ env.NOMAD_VERSION }}
       - run: pip install pre-commit==4.3.0
+      # The hook's venv has no Ansible collections, so ansible-lint fails to
+      # resolve modules here; the `ansible` job installs them and lints.
       - run: pre-commit run --all-files --show-diff-on-failure
+        env:
+          SKIP: ansible-lint
 
   nomad-validate:
     # `nomad job validate` talks to an agent API, so run against a throwaway
