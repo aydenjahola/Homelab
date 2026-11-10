@@ -120,7 +120,7 @@ EOH
       driver = "docker"
 
       config {
-        image   = "alpine:3.22.8"
+        image   = "alpine:3.24.3"
         command = "/bin/sh"
         args = [
           "-lc",
