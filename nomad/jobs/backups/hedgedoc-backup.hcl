@@ -15,7 +15,7 @@ job "hedgedoc-backup" {
       driver = "docker"
 
       config {
-        image   = "postgres:16-alpine"
+        image   = "postgres:17-alpine"
         command = "/bin/sh"
         args = [
           "-lc",
