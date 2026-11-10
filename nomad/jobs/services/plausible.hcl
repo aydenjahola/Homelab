@@ -205,11 +205,11 @@ EOH
       driver = "docker"
 
       config {
-        image = "postgres:16-alpine"
+        image = "postgres:17-alpine"
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/db/data:/var/lib/postgresql/data",
+          "/storage/nomad/${NOMAD_JOB_NAME}/db/data-pg17:/var/lib/postgresql/data",
         ]
       }
 
