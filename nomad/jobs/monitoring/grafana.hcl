@@ -173,7 +173,7 @@ EOH
       }
 
       resources {
-        cpu        = 300
+        cpu        = 500
         memory     = 576
         memory_max = 800
       }

@@ -68,7 +68,7 @@ job "archisteamfarm" {
       }
 
       resources {
-        cpu        = 500
+        cpu        = 100
         memory     = 160
         memory_max = 512
       }

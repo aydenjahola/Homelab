@@ -30,7 +30,7 @@ job "node-exporter" {
       }
 
       resources {
-        cpu        = 100
+        cpu        = 200
         memory     = 64
         memory_max = 128
       }

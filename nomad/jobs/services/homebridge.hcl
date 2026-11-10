@@ -49,7 +49,7 @@ job "homebridge" {
       }
 
       resources {
-        cpu        = 500
+        cpu        = 100
         memory     = 352
         memory_max = 512
       }
