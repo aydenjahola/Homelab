@@ -136,7 +136,7 @@ EOH
       driver = "docker"
 
       config {
-        image   = "alpine:3.20.10"
+        image   = "alpine:3.24.3"
         command = "/bin/sh"
         args = [
           "-lc",

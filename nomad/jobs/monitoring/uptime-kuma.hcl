@@ -57,7 +57,7 @@ job "uptime-kuma" {
       }
 
       config {
-        image   = "alpine:3.19.9"
+        image   = "alpine:3.24.3"
         command = "sh"
 
         args = [
