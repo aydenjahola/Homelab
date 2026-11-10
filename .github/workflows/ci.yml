@@ -14,7 +14,7 @@ env:
 jobs:
   pre-commit:
     # trailing whitespace, EOF, yaml/json, merge markers, private keys,
-    # gitleaks, ansible-lint (ansible/ only) and `nomad fmt -check`.
+    # gitleaks and `nomad fmt -check` (ansible-lint runs in the `ansible` job).
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
