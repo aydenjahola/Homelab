@@ -39,7 +39,7 @@ job "deployer" {
       }
 
       config {
-        image        = "hashicorp/nomad:2.0.3"
+        image        = "hashicorp/nomad:2.1.1"
         entrypoint   = ["/bin/sh"]
         args         = ["-c", "cp /bin/nomad /alloc/data/nomad && chmod 0755 /alloc/data/nomad"]
         security_opt = ["no-new-privileges:true"]

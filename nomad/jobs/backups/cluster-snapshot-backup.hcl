@@ -76,7 +76,7 @@ EOH
       }
 
       config {
-        image      = "hashicorp/nomad:2.0.3"
+        image      = "hashicorp/nomad:2.1.1"
         entrypoint = ["/bin/sh"]
         args = [
           "-c",
