@@ -53,6 +53,14 @@ apk add --no-cache curl jq openssl >/dev/null
 
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 
+need() {
+  # need NAME VALUE: stop before Renovate runs with an empty value
+  if [ -z "$2" ] || [ "$2" = null ]; then
+    echo "!! could not get $1 (is the app installed on $REPO?)" >&2
+    exit 1
+  fi
+}
+
 gh() {
   # gh TOKEN [curl args...]
   t="$1"; shift
@@ -67,10 +75,14 @@ sig="$(printf '%s.%s' "$header" "$payload" | openssl dgst -sha256 -sign /secrets
 jwt="$header.$payload.$sig"
 
 installation="$(gh "$jwt" "https://api.github.com/repos/$REPO/installation" | jq -r '.id')"
+need "installation id" "$installation"
 token="$(gh "$jwt" -X POST "https://api.github.com/app/installations/$installation/access_tokens" | jq -r '.token')"
+need "installation token" "$token"
 slug="$(gh "$jwt" "https://api.github.com/app" | jq -r '.slug')"
+need "app slug" "$slug"
 bot="$slug"'[bot]'
 bot_id="$(curl -fsS "https://api.github.com/users/$slug%5Bbot%5D" | jq -r '.id')"
+need "bot user id" "$bot_id"
 
 umask 077
 cat > /alloc/data/renovate.env <<EOF
