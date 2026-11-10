@@ -198,7 +198,7 @@ SCRIPT
         ]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}:/backup:rw",
+          "/storage/nomad/cluster-snapshot-backup:/backup:rw",
           "/home/ayden/.config/rclone/rclone.conf:/local/rclone.conf:ro",
         ]
       }
