@@ -3,6 +3,7 @@
   "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
   "timezone": "Europe/Dublin",
   "dependencyDashboard": true,
+  "platformAutomerge": false,
   "customManagers": [
     {
       "customType": "regex",
@@ -41,6 +42,11 @@
     {
       "description": "Major updates always need a manual merge",
       "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "CI Python must stay on a version ansible-core supports (2.19 breaks on 3.15): manual merge",
+      "matchDepNames": ["python"],
       "automerge": false
     },
     {
