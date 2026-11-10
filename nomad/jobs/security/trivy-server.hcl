@@ -67,7 +67,7 @@ job "trivy-server" {
 
       config {
         # Pinned: v0.69.4–0.69.6 were the malicious releases (CVE-2026-33634). Never use :latest here.
-        image = "aquasec/trivy:0.76.1"
+        image = "aquasec/trivy:0.76.2"
         args  = ["server", "--listen", "0.0.0.0:4954", "--cache-dir", "/cache"]
         ports = ["http"]
 
