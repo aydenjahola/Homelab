@@ -36,7 +36,7 @@ job "keepalived" {
       driver = "docker"
 
       config {
-        image        = "osixia/keepalived:2.3.4"
+        image        = "osixia/keepalived:2.4.3"
         network_mode = "host"
         cap_add      = ["NET_ADMIN", "NET_RAW", "NET_BROADCAST"]
 
@@ -134,7 +134,7 @@ EOH
       driver = "docker"
 
       config {
-        image        = "osixia/keepalived:2.3.4"
+        image        = "osixia/keepalived:2.4.3"
         network_mode = "host"
         cap_add      = ["NET_ADMIN", "NET_RAW", "NET_BROADCAST"]
 
@@ -232,7 +232,7 @@ EOH
       driver = "docker"
 
       config {
-        image        = "osixia/keepalived:2.3.4"
+        image        = "osixia/keepalived:2.4.3"
         network_mode = "host"
         cap_add      = ["NET_ADMIN", "NET_RAW", "NET_BROADCAST"]
 
