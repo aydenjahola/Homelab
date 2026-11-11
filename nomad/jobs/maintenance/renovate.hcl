@@ -38,7 +38,7 @@ job "renovate" {
       }
 
       config {
-        image        = "alpine:3.22.8"
+        image        = "alpine:3.24.3"
         command      = "/bin/sh"
         security_opt = ["no-new-privileges:true"]
         args = [
