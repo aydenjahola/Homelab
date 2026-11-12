@@ -117,6 +117,7 @@ ui:
   logo: "https://www.aydenjahola.com/favicon.ico"
   link: "https://{{ env "NOMAD_META_domain" }}"
   dark-mode: on
+  default-sort-by: group
 
 storage:
   type: postgres
@@ -154,141 +155,95 @@ defaults_sso: &defaults_sso
     - "[CERTIFICATE_EXPIRATION] > 48h"
 
 endpoints:
-  # --- Core / Home ---
-  - name: homarr
-    group: services
-    url: "https://home.aydenjahola.com"
-    <<: *defaults_https
-
+  # --- Core ---
   - name: authentik
-    group: services
+    group: Core
     url: "{{ key "authentik/url" }}/-/health/live/"
     <<: *defaults
     conditions:
       - "[STATUS] < 300"
       - "[CERTIFICATE_EXPIRATION] > 48h"
 
-  - name: archisteamfarm
-    group: services
-    url: "https://asf.local.aydenjahola.com"
-    <<: *defaults_sso
-
-  - name: dozzle
-    group: services
-    url: "https://dozzle.local.aydenjahola.com"
-    <<: *defaults_sso
-
-  - name: watchyourlan
-    group: services
-    url: "https://wyl.local.aydenjahola.com"
-    <<: *defaults_sso
-
-  # --- Analytics / Docs ---
-  - name: plausible
-    group: services
-    url: "https://plausible.aydenjahola.com"
-    <<: *defaults_https
-
-  - name: homelab-docs
-    group: docs
-    url: "https://docs.local.aydenjahola.com"
-    <<: *defaults_sso
-
-  - name: hedgedoc
-    group: services
-    url: "https://md.aydenjahola.com"
-    <<: *defaults_https
-
-  - name: stirling-pdf
-    group: services
-    url: "https://pdf.aydenjahola.com/api/v1/info/status"
-    <<: *defaults_https
-
-  - name: your-lastfm
-    group: services
-    url: "https://ylfm.local.aydenjahola.com"
-    <<: *defaults_sso
-
-  - name: reactive-resume
-    group: services
-    url: "https://resume.local.aydenjahola.com"
-    <<: *defaults
-
-  # --- Auth / Security ---
   - name: vaultwarden
-    group: services
+    group: Core
     url: "https://vault.aydenjahola.com"
     <<: *defaults_https
 
-  - name: dependency-track
-    group: security
-    url: "https://dtrack.local.aydenjahola.com"
+  - name: traefik
+    group: Core
+    url: "https://traefik.local.aydenjahola.com"
     <<: *defaults_https
 
-  - name: trivy-server
-    group: security
-    url: "https://trivy.local.aydenjahola.com/healthz"
+  - name: homarr
+    group: Core
+    url: "https://home.aydenjahola.com"
     <<: *defaults_https
 
-  # --- Cloud / Apps ---
-  - name: netronome
-    group: services
-    url: "https://netronome.aydenjahola.com"
+  # --- Cluster ---
+  - name: nomad-odin
+    group: Cluster
+    url: "http://192.168.1.100:4646"
     <<: *defaults
 
-  - name: tracearr
-    group: services
-    url: "https://tracearr.local.aydenjahola.com"
-    <<: *defaults_sso
+  - name: nomad-thor
+    group: Cluster
+    url: "http://192.168.1.101:4646"
+    <<: *defaults
 
-  # --- Monitoring / Infra ---
+  - name: nomad-loki
+    group: Cluster
+    url: "http://192.168.1.102:4646"
+    <<: *defaults
+
+  # --- Monitoring ---
   - name: gatus
-    group: monitoring
+    group: Monitoring
     url: "https://gatus.aydenjahola.com"
     <<: *defaults_https
 
+  - name: uptime-kuma
+    group: Monitoring
+    url: "https://status.aydenjahola.com/status/homelab"
+    <<: *defaults_https
+
   - name: grafana
-    group: monitoring
+    group: Monitoring
     url: "https://grafana.aydenjahola.com"
     <<: *defaults_https
 
+  - name: prometheus
+    group: Monitoring
+    url: "https://prometheus.local.aydenjahola.com"
+    <<: *defaults_sso
+
+  - name: loki
+    group: Monitoring
+    url: "https://loki.local.aydenjahola.com/ready"
+    <<: *defaults
+
   - name: grafana-alloy-odin
-    group: monitoring
+    group: Monitoring
     url: "http://192.168.1.100:12345"
     <<: *defaults
 
   - name: grafana-alloy-thor
-    group: monitoring
+    group: Monitoring
     url: "http://192.168.1.101:12345"
     <<: *defaults
 
   - name: grafana-alloy-loki
-    group: monitoring
+    group: Monitoring
     url: "http://192.168.1.102:12345"
     <<: *defaults
 
-  - name: loki
-    group: monitoring
-    url: "https://loki.local.aydenjahola.com/ready"
-    <<: *defaults
-
-  - name: uptime-kuma
-    group: monitoring
-    url: "https://status.aydenjahola.com/status/homelab"
-    <<: *defaults_https
-
-  - name: prometheus
-    group: monitoring
-    url: "https://prometheus.local.aydenjahola.com"
+  # --- Logs & Network ---
+  - name: dozzle
+    group: "Logs & Network"
+    url: "https://dozzle.local.aydenjahola.com"
     <<: *defaults_sso
 
-  - name: traefik
-    group: infra
-    url: "https://traefik.local.aydenjahola.com"
-    <<: *defaults_https
-
   - name: dozzle-agent-odin
-    group: infra
+    group: "Logs & Network"
     # gRPC agent, no HTTP endpoint: check the port is accepting connections
     url: "tcp://192.168.1.100:7007"
     <<: *defaults
@@ -296,7 +251,7 @@ endpoints:
       - "[CONNECTED] == true"
 
   - name: dozzle-agent-thor
-    group: infra
+    group: "Logs & Network"
     # gRPC agent, no HTTP endpoint: check the port is accepting connections
     url: "tcp://192.168.1.101:7007"
     <<: *defaults
@@ -304,83 +259,132 @@ endpoints:
       - "[CONNECTED] == true"
 
   - name: dozzle-agent-loki
-    group: infra
+    group: "Logs & Network"
     # gRPC agent, no HTTP endpoint: check the port is accepting connections
     url: "tcp://192.168.1.102:7007"
     <<: *defaults
     conditions:
       - "[CONNECTED] == true"
 
-  # --- Media Stack ---
-  - name: bazarr
-    group: media
-    url: "https://bazarr.local.aydenjahola.com"
+  - name: netronome
+    group: "Logs & Network"
+    url: "https://netronome.aydenjahola.com"
+    <<: *defaults
+
+  - name: watchyourlan
+    group: "Logs & Network"
+    url: "https://wyl.local.aydenjahola.com"
     <<: *defaults_sso
 
+  # --- Security ---
+  - name: dependency-track
+    group: Security
+    url: "https://dtrack.local.aydenjahola.com"
+    <<: *defaults_https
+
+  - name: trivy-server
+    group: Security
+    url: "https://trivy.local.aydenjahola.com/healthz"
+    <<: *defaults_https
+
+  # --- Media ---
   - name: jellyfin
-    group: media
+    group: Media
     url: "https://jellyfin.local.aydenjahola.com"
     <<: *defaults_https
 
   - name: seerr
-    group: media
+    group: Media
     url: "https://seerr.local.aydenjahola.com"
     <<: *defaults_https
 
+  - name: tracearr
+    group: Media
+    url: "https://tracearr.local.aydenjahola.com"
+    <<: *defaults_sso
+
+  - name: your-lastfm
+    group: Media
+    url: "https://ylfm.local.aydenjahola.com"
+    <<: *defaults_sso
+
+  # --- Media Automation ---
   - name: radarr
-    group: media
+    group: "Media Automation"
     url: "https://radarr.local.aydenjahola.com"
     <<: *defaults_sso
 
   - name: sonarr
-    group: media
+    group: "Media Automation"
     url: "https://sonarr.local.aydenjahola.com"
     <<: *defaults_sso
 
+  - name: bazarr
+    group: "Media Automation"
+    url: "https://bazarr.local.aydenjahola.com"
+    <<: *defaults_sso
+
   - name: prowlarr
-    group: media
+    group: "Media Automation"
     url: "https://prowl.local.aydenjahola.com"
     <<: *defaults_sso
 
   - name: flaresolverr
-    group: media
+    group: "Media Automation"
     url: "https://flaresolverr.local.aydenjahola.com"
     <<: *defaults_https
 
-  # --- Nomad Boxes ---
-  - name: nomad-odin
-    group: nomad
-    url: "http://192.168.1.100:4646"
+  # --- Productivity ---
+  - name: hedgedoc
+    group: Productivity
+    url: "https://md.aydenjahola.com"
+    <<: *defaults_https
+
+  - name: stirling-pdf
+    group: Productivity
+    url: "https://pdf.aydenjahola.com/api/v1/info/status"
+    <<: *defaults_https
+
+  - name: reactive-resume
+    group: Productivity
+    url: "https://resume.local.aydenjahola.com"
     <<: *defaults
 
-  - name: nomad-thor
-    group: nomad
-    url: "http://192.168.1.101:4646"
-    <<: *defaults
+  - name: homelab-docs
+    group: Productivity
+    url: "https://docs.local.aydenjahola.com"
+    <<: *defaults_sso
 
-  - name: nomad-loki
-    group: nomad
-    url: "http://192.168.1.102:4646"
-    <<: *defaults
+  # --- Analytics ---
+  - name: plausible
+    group: Analytics
+    url: "https://plausible.aydenjahola.com"
+    <<: *defaults_https
 
-  # --- Public sites ---
+  # --- Gaming ---
+  - name: archisteamfarm
+    group: Gaming
+    url: "https://asf.local.aydenjahola.com"
+    <<: *defaults_sso
+
+  # --- Public Websites ---
   - name: main-website
-    group: public
+    group: "Public Websites"
     url: "https://aydenjahola.com"
     <<: *defaults_https
 
   - name: blog
-    group: public
+    group: "Public Websites"
     url: "https://blog.aydenjahola.com"
     <<: *defaults_https
 
   - name: solar-racing
-    group: public
+    group: "Public Websites"
     url: "https://solarracing.ie"
     <<: *defaults_https
 
   - name: katyaphone
-    group: public
+    group: "Public Websites"
     url: "https://katyaphone.com.au"
     <<: *defaults_https
 EOH
