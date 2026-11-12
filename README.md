@@ -34,7 +34,7 @@ flowchart LR
 - TrueNAS SCALE provides NFS storage, mounted at `/storage` on every node.
 - Traefik discovers routes from Consul catalog tags. Certificates come from Let's Encrypt using the Cloudflare DNS challenge. keepalived holds a virtual IP so ingress survives a node loss.
 - Authentik protects apps either with forward-auth (Traefik middleware `authentik@consulcatalog`) or native OIDC where the app supports it. Some apps keep their own login on purpose.
-- Images are pinned to exact versions and bumped by Renovate.
+- Images are pinned to exact versions. Diun reports new tags; bumps and deploys are done by hand.
 
 ## Repo layout
 
@@ -47,7 +47,6 @@ flowchart LR
 | `nomad/scripts/` | `kv-check.sh`, which lists and verifies the Consul KV keys the jobs need. |
 | `.github/` | CI workflow. |
 | `.pre-commit-config.yaml` | Local and CI checks. |
-| `renovate.json` | Dependency update policy. |
 
 ## Apps
 
@@ -179,9 +178,8 @@ nomad/scripts/kv-check.sh --markdown   # print the per-job key list as markdown
 
 ## Updates and CI
 
-- Renovate (`renovate.json`) bumps pinned images and GitHub Actions. Patch updates auto-merge after 3 days, minor after 7 days. Majors and minors of critical apps (Authentik, Traefik, Vaultwarden, Jellyfin DB image) need a manual merge. Database major upgrades are disabled because they need a dump and restore.
+- Updates are manual. Diun posts new image tags; bump the tag in the job file, merge, then `nomad job plan` and `nomad job run` it from `nomad/`. Nothing deploys automatically. Database major upgrades need a dump and restore.
 - CI (`.github/workflows/ci.yml`) runs pre-commit (formatting, gitleaks secret scan, ansible-lint, `nomad fmt`), validates every Nomad job against a throwaway dev agent, and lints and syntax-checks the Ansible.
-- Planned: self-hosted Renovate and pull-based auto-deploy of merged changes.
 
 ## Development
 
