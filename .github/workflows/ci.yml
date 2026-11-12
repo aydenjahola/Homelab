@@ -74,24 +74,11 @@ jobs:
       - name: Install ansible
         run: pip install ansible-core==2.19.4 ansible-lint==26.11.0
       - name: Install collections
-        run: |
-          if [ -f ansible/requirements.yml ]; then
-            ansible-galaxy collection install -r ansible/requirements.yml
-          fi
+        run: ansible-galaxy collection install -r ansible/requirements.yml
       - name: ansible-lint
-        run: |
-          if [ -d ansible ]; then ansible-lint ansible/; else echo "no ansible/ dir"; fi
+        run: ansible-lint ansible/
       - name: Syntax check
-        run: |
-          if [ -f ansible/site.yml ]; then
-            inv=ansible/inventory.yml
-            [ -f "$inv" ] || inv=ansible/inventory/hosts.yml
-            ansible-playbook --syntax-check -i "$inv" ansible/site.yml
-          else
-            find ansible/playbooks -name '*.yml' 2>/dev/null | sort | while IFS= read -r p; do
-              ansible-playbook --syntax-check -i localhost, "$p"
-            done
-          fi
+        run: ansible-playbook --syntax-check -i ansible/inventory.yml ansible/site.yml
 
   gitleaks:
     runs-on: ubuntu-latest
