@@ -78,22 +78,59 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
+  # Every per-host target carries a node label (odin, thor, loki) so
+  # dashboards and alerts can join host, Nomad and Traefik metrics.
   - job_name: "node-exporters"
     static_configs:
-      - targets:
-        - "192.168.1.100:9100"
-        - "192.168.1.101:9100"
-        - "192.168.1.102:9100"
+      - targets: ["192.168.1.100:9100"]
+        labels:
+          node: odin
+      - targets: ["192.168.1.101:9100"]
+        labels:
+          node: thor
+      - targets: ["192.168.1.102:9100"]
+        labels:
+          node: loki
 
   - job_name: "nomad_metrics"
     metrics_path: "/v1/metrics"
     params:
       format: ["prometheus"]
     static_configs:
-      - targets:
-        - "192.168.1.100:4646"
-        - "192.168.1.101:4646"
-        - "192.168.1.102:4646"
+      - targets: ["192.168.1.100:4646"]
+        labels:
+          node: odin
+      - targets: ["192.168.1.101:4646"]
+        labels:
+          node: thor
+      - targets: ["192.168.1.102:4646"]
+        labels:
+          node: loki
+
+  - job_name: "grafana-alloy"
+    static_configs:
+      - targets: ["192.168.1.100:12345"]
+        labels:
+          node: odin
+      - targets: ["192.168.1.101:12345"]
+        labels:
+          node: thor
+      - targets: ["192.168.1.102:12345"]
+        labels:
+          node: loki
+
+  # Traefik runs on the host network; metrics are on its internal :8080 entrypoint.
+  - job_name: "traefik"
+    static_configs:
+      - targets: ["192.168.1.100:8080"]
+        labels:
+          node: odin
+      - targets: ["192.168.1.101:8080"]
+        labels:
+          node: thor
+      - targets: ["192.168.1.102:8080"]
+        labels:
+          node: loki
 
   - job_name: "loki"
     scheme: https
@@ -102,12 +139,9 @@ scrape_configs:
       - targets:
         - "loki.local.aydenjahola.com"
 
-  - job_name: "grafana-alloy"
+  - job_name: "prometheus"
     static_configs:
-      - targets:
-        - "192.168.1.100:12345"
-        - "192.168.1.101:12345"
-        - "192.168.1.102:12345"
+      - targets: ["localhost:9090"]
 
   - job_name: "authentik"
     consul_sd_configs:

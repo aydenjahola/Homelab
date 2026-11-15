@@ -117,6 +117,11 @@ providers:
 
 metrics:
   addInternals: true
+  prometheus:
+    entryPoint: traefik
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
 EOH
       }
 
