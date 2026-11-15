@@ -101,31 +101,36 @@ loki.source.journal "systemd" {
   forward_to    = [loki.write.loki.receiver]
   relabel_rules = loki.relabel.journal.rules
 
+  // service_name drives Grafana Logs Drilldown: one "host-<node>" entry per server.
   labels = {
-    source = "journal",
-    node   = "{{ env "node.unique.name" }}",
+    source       = "journal",
+    node         = "{{ env "node.unique.name" }}",
+    service_name = "host-{{ env "node.unique.name" }}",
   }
 }
 
 loki.source.file "host_logs" {
   targets = [
     {
-      __path__ = "/host/var/log/**/*.log",
-      source   = "file",
-      job      = "host-logs",
-      node     = "{{ env "node.unique.name" }}",
+      __path__     = "/host/var/log/**/*.log",
+      source       = "file",
+      job          = "host-logs",
+      node         = "{{ env "node.unique.name" }}",
+      service_name = "host-{{ env "node.unique.name" }}",
     },
     {
-      __path__ = "/host/var/log/syslog",
-      source   = "file",
-      job      = "syslog",
-      node     = "{{ env "node.unique.name" }}",
+      __path__     = "/host/var/log/syslog",
+      source       = "file",
+      job          = "syslog",
+      node         = "{{ env "node.unique.name" }}",
+      service_name = "host-{{ env "node.unique.name" }}",
     },
     {
-      __path__ = "/host/var/log/auth.log",
-      source   = "file",
-      job      = "auth",
-      node     = "{{ env "node.unique.name" }}",
+      __path__     = "/host/var/log/auth.log",
+      source       = "file",
+      job          = "auth",
+      node         = "{{ env "node.unique.name" }}",
+      service_name = "host-{{ env "node.unique.name" }}",
     },
   ]
 
@@ -137,28 +142,46 @@ loki.source.file "host_logs" {
   }
 }
 
-loki.source.file "nomad_alloc_logs" {
-  targets = [
-    {
-      __path__ = "/host/nomad/alloc/*/alloc/logs/*.stdout.*",
-      source   = "nomad",
-      stream   = "stdout",
-      node     = "{{ env "node.unique.name" }}",
-    },
-    {
-      __path__ = "/host/nomad/alloc/*/alloc/logs/*.stderr.*",
-      source   = "nomad",
-      stream   = "stderr",
-      node     = "{{ env "node.unique.name" }}",
-    },
-  ]
+// Nomad task logs. The task name comes from the file name
+// (<alloc>/alloc/logs/<task>.<stream>.<n>) so logs can be filtered per task.
+local.file_match "nomad_alloc_logs" {
+  path_targets = [{
+    __path__ = "/host/nomad/alloc/*/alloc/logs/*.std*.*",
+    source   = "nomad",
+    node     = "{{ env "node.unique.name" }}",
+  }]
+  sync_period = "10s"
+}
 
-  forward_to = [loki.write.loki.receiver]
+discovery.relabel "nomad_alloc_logs" {
+  targets = local.file_match.nomad_alloc_logs.targets
 
-  file_match {
-    enabled     = true
-    sync_period = "10s"
+  rule {
+    source_labels = ["__path__"]
+    regex         = "/host/nomad/alloc/[^/]+/alloc/logs/(.+)[.](stdout|stderr)[.][0-9]+"
+    target_label  = "task"
+    replacement   = "$1"
   }
+
+  rule {
+    source_labels = ["__path__"]
+    regex         = "/host/nomad/alloc/[^/]+/alloc/logs/(.+)[.](stdout|stderr)[.][0-9]+"
+    target_label  = "stream"
+    replacement   = "$2"
+  }
+
+  // Drilldown lists each Nomad task as its own service.
+  rule {
+    source_labels = ["__path__"]
+    regex         = "/host/nomad/alloc/[^/]+/alloc/logs/(.+)[.](stdout|stderr)[.][0-9]+"
+    target_label  = "service_name"
+    replacement   = "$1"
+  }
+}
+
+loki.source.file "nomad_alloc_logs" {
+  targets    = discovery.relabel.nomad_alloc_logs.output
+  forward_to = [loki.write.loki.receiver]
 }
 EOH
       }

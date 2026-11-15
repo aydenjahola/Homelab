@@ -128,6 +128,13 @@ schema_config:
 limits_config:
   retention_period: 168h
   allow_structured_metadata: true
+  # Used by Grafana Logs Drilldown (volume bars, level filter).
+  volume_enabled: true
+  discover_log_levels: true
+
+# Groups similar lines into patterns in Grafana Logs Drilldown.
+pattern_ingester:
+  enabled: true
 
 compactor:
   working_directory: /loki/compactor

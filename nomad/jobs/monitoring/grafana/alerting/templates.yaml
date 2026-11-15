@@ -1,0 +1,24 @@
+# Discord message templates used by contact-points.yaml.
+apiVersion: 1
+
+templates:
+  - orgId: 1
+    name: homelab
+    template: |
+      {{ define "homelab.title" -}}
+      {{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "critical" }}🚨{{ else }}⚠️{{ end }}{{ else }}✅{{ end }} {{ .CommonLabels.alertname }}{{ if eq .Status "firing" }} ({{ len .Alerts.Firing }} firing){{ else }} resolved{{ end }}
+      {{- end }}
+
+      {{ define "homelab.alert" -}}
+      **{{ .Annotations.summary }}**
+      {{ .Annotations.description }}
+      {{ if .Labels.severity }}`{{ .Labels.severity }}`{{ end }} · since <t:{{ .StartsAt.Unix }}:R>{{ if .DashboardURL }} · [dashboard]({{ .DashboardURL }}){{ end }}{{ if .SilenceURL }} · [silence]({{ .SilenceURL }}){{ end }}
+      {{- end }}
+
+      {{ define "homelab.message" -}}
+      {{ if gt (len .Alerts.Firing) 0 }}{{ range .Alerts.Firing }}{{ template "homelab.alert" . }}
+
+      {{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 0 }}{{ if gt (len .Alerts.Firing) 0 }}**Resolved**
+      {{ end }}{{ range .Alerts.Resolved }}✅ {{ .Annotations.summary }}
+      {{ end }}{{ end }}
+      {{- end }}
