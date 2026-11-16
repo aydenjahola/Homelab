@@ -98,6 +98,13 @@ regopts:
 notif:
   discord:
     webhookURL: "{{ key "diun/discord/webhook" }}"
+  ntfy:
+    endpoint: "{{ key "ntfy/url" }}"
+    token: "{{ key "ntfy/token/diun" }}"
+    topic: homelab-updates
+    priority: 2
+    tags:
+      - package
 EOH
       }
 

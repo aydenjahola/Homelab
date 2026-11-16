@@ -38,6 +38,10 @@ if ! consul snapshot save "$NOMAD_ALLOC_DIR/data/consul.snap"; then
   wget -q -O /dev/null --header "Content-Type: application/json" \
     --post-data "{\"content\":\"❌ <@367293674981294086> **cluster-snapshot-backup** consul snapshot failed on $(hostname). Check Nomad alloc logs.\",\"allowed_mentions\":{\"users\":[\"367293674981294086\"]}}" \
     "$DISCORD_WEBHOOK_URL" || true
+  wget -q -O /dev/null --header "Authorization: Bearer $NTFY_TOKEN" \
+    --header "Priority: 4" --header "Tags: backup,failed" --header "Markdown: yes" \
+    --post-data "❌ **cluster-snapshot-backup** consul snapshot failed on $(hostname). Check Nomad alloc logs." \
+    "$NTFY_URL/homelab-backups" || true
   exit 1
 fi
 consul snapshot inspect "$NOMAD_ALLOC_DIR/data/consul.snap" >/dev/null
@@ -57,6 +61,8 @@ SCRIPT
         error_on_missing_key = true
         data                 = <<EOH
 DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
+NTFY_URL            = {{ key "ntfy/url" }}
+NTFY_TOKEN          = {{ key "ntfy/token/backups" }}
 EOH
       }
 
@@ -87,6 +93,10 @@ if ! nomad operator snapshot save "$NOMAD_ALLOC_DIR/data/nomad.snap"; then
   wget -q -O /dev/null --header "Content-Type: application/json" \
     --post-data "{\"content\":\"❌ <@367293674981294086> **cluster-snapshot-backup** nomad snapshot failed on $(hostname). Check Nomad alloc logs.\",\"allowed_mentions\":{\"users\":[\"367293674981294086\"]}}" \
     "$DISCORD_WEBHOOK_URL" || true
+  wget -q -O /dev/null --header "Authorization: Bearer $NTFY_TOKEN" \
+    --header "Priority: 4" --header "Tags: backup,failed" --header "Markdown: yes" \
+    --post-data "❌ **cluster-snapshot-backup** nomad snapshot failed on $(hostname). Check Nomad alloc logs." \
+    "$NTFY_URL/homelab-backups" || true
   exit 1
 fi
 nomad operator snapshot inspect "$NOMAD_ALLOC_DIR/data/nomad.snap" >/dev/null
@@ -106,6 +116,8 @@ SCRIPT
         error_on_missing_key = true
         data                 = <<EOH
 DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
+NTFY_URL            = {{ key "ntfy/url" }}
+NTFY_TOKEN          = {{ key "ntfy/token/backups" }}
 EOH
       }
 
@@ -133,22 +145,33 @@ apk add --no-cache curl gnupg rclone tzdata ca-certificates >/dev/null
 : "$GPG_FINGERPRINT"
 : "$RETENTION_DAYS"
 : "$DISCORD_WEBHOOK_URL"
+: "$NTFY_URL"
+: "$NTFY_TOKEN"
 
 export RCLONE_CONFIG="/local/rclone.conf"
 REMOTE="gdrive:backups/cluster-snapshots"
 DATA="$NOMAD_ALLOC_DIR/data"
 DEST="/backup"
 
+ntfy() {
+  curl -sS -H "Authorization: Bearer $NTFY_TOKEN" \
+    -H "Priority: $1" -H "Tags: $2" -H "Markdown: yes" \
+    --data-binary "$(printf '%s' "$3" | sed 's/<@[0-9]*> //g')" \
+    "$NTFY_URL/homelab-backups" >/dev/null || true
+}
+
 notify_ok() {
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$*")" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
+  ntfy 2 backup "$*"
 }
 
 notify_fail() {
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$*")" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
+  ntfy 4 backup,failed "$*"
 }
 
 cleanup() {
@@ -223,6 +246,8 @@ SCRIPT
         data                 = <<EOH
 RETENTION_DAYS      = {{ key "backup/retention/days" }}
 DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
+NTFY_URL            = {{ key "ntfy/url" }}
+NTFY_TOKEN          = {{ key "ntfy/token/backups" }}
 EOH
       }
 

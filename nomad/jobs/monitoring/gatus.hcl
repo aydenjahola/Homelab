@@ -131,11 +131,23 @@ alerting:
       send-on-resolved: true
       failure-threshold: 3
       success-threshold: 2
+  ntfy:
+    url: '{{ key "ntfy/url" }}'
+    topic: homelab-uptime
+    token: '{{ key "ntfy/token/gatus" }}'
+    priority: 4
+    click: "https://{{ env "NOMAD_META_domain" }}"
+    default-alert:
+      enabled: true
+      send-on-resolved: true
+      failure-threshold: 3
+      success-threshold: 2
 
 defaults: &defaults
   interval: 60s
   alerts:
     - type: discord
+    - type: ntfy
   conditions:
     - "[STATUS] == 200"
 
@@ -205,6 +217,15 @@ endpoints:
     group: Monitoring
     url: "https://status.aydenjahola.com/status/homelab"
     <<: *defaults_https
+
+  - name: ntfy
+    group: Monitoring
+    url: "https://ntfy.aydenjahola.com/v1/health"
+    <<: *defaults
+    conditions:
+      - "[STATUS] == 200"
+      - "[BODY].healthy == true"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
 
   - name: grafana
     group: Monitoring
