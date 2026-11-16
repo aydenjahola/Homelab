@@ -98,13 +98,11 @@ regopts:
 notif:
   discord:
     webhookURL: "{{ key "diun/discord/webhook" }}"
-  ntfy:
-    endpoint: "{{ key "ntfy/url" }}"
-    token: "{{ key "ntfy/token/diun" }}"
-    topic: homelab-updates
-    priority: 2
-    tags:
-      - package
+  script:
+    cmd: /bin/sh
+    args:
+      - -c
+      - printf '%s\t%s\n' "$DIUN_ENTRY_IMAGE" "$DIUN_ENTRY_HUBLINK" >> /data/pending.tsv
 EOH
       }
 

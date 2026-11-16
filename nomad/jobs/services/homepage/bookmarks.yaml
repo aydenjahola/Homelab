@@ -1,0 +1,14 @@
+- Public sites:
+    - aydenjahola.com:
+        - href: https://aydenjahola.com
+          icon: mdi-web
+    - Blog:
+        - href: https://blog.aydenjahola.com
+          icon: ghost.svg
+    - DCU Solar Racing:
+        - href: https://solarracing.ie
+          icon: mdi-solar-power
+- Repo:
+    - Homelab:
+        - href: https://github.com/aydenjahola/Homelab
+          icon: github.svg

@@ -863,6 +863,13 @@ ALERT_GROUPS = [
              "gt", 0, "2m", "critical",
              f"/storage is not mounted on {N}",
              f"{N} is up but the TrueNAS NFS mount is missing. Jobs with state on that node will fail."),
+        rule("nas-nfs-slow", "NFS slow", 'max by (node) ('
+             'rate(node_mountstats_nfs_operations_request_time_seconds_total{operation=~"READ|WRITE|GETATTR|LOOKUP"}[5m]) '
+             '/ rate(node_mountstats_nfs_operations_requests_total{operation=~"READ|WRITE|GETATTR|LOOKUP"}[5m]))',
+             "gt", 0.25, "10m", "warning",
+             f"NFS on {N} averaging {V}s per request",
+             "NFS requests to TrueNAS have averaged over 250ms for 10 minutes (normal is about 20ms). "
+             "The NAS is overloaded, scrubbing, or a disk is failing."),
         rule("host-temp-high", "Host temperature high", 'max by (node) (node_hwmon_temp_celsius)', "gt", 85, "5m",
              "warning", f"{N} at {VP}°C", f"A sensor on {N} has been above 85°C for 5 minutes."),
         rule("host-clock-skew", "Host clock skew", 'abs(node_timex_offset_seconds)', "gt", 0.05, "10m", "warning",

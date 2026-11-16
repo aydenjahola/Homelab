@@ -1,0 +1,162 @@
+- Core:
+    - Authentik:
+        href: https://auth.aydenjahola.com
+        icon: authentik.svg
+        description: Single sign-on
+    - Vaultwarden:
+        href: https://vault.aydenjahola.com
+        icon: vaultwarden.svg
+        description: Passwords
+        siteMonitor: https://vault.aydenjahola.com
+    - Traefik:
+        href: https://traefik.local.aydenjahola.com/dashboard/
+        icon: traefik-proxy.svg
+        description: Ingress
+        siteMonitor: https://traefik.local.aydenjahola.com/dashboard/
+    - ntfy:
+        href: https://ntfy.aydenjahola.com
+        icon: ntfy.svg
+        description: Notifications
+        siteMonitor: https://ntfy.aydenjahola.com/v1/health
+- Media:
+    - Jellyfin:
+        href: https://jellyfin.local.aydenjahola.com
+        icon: jellyfin.svg
+        description: Media server
+        siteMonitor: https://jellyfin.local.aydenjahola.com
+    - Seerr:
+        href: https://seerr.local.aydenjahola.com
+        icon: jellyseerr.svg
+        description: Requests
+        siteMonitor: https://seerr.local.aydenjahola.com
+    - Tracearr:
+        href: https://tracearr.local.aydenjahola.com
+        icon: tracearr.svg
+        description: Playback activity
+        siteMonitor: https://tracearr.local.aydenjahola.com
+    - Your LastFM:
+        href: https://ylfm.local.aydenjahola.com
+        icon: lastfm.svg
+        description: Last.fm stats
+        siteMonitor: https://ylfm.local.aydenjahola.com
+- Media Automation:
+    - Sonarr:
+        href: https://sonarr.local.aydenjahola.com
+        icon: sonarr.svg
+        description: TV
+        siteMonitor: https://sonarr.local.aydenjahola.com
+    - Radarr:
+        href: https://radarr.local.aydenjahola.com
+        icon: radarr.svg
+        description: Movies
+        siteMonitor: https://radarr.local.aydenjahola.com
+    - Bazarr:
+        href: https://bazarr.local.aydenjahola.com
+        icon: bazarr.svg
+        description: Subtitles
+        siteMonitor: https://bazarr.local.aydenjahola.com
+    - Prowlarr:
+        href: https://prowl.local.aydenjahola.com
+        icon: prowlarr.svg
+        description: Indexers
+        siteMonitor: https://prowl.local.aydenjahola.com
+    - Transmission:
+        href: https://torr.local.aydenjahola.com
+        icon: transmission.svg
+        description: Downloads
+- Productivity:
+    - HedgeDoc:
+        href: https://md.aydenjahola.com
+        icon: hedgedoc.svg
+        description: Markdown notes
+        siteMonitor: https://md.aydenjahola.com
+    - openGym:
+        href: https://gym.aydenjahola.com
+        icon: mdi-dumbbell
+        description: Workouts
+        siteMonitor: https://gym.aydenjahola.com/api/health
+    - Reactive Resume:
+        href: https://resume.local.aydenjahola.com
+        icon: reactive-resume.svg
+        description: Resume builder
+        siteMonitor: https://resume.local.aydenjahola.com
+    - Stirling PDF:
+        href: https://pdf.aydenjahola.com
+        icon: stirling-pdf.svg
+        description: PDF tools
+        siteMonitor: https://pdf.aydenjahola.com/api/v1/info/status
+    - Homelab docs:
+        href: https://docs.local.aydenjahola.com
+        icon: mdi-book-open-variant
+        description: Private docs
+        siteMonitor: https://docs.local.aydenjahola.com
+    - Plausible:
+        href: https://plausible.aydenjahola.com
+        icon: plausible.svg
+        description: Web analytics
+        siteMonitor: https://plausible.aydenjahola.com
+- Monitoring:
+    - Gatus:
+        href: https://status.aydenjahola.com
+        icon: gatus.svg
+        description: Status page
+        siteMonitor: https://status.aydenjahola.com
+        widget:
+          type: gatus
+          url: https://status.aydenjahola.com
+    - Grafana:
+        href: https://grafana.aydenjahola.com
+        icon: grafana.svg
+        description: Dashboards and alerts
+        siteMonitor: https://grafana.aydenjahola.com
+    - Prometheus:
+        href: https://prometheus.local.aydenjahola.com
+        icon: prometheus.svg
+        description: Metrics
+        siteMonitor: https://prometheus.local.aydenjahola.com
+    - Dozzle:
+        href: https://dozzle.local.aydenjahola.com
+        icon: dozzle.svg
+        description: Container logs
+        siteMonitor: https://dozzle.local.aydenjahola.com
+    - Netronome:
+        href: https://netronome.aydenjahola.com
+        icon: mdi-speedometer
+        description: Speed tests
+        siteMonitor: https://netronome.aydenjahola.com
+    - WatchYourLAN:
+        href: https://wyl.local.aydenjahola.com
+        icon: watchyourlan.svg
+        description: LAN devices
+        siteMonitor: https://wyl.local.aydenjahola.com
+- Security:
+    - Dependency-Track:
+        href: https://dtrack.local.aydenjahola.com
+        icon: dependency-track.svg
+        description: SBOMs and CVEs
+        siteMonitor: https://dtrack.local.aydenjahola.com
+- Cluster:
+    - Nomad:
+        href: http://192.168.1.100:4646
+        icon: hashicorp-nomad.svg
+        description: odin · thor · loki
+        siteMonitor: http://192.168.1.100:4646
+    - Consul:
+        href: http://192.168.1.100:8500
+        icon: consul.svg
+        description: Service catalog and KV
+        siteMonitor: http://192.168.1.100:8500/v1/status/leader
+    - TrueNAS:
+        href: https://192.168.1.103
+        icon: truenas-scale.svg
+        description: NAS
+    - Homebridge:
+        href: http://192.168.1.102:8581
+        icon: homebridge.svg
+        description: HomeKit bridge
+        siteMonitor: http://192.168.1.102:8581
+    - ArchiSteamFarm:
+        href: https://asf.local.aydenjahola.com
+        icon: archisteamfarm.svg
+        description: Steam cards
+        siteMonitor: https://asf.local.aydenjahola.com

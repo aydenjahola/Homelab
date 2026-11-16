@@ -331,6 +331,45 @@ groups:
         annotations:
           summary: "/storage is not mounted on {{ $labels.node }}"
           description: "{{ $labels.node }} is up but the TrueNAS NFS mount is missing. Jobs with state on that node will fail."
+      - uid: "nas-nfs-slow"
+        title: "NFS slow"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "PBFA97CFB590B2093"
+            model:
+              refId: "A"
+              expr: "max by (node) (rate(node_mountstats_nfs_operations_request_time_seconds_total{operation=~\"READ|WRITE|GETATTR|LOOKUP\"}[5m]) / rate(node_mountstats_nfs_operations_requests_total{operation=~\"READ|WRITE|GETATTR|LOOKUP\"}[5m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              instant: true
+              range: false
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 0.25
+        for: "10m"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "NFS on {{ $labels.node }} averaging {{ with $values.A }}{{ humanize .Value }}{{ end }}s per request"
+          description: "NFS requests to TrueNAS have averaged over 250ms for 10 minutes (normal is about 20ms). The NAS is overloaded, scrubbing, or a disk is failing."
       - uid: "host-temp-high"
         title: "Host temperature high"
         condition: "C"

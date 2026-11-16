@@ -3,7 +3,7 @@ job "gatus" {
   type        = "service"
 
   meta {
-    domain = "gatus.aydenjahola.com"
+    domain = "status.aydenjahola.com"
   }
 
   group "gatus" {
@@ -45,6 +45,12 @@ job "gatus" {
         "traefik.enable=true",
         "traefik.http.routers.gatus.entrypoints=https",
         "traefik.http.routers.gatus.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.gatus-old.entrypoints=https",
+        "traefik.http.routers.gatus-old.rule=Host(`gatus.aydenjahola.com`)",
+        "traefik.http.routers.gatus-old.middlewares=gatus-old",
+        "traefik.http.middlewares.gatus-old.redirectregex.regex=^https://gatus\\.aydenjahola\\.com/(.*)",
+        "traefik.http.middlewares.gatus-old.redirectregex.replacement=https://status.aydenjahola.com/$${1}",
+        "traefik.http.middlewares.gatus-old.redirectregex.permanent=true",
       ]
     }
 
@@ -186,7 +192,7 @@ endpoints:
     url: "https://traefik.local.aydenjahola.com"
     <<: *defaults_https
 
-  - name: homarr
+  - name: homepage
     group: Core
     url: "https://home.aydenjahola.com"
     <<: *defaults_https
@@ -207,15 +213,25 @@ endpoints:
     url: "http://192.168.1.102:4646"
     <<: *defaults
 
+  # --- Storage ---
+  - name: truenas-nfs
+    group: Storage
+    url: "tcp://192.168.1.103:2049"
+    <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
+
+  - name: truenas-ui
+    group: Storage
+    url: "tcp://192.168.1.103:443"
+    <<: *defaults
+    conditions:
+      - "[CONNECTED] == true"
+
   # --- Monitoring ---
   - name: gatus
     group: Monitoring
-    url: "https://gatus.aydenjahola.com"
-    <<: *defaults_https
-
-  - name: uptime-kuma
-    group: Monitoring
-    url: "https://status.aydenjahola.com/status/homelab"
+    url: "https://status.aydenjahola.com"
     <<: *defaults_https
 
   - name: ntfy
@@ -376,6 +392,11 @@ endpoints:
     url: "https://docs.local.aydenjahola.com"
     <<: *defaults_sso
 
+  - name: opengym
+    group: Productivity
+    url: "https://gym.aydenjahola.com/api/health"
+    <<: *defaults_https
+
   # --- Analytics ---
   - name: plausible
     group: Analytics
@@ -402,11 +423,6 @@ endpoints:
   - name: solar-racing
     group: "Public Websites"
     url: "https://solarracing.ie"
-    <<: *defaults_https
-
-  - name: katyaphone
-    group: "Public Websites"
-    url: "https://katyaphone.com.au"
     <<: *defaults_https
 EOH
       }

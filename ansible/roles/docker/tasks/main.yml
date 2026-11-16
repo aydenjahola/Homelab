@@ -1,6 +1,6 @@
 ---
 # Packages (pinned) come from the packages role.
-- name: Docker daemon.json (absent today - only written if docker_daemon_json is set)
+- name: Docker daemon.json
   ansible.builtin.copy:
     content: "{{ docker_daemon_json | to_nice_json }}\n"
     dest: /etc/docker/daemon.json
@@ -8,7 +8,7 @@
     group: root
     mode: "0644"
   when: docker_daemon_json | length > 0
-  notify: Restart docker
+  notify: Reload docker
 
 - name: Docker and containerd services
   ansible.builtin.systemd_service:

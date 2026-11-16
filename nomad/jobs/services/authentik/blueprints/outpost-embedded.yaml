@@ -69,6 +69,12 @@ entries:
         path: custom/app-prowlarr.yaml
       required: true
 
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        path: custom/app-homepage.yaml
+      required: true
+
   - model: authentik_outposts.outpost
     identifiers:
       managed: goauthentik.io/outposts/embedded

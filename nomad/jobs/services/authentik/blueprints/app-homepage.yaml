@@ -1,0 +1,37 @@
+version: 1
+metadata:
+  name: app-homepage
+entries:
+  - model: authentik_core.application
+    identifiers:
+      slug: homarr
+    state: absent
+
+  - model: authentik_providers_oauth2.oauth2provider
+    identifiers:
+      name: homarr
+    state: absent
+
+  - model: authentik_providers_proxy.proxyprovider
+    identifiers:
+      name: homepage
+    state: absent
+
+  - model: authentik_core.application
+    id: homepage-app
+    identifiers:
+      slug: homepage
+    attrs:
+      name: Homepage
+      meta_launch_url: https://home.{{ key "homelab/domain" }}
+      meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/homepage.svg
+      group: Services
+      open_in_new_tab: true
+      policy_engine_mode: any
+
+  - model: authentik_policies.policybinding
+    identifiers:
+      target: !KeyOf homepage-app
+      group: !Find [authentik_core.group, [name, homelab-admins]]
+    attrs:
+      order: 0
