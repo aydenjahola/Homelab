@@ -34,15 +34,16 @@ set -eu
 apk add --no-cache curl jq >/dev/null
 
 : "$TRUENAS_URL"
+: "$TRUENAS_HOST"
+: "$TRUENAS_IP"
 : "$TRUENAS_API_KEY"
-: "$TRUENAS_TLS_PIN"
 : "$NTFY_URL"
 : "$NTFY_TOKEN"
 
 state=/data/active.txt
 touch "$state"
 
-curl -fsS -k --pinnedpubkey "$TRUENAS_TLS_PIN" -H "Authorization: Bearer $TRUENAS_API_KEY" "$TRUENAS_URL/api/v2.0/alert/list" \
+curl -fsS --resolve "$TRUENAS_HOST:443:$TRUENAS_IP" -H "Authorization: Bearer $TRUENAS_API_KEY" "$TRUENAS_URL/api/v2.0/alert/list" \
   | jq -c '.[] | select((.dismissed | not) and (.level | IN("WARNING","ERROR","CRITICAL","ALERT","EMERGENCY")))' \
   > /local/alerts.jsonl
 
@@ -82,8 +83,10 @@ SCRIPT
       }
 
       env {
-        TZ          = "Europe/Dublin"
-        TRUENAS_URL = "https://192.168.1.103"
+        TZ           = "Europe/Dublin"
+        TRUENAS_HOST = "nas.local.aydenjahola.com"
+        TRUENAS_IP   = "192.168.1.103"
+        TRUENAS_URL  = "https://nas.local.aydenjahola.com"
       }
 
       template {
@@ -93,7 +96,6 @@ SCRIPT
         error_on_missing_key = true
         data                 = <<EOH
 TRUENAS_API_KEY = {{ key "truenas/api/key" }}
-TRUENAS_TLS_PIN = {{ key "truenas/tls/pin" }}
 NTFY_URL        = {{ key "ntfy/url" }}
 NTFY_TOKEN      = {{ key "ntfy/token/truenas" }}
 EOH

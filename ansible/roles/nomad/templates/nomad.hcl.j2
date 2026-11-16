@@ -35,11 +35,11 @@ server {
   enabled          = true
   bootstrap_expect = {{ nomad_bootstrap_expect }}
 
-  job_gc_interval         = "1m"
-  job_gc_threshold        = "1m"
-  eval_gc_threshold       = "5m"
-  batch_eval_gc_threshold = "5m"
-  deployment_gc_threshold = "5m"
+  job_gc_interval         = "5m"
+  job_gc_threshold        = "24h"
+  eval_gc_threshold       = "1h"
+  batch_eval_gc_threshold = "24h"
+  deployment_gc_threshold = "1h"
 
   raft_logstore {
     backend = "wal"
@@ -59,7 +59,7 @@ client {
 {% endif %}
 
   gc_interval              = "30s"
-  gc_max_allocs            = 10
+  gc_max_allocs            = 100
   gc_disk_usage_threshold  = 70
   gc_inode_usage_threshold = 70
   gc_parallel_destroys     = 4
