@@ -53,7 +53,6 @@ notify_ok() {
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$msg")" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
-  ntfy 2 backup "$*"
 }
 
 notify_fail() {
@@ -76,10 +75,8 @@ REMOTE="gdrive:backups/plausible/postgres"
 
 echo "==> Dumping Postgres $POSTGRES_DB@$DB_HOST:$DB_PORT ..."
 pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-privileges \
-  | gzip -c > "$PLAIN_PATH"
-
-echo "==> Encrypting for $GPG_RECIPIENT ..."
-gpg --batch --yes --trust-model always -r "$GPG_RECIPIENT" -o "$ENC_PATH" --encrypt "$PLAIN_PATH"
+  | gzip -c \
+  | gpg --batch --yes --trust-model always -r "$GPG_RECIPIENT" -o "$ENC_PATH" --encrypt
 
 echo "==> Uploading to $REMOTE ..."
 rclone copy --transfers=4 --checkers=8 --checksum "$ENC_PATH" "$REMOTE"
@@ -90,7 +87,6 @@ rclone delete "$REMOTE" --min-age "$AGE" || true
 rclone rmdirs "$REMOTE" --leave-root || true
 
 echo "==> Cleaning local artifacts ..."
-shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -f "$ENC_PATH" || true
 
 echo "==> Postgres backup finished."
@@ -183,7 +179,6 @@ notify_ok() {
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$msg")" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
-  ntfy 2 backup "$*"
 }
 
 notify_fail() {
@@ -226,12 +221,10 @@ PLAIN_PATH="$NOMAD_TASK_DIR/plausible-clickhouse-$DATE.tar.gz"
 ENC_PATH="$PLAIN_PATH.gpg"
 
 echo "==> Packing dump directory ..."
-tar -C "$WORKDIR" -czf "$PLAIN_PATH" .
+tar -C "$WORKDIR" -czf - . \
+  | gpg --batch --yes --trust-model always -r "$GPG_RECIPIENT" -o "$ENC_PATH" --encrypt
 
 REMOTE="gdrive:backups/plausible/clickhouse"
-
-echo "==> Encrypting for $GPG_RECIPIENT ..."
-gpg --batch --yes --trust-model always -r "$GPG_RECIPIENT" -o "$ENC_PATH" --encrypt "$PLAIN_PATH"
 
 echo "==> Uploading to $REMOTE ..."
 rclone copy --transfers=4 --checkers=8 --checksum "$ENC_PATH" "$REMOTE"
@@ -242,7 +235,6 @@ rclone delete "$REMOTE" --min-age "$AGE" || true
 rclone rmdirs "$REMOTE" --leave-root || true
 
 echo "==> Cleaning local artifacts ..."
-shred -u -z "$PLAIN_PATH" || rm -f "$PLAIN_PATH"
 rm -rf "$WORKDIR" || true
 rm -f "$ENC_PATH" || true
 

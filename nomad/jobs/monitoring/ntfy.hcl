@@ -133,6 +133,7 @@ auth-tokens:
   - "homelab:{{ key "ntfy/token/diun" }}:diun"
   - "homelab:{{ key "ntfy/token/backups" }}:backups"
   - "homelab:{{ key "ntfy/token/cve-scan" }}:cve-scan"
+  - "homelab:{{ key "ntfy/token/truenas" }}:truenas"
 
 enable-login: true
 require-login: true

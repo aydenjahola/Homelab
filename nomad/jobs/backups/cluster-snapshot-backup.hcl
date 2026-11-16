@@ -164,7 +164,6 @@ notify_ok() {
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$*")" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
-  ntfy 2 backup "$*"
 }
 
 notify_fail() {
@@ -175,7 +174,7 @@ notify_fail() {
 }
 
 cleanup() {
-  shred -u -z "$DATA/consul.snap" "$DATA/nomad.snap" 2>/dev/null || rm -f "$DATA/consul.snap" "$DATA/nomad.snap"
+  rm -f "$DATA/consul.snap" "$DATA/nomad.snap"
   rm -f "$DEST"/consul/.tmp-* "$DEST"/nomad/.tmp-* 2>/dev/null || true
 }
 trap cleanup EXIT

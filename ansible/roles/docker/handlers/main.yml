@@ -1,6 +1,11 @@
 ---
-# Restarting dockerd kills every container on the node (live-restore is
-# off), so drain the Nomad node first.
+# live-restore and most daemon.json options apply on reload, without
+# touching running containers.
+- name: Reload docker
+  ansible.builtin.systemd_service:
+    name: docker
+    state: reloaded
+
 - name: Restart docker
   ansible.builtin.systemd_service:
     name: docker

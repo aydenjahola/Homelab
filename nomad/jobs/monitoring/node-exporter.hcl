@@ -21,7 +21,8 @@ job "node-exporter" {
 
         volumes = ["/:/host:ro,rslave"]
         args = [
-          "--path.rootfs=/host"
+          "--path.rootfs=/host",
+          "--collector.mountstats",
         ]
       }
 

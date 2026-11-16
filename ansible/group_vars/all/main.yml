@@ -32,11 +32,11 @@ packages_hold_pinned: false
 packages_pinned:
   nomad: "2.0.3-1"
   consul: "2.0.0-1"
-  docker-ce: "5:29.5.3-1~debian.13~trixie"
-  docker-ce-cli: "5:29.5.3-1~debian.13~trixie"
-  containerd.io: "2.2.4-1~debian.13~trixie"
-  docker-buildx-plugin: "0.34.1-1~debian.13~trixie"
-  docker-compose-plugin: "5.1.4-1~debian.13~trixie"
+  docker-ce: "5:29.9.3-1~debian.13~trixie"
+  docker-ce-cli: "5:29.9.3-1~debian.13~trixie"
+  containerd.io: "2.4.2-4~debian.13~trixie"
+  docker-buildx-plugin: "0.39.0-1~debian.13~trixie"
+  docker-compose-plugin: "5.7.1-1~debian.13~trixie"
   # No longer present in the HashiCorp apt index (only in dpkg status and
   # /var/cache/apt/archives/nomad-driver-virt_0.0.1~beta.1-1_amd64.deb).
   nomad-driver-virt: "0.0.1~beta.1-1"
@@ -128,9 +128,9 @@ storage_layout:
 storage_manage_layout: false
 
 # --------------------------------------------------------------- docker
-# No /etc/docker/daemon.json exists today: json-file logging, overlay2,
-# systemd cgroup driver, no registry mirrors/insecure registries.
-docker_daemon_json: {}
+# live-restore keeps containers running across a dockerd restart or upgrade.
+docker_daemon_json:
+  live-restore: true
 
 # ------------------------------------------------------------------ cni
 cni_version: "1.6.2"
@@ -156,6 +156,10 @@ nomad_qemu_image_path: /storage/images
 nomad_hcl_layout: standard
 nomad_http: "http://127.0.0.1:4646"
 nomad_extra_dirs: []
+# Only applied when the cluster is first bootstrapped; a running cluster is
+# changed with `nomad operator scheduler set-config`.
+nomad_scheduler_algorithm: spread
+nomad_reserved_memory_mb: 1024
 
 # ---------------------------------------------------------- health waits
 health_retries: 60

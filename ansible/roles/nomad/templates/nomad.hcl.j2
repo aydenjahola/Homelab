@@ -44,6 +44,11 @@ server {
   raft_logstore {
     backend = "wal"
   }
+
+  default_scheduler_config {
+    scheduler_algorithm             = "{{ nomad_scheduler_algorithm }}"
+    memory_oversubscription_enabled = true
+  }
 }
 
 client {
@@ -58,6 +63,10 @@ client {
   gc_disk_usage_threshold  = 70
   gc_inode_usage_threshold = 70
   gc_parallel_destroys     = 4
+
+  reserved {
+    memory = {{ nomad_reserved_memory_mb }}
+  }
 }
 
 limits {

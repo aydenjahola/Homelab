@@ -20,6 +20,8 @@ nomad job plan jobs/media/jellyfin.hcl
 nomad job run jobs/media/jellyfin.hcl
 ```
 
+The scheduler uses `spread`. Running jobs never move on their own, so after a node has been offline run `scripts/rebalance.sh <busiest-node>`.
+
 ## New app checklist
 
 - App group first, then a `db` group on `postgres:17-alpine` with a `wait-for-db` prestart task.
@@ -29,6 +31,8 @@ nomad job run jobs/media/jellyfin.hcl
 ## Notifications
 
 Self-hosted ntfy at `ntfy.aydenjahola.com`, login required. Senders publish with tokens from `ntfy/token/<sender>` to `homelab-alerts` (Grafana), `homelab-uptime` (Gatus), `homelab-backups`, `homelab-updates` (Diun) and `homelab-security` (cve-scan). Discord still receives the same alerts for now.
+
+Backup successes are quiet: `backup-digest` posts one summary at 08:00, and `diun-digest` lists new image tags on Monday mornings. `truenas-alerts` forwards TrueNAS alerts to `homelab-alerts`.
 
 ## Hosts
 
