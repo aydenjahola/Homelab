@@ -192,10 +192,10 @@ endpoints:
     url: "https://traefik.local.aydenjahola.com"
     <<: *defaults_https
 
-  - name: homarr
+  - name: homepage
     group: Core
     url: "https://home.aydenjahola.com"
-    <<: *defaults_https
+    <<: *defaults_sso
 
   # --- Cluster ---
   - name: nomad-odin

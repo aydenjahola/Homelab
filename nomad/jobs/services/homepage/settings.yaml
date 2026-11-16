@@ -1,0 +1,29 @@
+title: Homelab
+theme: dark
+color: slate
+headerStyle: clean
+hideVersion: true
+statusStyle: dot
+target: _blank
+layout:
+  Core:
+    style: row
+    columns: 4
+  Media:
+    style: row
+    columns: 4
+  Media Automation:
+    style: row
+    columns: 5
+  Productivity:
+    style: row
+    columns: 3
+  Monitoring:
+    style: row
+    columns: 3
+  Security:
+    style: row
+    columns: 1
+  Cluster:
+    style: row
+    columns: 5
