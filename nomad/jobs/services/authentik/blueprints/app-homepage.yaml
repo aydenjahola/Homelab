@@ -13,14 +13,9 @@ entries:
     state: absent
 
   - model: authentik_providers_proxy.proxyprovider
-    id: homepage-provider
     identifiers:
       name: homepage
-    attrs:
-      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
-      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
-      mode: forward_single
-      external_host: https://home.{{ key "homelab/domain" }}
+    state: absent
 
   - model: authentik_core.application
     id: homepage-app
@@ -28,7 +23,6 @@ entries:
       slug: homepage
     attrs:
       name: Homepage
-      provider: !KeyOf homepage-provider
       meta_launch_url: https://home.{{ key "homelab/domain" }}
       meta_icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/homepage.svg
       group: Services

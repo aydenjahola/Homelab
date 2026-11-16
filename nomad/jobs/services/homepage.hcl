@@ -45,7 +45,6 @@ job "homepage" {
         "traefik.enable=true",
         "traefik.http.routers.homepage.entrypoints=https",
         "traefik.http.routers.homepage.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.homepage.middlewares=authentik@consulcatalog",
       ]
 
       check {

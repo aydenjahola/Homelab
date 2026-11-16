@@ -195,7 +195,7 @@ endpoints:
   - name: homepage
     group: Core
     url: "https://home.aydenjahola.com"
-    <<: *defaults_sso
+    <<: *defaults_https
 
   # --- Cluster ---
   - name: nomad-odin
