@@ -36,14 +36,24 @@ export GNUPGHOME="/gnupg"
 : "$GPG_RECIPIENT"
 : "$RETENTION_DAYS"
 : "$DISCORD_WEBHOOK_URL"
+: "$NTFY_URL"
+: "$NTFY_TOKEN"
 
 export PGPASSWORD="$POSTGRES_PASSWORD"
+
+ntfy() {
+  curl -sS -H "Authorization: Bearer $NTFY_TOKEN" \
+    -H "Priority: $1" -H "Tags: $2" -H "Markdown: yes" \
+    --data-binary "$(printf '%s' "$3" | sed 's/<@[0-9]*> //g')" \
+    "$NTFY_URL/homelab-backups" >/dev/null || true
+}
 
 notify_ok() {
   msg="$*"
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$msg")" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
+  ntfy 2 backup "$*"
 }
 
 notify_fail() {
@@ -52,6 +62,7 @@ notify_fail() {
   curl -sS -H "Content-Type: application/json" \
     -d "$payload" \
     "$DISCORD_WEBHOOK_URL" >/dev/null || true
+  ntfy 4 backup,failed "$*"
 }
 
 trap 'notify_fail "❌ <@367293674981294086> **jellyfin-backup** failed on $(hostname) at $(date +%Y-%m-%dT%H:%M:%SZ). Check Nomad alloc logs."' ERR
@@ -110,6 +121,8 @@ POSTGRES_DB       = {{ key "jellyfin/db/name" }}
 GPG_RECIPIENT       = {{ key "backup/gpg/key" }}
 RETENTION_DAYS      = {{ key "backup/retention/days" }}
 DISCORD_WEBHOOK_URL = {{ key "backup/webhook/discord" }}
+NTFY_URL            = {{ key "ntfy/url" }}
+NTFY_TOKEN          = {{ key "ntfy/token/backups" }}
 EOH
       }
 

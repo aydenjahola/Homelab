@@ -1,4 +1,4 @@
-# Discord contact point. Takes over the one made in the UI (same uid).
+# Contact points. Discord takes over the one made in the UI (same uid).
 # Nomad renders this file with double-square-bracket delimiters; the webhook comes from Consul KV.
 apiVersion: 1
 
@@ -14,3 +14,31 @@ contactPoints:
           use_discord_username: false
           title: '{{ template "homelab.title" . }}'
           message: '{{ template "homelab.message" . }}'
+
+  - orgId: 1
+    name: ntfy
+    receivers:
+      - uid: ntfy-homelab-warning
+        type: webhook
+        disableResolveMessage: false
+        settings:
+          url: '[[ key "ntfy/url" ]]/homelab-alerts?template=grafana&markdown=yes&priority=4&tags=warning&click=https://grafana.aydenjahola.com/alerting/list'
+          httpMethod: POST
+          authorization_scheme: Bearer
+          authorization_credentials: '[[ key "ntfy/token/grafana" ]]'
+          title: '{{ template "homelab.ntfy.title" . }}'
+          message: '{{ template "homelab.ntfy.message" . }}'
+
+  - orgId: 1
+    name: ntfy-critical
+    receivers:
+      - uid: ntfy-homelab-critical
+        type: webhook
+        disableResolveMessage: false
+        settings:
+          url: '[[ key "ntfy/url" ]]/homelab-alerts?template=grafana&markdown=yes&priority=5&tags=rotating_light&click=https://grafana.aydenjahola.com/alerting/list'
+          httpMethod: POST
+          authorization_scheme: Bearer
+          authorization_credentials: '[[ key "ntfy/token/grafana" ]]'
+          title: '{{ template "homelab.ntfy.title" . }}'
+          message: '{{ template "homelab.ntfy.message" . }}'

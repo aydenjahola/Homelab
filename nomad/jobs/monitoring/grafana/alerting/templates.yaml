@@ -1,4 +1,4 @@
-# Discord message templates used by contact-points.yaml.
+# Discord and ntfy message templates used by contact-points.yaml.
 apiVersion: 1
 
 templates:
@@ -21,4 +21,17 @@ templates:
       {{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 0 }}{{ if gt (len .Alerts.Firing) 0 }}**Resolved**
       {{ end }}{{ range .Alerts.Resolved }}✅ {{ .Annotations.summary }}
       {{ end }}{{ end }}
+      {{- end }}
+
+      {{ define "homelab.ntfy.title" -}}
+      {{ .CommonLabels.alertname }}{{ if eq .Status "firing" }}{{ if gt (len .Alerts.Firing) 1 }} ({{ len .Alerts.Firing }} firing){{ end }}{{ else }} resolved{{ end }}
+      {{- end }}
+
+      {{ define "homelab.ntfy.message" -}}
+      {{ range .Alerts.Firing }}**{{ .Annotations.summary }}**
+      {{ .Annotations.description }}
+      {{ if .Labels.severity }}`{{ .Labels.severity }}` · {{ end }}since {{ .StartsAt.Format "Jan 2 15:04 MST" }}{{ if .DashboardURL }} · [dashboard]({{ .DashboardURL }}){{ end }}{{ if .SilenceURL }} · [silence]({{ .SilenceURL }}){{ end }}
+
+      {{ end }}{{ range .Alerts.Resolved }}✅ {{ .Annotations.summary }}
+      {{ end }}
       {{- end }}
