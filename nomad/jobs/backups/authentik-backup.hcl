@@ -11,6 +11,8 @@ job "authentik-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "authentik-db-backup" {
       driver = "docker"
 

@@ -11,6 +11,8 @@ job "backup-digest" {
   group "digest" {
     count = 1
 
+    max_run_duration = "10m"
+
     restart {
       attempts = 0
       mode     = "fail"

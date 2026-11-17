@@ -11,6 +11,8 @@ job "ntfy-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "ntfy-db-backup" {
       driver = "docker"
 

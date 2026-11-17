@@ -11,6 +11,8 @@ job "radarr-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "radarr-db-backup" {
       driver = "docker"
 

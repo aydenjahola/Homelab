@@ -11,6 +11,8 @@ job "opengym-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     # openGym keeps everything in JSON files (no database): archive the data dir.
     task "opengym-data-backup" {
       driver = "docker"

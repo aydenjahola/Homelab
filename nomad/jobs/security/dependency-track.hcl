@@ -77,6 +77,19 @@ job "dependency-track" {
         "traefik.http.routers.dtrack.entrypoints=https",
         "traefik.http.routers.dtrack.rule=Host(`${NOMAD_META_domain}`)",
       ]
+
+      check {
+        name     = "dependency-track-health"
+        type     = "http"
+        path     = "/"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "wait-for-db" {
@@ -112,8 +125,9 @@ EOH
       }
 
       resources {
-        cpu    = 50
-        memory = 64
+        cpu        = 50
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -251,7 +265,9 @@ EOH
     }
 
     task "db" {
-      driver = "docker"
+      driver       = "docker"
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
 
       config {
         image        = "postgres:17-alpine"

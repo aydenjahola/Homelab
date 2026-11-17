@@ -203,7 +203,9 @@ EOH
     }
 
     task "postgres" {
-      driver = "docker"
+      driver       = "docker"
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
 
       config {
         image = "postgres:17-alpine"

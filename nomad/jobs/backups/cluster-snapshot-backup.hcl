@@ -11,6 +11,8 @@ job "cluster-snapshot-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     restart {
       attempts = 2
       interval = "30m"

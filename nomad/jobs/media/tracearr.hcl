@@ -97,8 +97,9 @@ EOH
       }
 
       resources {
-        cpu    = 50
-        memory = 64
+        cpu        = 50
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -216,7 +217,9 @@ EOH
     }
 
     task "timescale" {
-      driver = "docker"
+      driver       = "docker"
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
 
       config {
         image = "timescale/timescaledb-ha:pg18.1-ts2.25.0"

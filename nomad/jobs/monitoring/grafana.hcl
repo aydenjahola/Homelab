@@ -46,6 +46,19 @@ job "grafana" {
         "traefik.http.routers.grafana.entrypoints=https",
         "traefik.http.routers.grafana.rule=Host(`${NOMAD_META_domain}`)",
       ]
+
+      check {
+        name     = "grafana-health"
+        type     = "http"
+        path     = "/api/health"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "wait-for-db" {
@@ -297,7 +310,9 @@ EOH
     }
 
     task "db" {
-      driver = "docker"
+      driver       = "docker"
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
 
       config {
         image = "postgres:17-alpine"
