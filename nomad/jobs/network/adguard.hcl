@@ -284,6 +284,24 @@ filtering:
     - domain: blog.aydenjahola.com
       answer: AAAA
       enabled: true
+    - domain: www.aydenjahola.com
+      answer: A
+      enabled: true
+    - domain: www.aydenjahola.com
+      answer: AAAA
+      enabled: true
+    - domain: spotify-stats.aydenjahola.com
+      answer: A
+      enabled: true
+    - domain: spotify-stats.aydenjahola.com
+      answer: AAAA
+      enabled: true
+    - domain: re.aydenjahola.com
+      answer: A
+      enabled: true
+    - domain: re.aydenjahola.com
+      answer: AAAA
+      enabled: true
   filters_update_interval: 24
   filtering_enabled: true
   rewrites_enabled: true
