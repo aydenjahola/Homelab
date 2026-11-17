@@ -135,6 +135,11 @@
         icon: dependency-track.svg
         description: SBOMs and CVEs
         siteMonitor: https://dtrack.local.aydenjahola.com
+    - Wazuh:
+        href: https://wazuh.local.aydenjahola.com
+        icon: wazuh.svg
+        description: SIEM and host agents
+        siteMonitor: https://wazuh.local.aydenjahola.com/app/login
 - Cluster:
     - Nomad:
         href: http://192.168.1.100:4646
@@ -146,6 +151,14 @@
         icon: consul.svg
         description: Service catalog and KV
         siteMonitor: http://192.168.1.100:8500/v1/status/leader
+    - AdGuard Home:
+        href: https://adguard.local.aydenjahola.com
+        icon: adguard-home.svg
+        description: DNS and ad blocking · 192.168.1.100-102
+        siteMonitor: https://adguard.local.aydenjahola.com/login.html
+        widget:
+          type: adguard
+          url: https://adguard.local.aydenjahola.com
     - TrueNAS:
         href: https://nas.local.aydenjahola.com
         icon: truenas-scale.svg

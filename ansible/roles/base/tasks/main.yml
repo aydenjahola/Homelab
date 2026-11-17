@@ -50,3 +50,13 @@
     name: systemd-timesyncd
     enabled: true
     state: started
+
+# Debian 13 already ships 1048576 (/usr/lib/sysctl.d/50-default.conf);
+# pinned so the Wazuh indexer's >= 262144 requirement can't regress.
+- name: Set vm.max_map_count for the Wazuh indexer
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "1048576"
+    sysctl_file: /etc/sysctl.d/99-wazuh-indexer.conf
+    state: present
+    sysctl_set: true

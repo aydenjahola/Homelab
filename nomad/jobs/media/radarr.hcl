@@ -45,7 +45,7 @@ job "radarr" {
         "traefik.enable=true",
         "traefik.http.routers.radarr.entrypoints=https",
         "traefik.http.routers.radarr.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.radarr.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.radarr.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {

@@ -45,6 +45,7 @@ job "trivy-server" {
         "traefik.enable=true",
         "traefik.http.routers.trivy.entrypoints=https",
         "traefik.http.routers.trivy.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.trivy.middlewares=lan-only@file",
       ]
 
       check {
@@ -76,7 +77,7 @@ job "trivy-server" {
         security_opt    = ["no-new-privileges:true"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/cache:/cache:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/cache:/cache:rw",
         ]
       }
 

@@ -9,6 +9,17 @@ policies:
     group_interval: 5m
     repeat_interval: 4h
     routes:
+      # Security alerts only go to the homelab-security ntfy topic.
+      - receiver: ntfy-security
+        object_matchers:
+          - ["category", "=", "security"]
+        continue: false
+        routes:
+          - receiver: ntfy-security-critical
+            object_matchers:
+              - ["severity", "=", "critical"]
+            group_wait: 10s
+            repeat_interval: 1h
       - receiver: ntfy-critical
         object_matchers:
           - ["severity", "=", "critical"]

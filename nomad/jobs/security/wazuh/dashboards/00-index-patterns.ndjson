@@ -1,0 +1,2 @@
+{"attributes": {"timeFieldName": "timestamp", "title": "wazuh-alerts-*"}, "id": "wazuh-alerts-*", "references": [], "type": "index-pattern"}
+{"attributes": {"title": "wazuh-states-vulnerabilities-*"}, "id": "wazuh-states-vulnerabilities-*", "references": [], "type": "index-pattern"}

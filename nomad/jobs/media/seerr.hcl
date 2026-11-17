@@ -45,6 +45,7 @@ job "seerr" {
         "traefik.enable=true",
         "traefik.http.routers.seerr.entrypoints=https",
         "traefik.http.routers.seerr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.seerr.middlewares=lan-only@file",
       ]
 
       check {

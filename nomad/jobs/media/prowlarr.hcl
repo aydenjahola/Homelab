@@ -45,7 +45,7 @@ job "prowlarr" {
         "traefik.enable=true",
         "traefik.http.routers.prowl.entrypoints=https",
         "traefik.http.routers.prowl.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.prowl.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.prowl.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {
@@ -109,7 +109,7 @@ EOH
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/config:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/config:rw",
           "/etc/localtime:/etc/localtime:ro",
         ]
       }

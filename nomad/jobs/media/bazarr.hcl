@@ -45,7 +45,7 @@ job "bazarr" {
         "traefik.enable=true",
         "traefik.http.routers.bazarr.entrypoints=https",
         "traefik.http.routers.bazarr.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.bazarr.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.bazarr.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {
@@ -110,7 +110,7 @@ EOH
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/config:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/config:rw",
           "/storage/jellyfin/movies:/movies:rw",
           "/storage/jellyfin/tv:/tv:rw",
           "/etc/localtime:/etc/localtime:ro",

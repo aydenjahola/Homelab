@@ -69,11 +69,11 @@ job "stirling-pdf" {
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/trainingData:/usr/share/tessdata:rw",
-          "/storage/nomad/${NOMAD_JOB_NAME}/extraConfigs:/configs:rw",
-          "/storage/nomad/${NOMAD_JOB_NAME}/customFiles:/customFiles:rw",
-          "/storage/nomad/${NOMAD_JOB_NAME}/logs:/logs:rw",
-          "/storage/nomad/${NOMAD_JOB_NAME}/pipeline:/pipeline:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/trainingData:/usr/share/tessdata:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/extraConfigs:/configs:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/customFiles:/customFiles:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/logs:/logs:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/pipeline:/pipeline:rw",
         ]
       }
 

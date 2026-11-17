@@ -15,6 +15,8 @@
     "from": "now-7d",
     "to": "now"
   },
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
   "templating": {
     "list": [
       {
@@ -82,9 +84,9 @@
   ],
   "panels": [
     {
-      "type": "stat",
+      "type": "volkovlabs-echarts-panel",
       "title": "Estimated wall power",
-      "description": "Measured CPU and memory power plus the overhead and NAS estimates.",
+      "description": "Measured CPU and memory power plus the overhead and NAS estimates. The scale grows with the reading.",
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -102,55 +104,51 @@
           "instant": true,
           "format": "time_series",
           "editorMode": "code"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "(sum(sum by (node) (rate(node_rapl_package_joules_total[5m]))) + sum(sum by (node) (rate(node_rapl_dram_joules_total[5m]))) + count(node_uname_info) * $node_overhead_w + $nas_w) * 24 * 30.44 / 1000 * $price",
+          "legendFormat": "__auto",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "editorMode": "code"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          },
-          "unit": "watt",
-          "decimals": 0
-        },
-        "overrides": []
-      },
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "auto",
-        "wideLayout": true,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "renderer": "canvas",
+        "editorMode": "code",
+        "getOption": "const t = context.grafana.theme;\nconst series = context.panel.data.series;\nconst num = (s) => s.fields.find((f) => f.type === 'number');\nconst last = (ref) => {\n  const s = series.find((x) => x.refId === ref);\n  const f = s && num(s);\n  return f && f.values.length ? f.values[f.values.length - 1] : null;\n};\n\nconst w = last('A') || 0;\nconst eur = last('B') || 0;\nconst max = Math.max(150, Math.ceil((w * 1.6) / 50) * 50);\nconst grad = w < 150 ? '#2dd4bf' : w < 250 ? '#f5b73b' : '#f2495c';\nreturn {\n  backgroundColor: 'transparent',\n  textStyle: { fontFamily: t.typography.fontFamily },\n  series: [{\n    type: 'gauge', startAngle: 215, endAngle: -35, min: 0, max: max, splitNumber: 5,\n    radius: '95%', center: ['50%', '58%'],\n    progress: { show: true, roundCap: true, width: 14, itemStyle: { color: grad } },\n    axisLine: { roundCap: true, lineStyle: { width: 14, color: [ [1, 'rgba(142,154,175,0.16)'] ] } },\n    pointer: { show: false },\n    axisTick: { show: false },\n    splitLine: { length: 6, distance: 4, lineStyle: { width: 1, color: t.colors.border.medium } },\n    axisLabel: { distance: 14, color: t.colors.text.secondary, fontSize: 10 },\n    anchor: { show: false },\n    title: { offsetCenter: [0, '36%'], color: t.colors.text.secondary, fontSize: 12 },\n    detail: { valueAnimation: true, offsetCenter: [0, '2%'], fontSize: 30, fontWeight: 600,\n      color: t.colors.text.primary, formatter: (v) => Math.round(v) + ' W' },\n    data: [{ value: w, name: '\\u20ac' + eur.toFixed(2) + ' per month' }],\n  }],\n};\n",
+        "map": "none",
+        "editor": {
+          "format": "auto"
         },
-        "showPercentChange": false
+        "themeEditor": {
+          "name": "default",
+          "config": "{}"
+        },
+        "visualEditor": {
+          "dataset": [],
+          "series": [],
+          "code": ""
+        }
       },
       "id": 1,
       "gridPos": {
         "x": 0,
         "y": 0,
         "w": 6,
-        "h": 5
+        "h": 10
       }
     },
     {
       "type": "stat",
       "title": "Per day",
-      "description": "",
+      "description": "Energy per day at the current draw.",
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -170,6 +168,7 @@
           "editorMode": "code"
         }
       ],
+      "transparent": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -180,7 +179,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#2dd4bf"
               }
             ]
           },
@@ -192,7 +191,7 @@
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "textMode": "auto",
         "wideLayout": true,
         "orientation": "auto",
@@ -203,13 +202,14 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
       },
       "id": 2,
       "gridPos": {
         "x": 6,
         "y": 0,
-        "w": 4,
+        "w": 6,
         "h": 5
       }
     },
@@ -236,6 +236,7 @@
           "editorMode": "code"
         }
       ],
+      "transparent": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -246,7 +247,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#f5b73b"
               }
             ]
           },
@@ -258,7 +259,7 @@
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "textMode": "auto",
         "wideLayout": true,
         "orientation": "auto",
@@ -269,13 +270,14 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
       },
       "id": 3,
       "gridPos": {
-        "x": 10,
+        "x": 12,
         "y": 0,
-        "w": 5,
+        "w": 6,
         "h": 5
       }
     },
@@ -302,6 +304,7 @@
           "editorMode": "code"
         }
       ],
+      "transparent": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -312,7 +315,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#ff8a3d"
               }
             ]
           },
@@ -324,7 +327,7 @@
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "textMode": "auto",
         "wideLayout": true,
         "orientation": "auto",
@@ -335,13 +338,14 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
       },
       "id": 4,
       "gridPos": {
-        "x": 15,
+        "x": 18,
         "y": 0,
-        "w": 5,
+        "w": 6,
         "h": 5
       }
     },
@@ -362,12 +366,13 @@
           "expr": "sum(sum by (node) (rate(node_rapl_package_joules_total[5m])))",
           "legendFormat": "__auto",
           "refId": "A",
-          "range": false,
-          "instant": true,
+          "range": true,
+          "instant": false,
           "format": "time_series",
           "editorMode": "code"
         }
       ],
+      "transparent": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -378,7 +383,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#8b7cf6"
               }
             ]
           },
@@ -389,8 +394,8 @@
       },
       "options": {
         "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "textMode": "auto",
         "wideLayout": true,
         "orientation": "auto",
@@ -401,20 +406,21 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
       },
       "id": 5,
       "gridPos": {
-        "x": 20,
-        "y": 0,
-        "w": 4,
+        "x": 0,
+        "y": 10,
+        "w": 6,
         "h": 5
       }
     },
     {
-      "type": "timeseries",
-      "title": "CPU package power by node",
-      "description": "RAPL package domain: cores, iGPU and uncore.",
+      "type": "stat",
+      "title": "Measured DRAM power",
+      "description": "Sum of RAPL DRAM power on all nodes.",
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -425,8 +431,8 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum by (node) (rate(node_rapl_package_joules_total[5m]))",
-          "legendFormat": "{{node}}",
+          "expr": "sum(sum by (node) (rate(node_rapl_dram_joules_total[5m])))",
+          "legendFormat": "__auto",
           "refId": "A",
           "range": true,
           "instant": false,
@@ -438,56 +444,113 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 30,
-            "gradientMode": "opacity",
-            "showPoints": "never",
-            "spanNulls": true,
-            "lineInterpolation": "smooth",
-            "barAlignment": 0,
-            "stacking": {
-              "mode": "normal",
-              "group": "A"
-            }
-          },
+          "custom": {},
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#5794f2"
               }
             ]
           },
-          "unit": "watt"
+          "unit": "watt",
+          "decimals": 1
         },
         "overrides": []
       },
       "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
           "calcs": [
-            "mean",
-            "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
       },
       "id": 6,
       "gridPos": {
-        "x": 0,
-        "y": 5,
-        "w": 12,
-        "h": 9
+        "x": 6,
+        "y": 10,
+        "w": 6,
+        "h": 5
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Cost of selected range",
+      "description": "Average estimated wall power over the time picker range, priced at € per kWh.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "avg_over_time(((sum(sum by (node) (rate(node_rapl_package_joules_total[5m]))) + sum(sum by (node) (rate(node_rapl_dram_joules_total[5m]))) + count(node_uname_info) * $node_overhead_w + $nas_w))[$__range:5m]) * ($__range_s / 3600) / 1000 * $price",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#f472b6"
+              }
+            ]
+          },
+          "unit": "currencyEUR",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 12,
+        "y": 10,
+        "w": 6,
+        "h": 5
       }
     },
     {
@@ -517,20 +580,31 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-GrYlRd"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "gradientMode": "scheme",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
             "axisSoftMin": 0
           },
@@ -538,7 +612,15 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
+              },
+              {
+                "value": 150,
+                "color": "#f5b73b"
+              },
+              {
+                "value": 250,
+                "color": "#f2495c"
               }
             ]
           },
@@ -555,17 +637,283 @@
             "mean",
             "max"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Min",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 7,
+      "id": 8,
       "gridPos": {
-        "x": 12,
-        "y": 5,
+        "x": 0,
+        "y": 15,
+        "w": 16,
+        "h": 9
+      }
+    },
+    {
+      "type": "piechart",
+      "title": "Power share by node (CPU + DRAM)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "sum by (node) (rate(node_rapl_package_joules_total[5m])) + sum by (node) (rate(node_rapl_dram_joules_total[5m]))",
+          "legendFormat": "{{node}}",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              }
+            ]
+          },
+          "unit": "watt",
+          "decimals": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "odin"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c8cf8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "thor"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#2dd4bf"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loki"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f472b6"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": [
+          "percent"
+        ],
+        "sort": "desc",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ],
+          "showLegend": true
+        },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "id": 9,
+      "gridPos": {
+        "x": 16,
+        "y": 15,
+        "w": 8,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU package power by node",
+      "description": "RAPL package domain: cores, iGPU and uncore.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "sum by (node) (rate(node_rapl_package_joules_total[5m]))",
+          "legendFormat": "{{node}}",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 30,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "pointSize": 4,
+            "spanNulls": true,
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "odin"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c8cf8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "thor"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#2dd4bf"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loki"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f472b6"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": true
+        }
+      },
+      "id": 10,
+      "gridPos": {
+        "x": 0,
+        "y": 24,
         "w": 12,
         "h": 9
       }
@@ -610,20 +958,31 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "fillOpacity": 0,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
             "axisSoftMin": 0
           },
@@ -631,7 +990,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
@@ -663,6 +1022,51 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "odin.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c8cf8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "thor.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#2dd4bf"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "loki.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f472b6"
+                }
+              }
+            ]
           }
         ]
       },
@@ -675,17 +1079,20 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 8,
+      "id": 11,
       "gridPos": {
-        "x": 0,
-        "y": 14,
+        "x": 12,
+        "y": 24,
         "w": 12,
         "h": 9
       }
@@ -717,20 +1124,31 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 10,
+            "lineWidth": 2,
+            "fillOpacity": 12,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
             "axisSoftMin": 0
           },
@@ -738,13 +1156,59 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
           "unit": "watt"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "odin"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c8cf8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "thor"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#2dd4bf"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loki"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f472b6"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -755,19 +1219,22 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 9,
+      "id": 12,
       "gridPos": {
-        "x": 12,
-        "y": 14,
+        "x": 0,
+        "y": 33,
         "w": 12,
-        "h": 9
+        "h": 8
       }
     },
     {
@@ -793,6 +1260,7 @@
           "editorMode": "code"
         }
       ],
+      "transparent": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -803,104 +1271,89 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue"
+                "color": "#5794f2"
               }
             ]
           },
           "unit": "kwatth",
-          "min": 0
+          "min": 0,
+          "decimals": 2
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "odin"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c8cf8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "thor"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#2dd4bf"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "loki"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f472b6"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "displayMode": "gradient",
         "orientation": "horizontal",
         "showUnfilled": true,
         "valueMode": "color",
-        "namePlacement": "auto",
-        "sizing": "auto",
+        "namePlacement": "left",
+        "sizing": "manual",
+        "minVizHeight": 18,
+        "maxVizHeight": 22,
+        "minVizWidth": 8,
+        "legend": {
+          "showLegend": false
+        },
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
           "fields": "",
           "values": false
-        },
-        "minVizHeight": 16,
-        "maxVizHeight": 28
-      },
-      "id": 10,
-      "gridPos": {
-        "x": 0,
-        "y": 23,
-        "w": 12,
-        "h": 7
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Estimated cost of selected range",
-      "description": "Average estimated wall power over the time picker range, priced at € per kWh.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "avg_over_time(((sum(sum by (node) (rate(node_rapl_package_joules_total[5m]))) + sum(sum by (node) (rate(node_rapl_dram_joules_total[5m]))) + count(node_uname_info) * $node_overhead_w + $nas_w))[$__range:5m]) * ($__range_s / 3600) / 1000 * $price",
-          "legendFormat": "__auto",
-          "refId": "A",
-          "range": false,
-          "instant": true,
-          "format": "time_series",
-          "editorMode": "code"
         }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          },
-          "unit": "currencyEUR",
-          "decimals": 2
-        },
-        "overrides": []
       },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "auto",
-        "wideLayout": true,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false
-      },
-      "id": 11,
+      "id": 13,
       "gridPos": {
         "x": 12,
-        "y": 23,
+        "y": 33,
         "w": 12,
-        "h": 7
+        "h": 8
       }
     }
   ]

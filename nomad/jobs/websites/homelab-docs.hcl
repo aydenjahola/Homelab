@@ -45,7 +45,7 @@ job "homelab-docs" {
         "traefik.enable=true",
         "traefik.http.routers.docs.entrypoints=https",
         "traefik.http.routers.docs.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.docs.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.docs.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {

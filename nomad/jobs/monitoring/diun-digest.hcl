@@ -44,7 +44,7 @@ mv /data/pending.tsv /data/sending.tsv
 sort -u /data/sending.tsv | awk -F '\t' '{ if ($2 != "") printf "- [%s](%s)\n", $1, $2; else printf "- %s\n", $1 }' > /local/body.md
 count="$(wc -l < /local/body.md | tr -d ' ')"
 
-curl -fsS -H "Authorization: Bearer $NTFY_TOKEN" \
+curl -fsS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" \
   -H "Title: $count image updates this week" -H "Priority: 2" -H "Tags: package" -H "Markdown: yes" \
   --data-binary @/local/body.md "$NTFY_URL/homelab-updates" >/dev/null
 
@@ -70,6 +70,15 @@ SCRIPT
         data                 = <<EOH
 NTFY_URL   = {{ key "ntfy/url" }}
 NTFY_TOKEN = {{ key "ntfy/token/diun" }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/ntfy-auth"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+Authorization: Bearer {{ key "ntfy/token/diun" }}
 EOH
       }
 

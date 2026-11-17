@@ -135,8 +135,10 @@ GF_DATABASE_USER     = {{ key "grafana/db/user" }}
 GF_DATABASE_PASSWORD = {{ key "grafana/db/password" }}
 GF_DATABASE_SSL_MODE = disable
 
-GF_PLUGINS_PREINSTALL  = grafana-clock-panel
-GF_USERS_ALLOW_SIGN_UP = false
+GF_PLUGINS_PREINSTALL     = grafana-clock-panel@3.2.5,volkovlabs-echarts-panel@7.2.5
+GF_FEATURE_TOGGLES_ENABLE = dataviz.tabularNums
+GF_USERS_DEFAULT_THEME    = dark
+GF_USERS_ALLOW_SIGN_UP    = false
 
 GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH = /etc/grafana/dashboards/Homelab/command-center.json
 GF_UNIFIED_ALERTING_ENABLED               = true

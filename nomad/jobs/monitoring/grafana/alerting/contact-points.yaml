@@ -42,3 +42,32 @@ contactPoints:
           authorization_credentials: '[[ key "ntfy/token/grafana" ]]'
           title: '{{ template "homelab.ntfy.title" . }}'
           message: '{{ template "homelab.ntfy.message" . }}'
+
+  # Security alerts (rules labelled category=security) go to their own topic.
+  - orgId: 1
+    name: ntfy-security
+    receivers:
+      - uid: ntfy-homelab-security
+        type: webhook
+        disableResolveMessage: false
+        settings:
+          url: '[[ key "ntfy/url" ]]/homelab-security?template=grafana&markdown=yes&priority=4&tags=shield&click=https://grafana.aydenjahola.com/d/homelab-security-overview'
+          httpMethod: POST
+          authorization_scheme: Bearer
+          authorization_credentials: '[[ key "ntfy/token/cve-scan" ]]'
+          title: '{{ template "homelab.ntfy.title" . }}'
+          message: '{{ template "homelab.ntfy.message" . }}'
+
+  - orgId: 1
+    name: ntfy-security-critical
+    receivers:
+      - uid: ntfy-homelab-security-critical
+        type: webhook
+        disableResolveMessage: false
+        settings:
+          url: '[[ key "ntfy/url" ]]/homelab-security?template=grafana&markdown=yes&priority=5&tags=rotating_light,shield&click=https://grafana.aydenjahola.com/d/homelab-security-overview'
+          httpMethod: POST
+          authorization_scheme: Bearer
+          authorization_credentials: '[[ key "ntfy/token/cve-scan" ]]'
+          title: '{{ template "homelab.ntfy.title" . }}'
+          message: '{{ template "homelab.ntfy.message" . }}'

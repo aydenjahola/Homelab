@@ -46,3 +46,5 @@
       tags: [consul]
     - role: nomad
       tags: [nomad]
+    - role: wazuh_agent
+      tags: [wazuh_agent]

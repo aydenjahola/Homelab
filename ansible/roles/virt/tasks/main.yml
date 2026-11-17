@@ -3,10 +3,10 @@
 # task drivers. Packages come from the packages role. KVM is available
 # (/dev/kvm, VT-x) on all three OptiPlex 5060s.
 #
-# dnsmasq runs with its stock config (no /etc/dnsmasq.d files) and listens
-# on :53 on every host - it was enabled when libvirt/nomad-driver-virt was
-# installed. libvirt's "default" network is defined but inactive.
-- name: Libvirt and dnsmasq services
+# The standalone dnsmasq.service is disabled so AdGuard Home (Nomad job
+# "adguard") can bind :53. libvirt networks start their own dnsmasq bound
+# to their bridge, so they don't need it.
+- name: Libvirt services
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     enabled: true
@@ -15,7 +15,12 @@
     - libvirt-guests.service
     - virtlockd.service
     - virtlogd.service
-    - dnsmasq.service
+
+- name: Standalone dnsmasq off
+  ansible.builtin.systemd_service:
+    name: dnsmasq.service
+    enabled: false
+    state: stopped
 
 - name: Check KVM device
   ansible.builtin.stat:

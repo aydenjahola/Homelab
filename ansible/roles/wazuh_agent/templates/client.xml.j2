@@ -1,0 +1,18 @@
+<client>
+{% for manager in wazuh_agent_managers %}
+    <server>
+      <address>{{ manager }}</address>
+      <port>1514</port>
+      <protocol>tcp</protocol>
+    </server>
+{% endfor %}
+    <config-profile>debian, debian13</config-profile>
+    <notify_time>20</notify_time>
+    <time-reconnect>60</time-reconnect>
+    <auto_restart>yes</auto_restart>
+    <crypto_method>aes</crypto_method>
+    <enrollment>
+      <enabled>yes</enabled>
+      <authorization_pass_path>etc/authd.pass</authorization_pass_path>
+    </enrollment>
+  </client>

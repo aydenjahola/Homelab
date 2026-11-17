@@ -1,7 +1,7 @@
 {
   "uid": "homelab-nodes",
   "title": "Nodes",
-  "description": "Host metrics from node-exporter, one row per node.",
+  "description": "Host metrics from node-exporter: a fleet summary, then one card per node.",
   "tags": [
     "homelab",
     "infrastructure"
@@ -15,6 +15,8 @@
     "from": "now-6h",
     "to": "now"
   },
+  "fiscalYearStartMonth": 0,
+  "liveNow": false,
   "templating": {
     "list": [
       {
@@ -81,8 +83,8 @@
   "panels": [
     {
       "type": "table",
-      "title": "Node summary",
-      "description": "",
+      "title": "Fleet",
+      "description": "One line per node. Bars show CPU, memory and root disk against 100%.",
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -219,6 +221,391 @@
           "editorMode": "code"
         }
       ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Node"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Uptime"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RAM"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cores"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#3ecf8e"
+                    },
+                    {
+                      "value": 70,
+                      "color": "#f5b73b"
+                    },
+                    {
+                      "value": 85,
+                      "color": "#ff8a3d"
+                    },
+                    {
+                      "value": 95,
+                      "color": "#f2495c"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Memory"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#3ecf8e"
+                    },
+                    {
+                      "value": 70,
+                      "color": "#f5b73b"
+                    },
+                    {
+                      "value": 85,
+                      "color": "#ff8a3d"
+                    },
+                    {
+                      "value": 95,
+                      "color": "#f2495c"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Root disk"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#3ecf8e"
+                    },
+                    {
+                      "value": 70,
+                      "color": "#f5b73b"
+                    },
+                    {
+                      "value": 85,
+                      "color": "#ff8a3d"
+                    },
+                    {
+                      "value": 95,
+                      "color": "#f2495c"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "min",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Load 5m"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max temp"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#3ecf8e"
+                    },
+                    {
+                      "value": 70,
+                      "color": "#f5b73b"
+                    },
+                    {
+                      "value": 85,
+                      "color": "#f2495c"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "OOM kills 24h"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "transparent"
+                    },
+                    {
+                      "value": 1,
+                      "color": "#ff8a3d"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [],
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
       "transformations": [
         {
           "id": "merge",
@@ -262,320 +649,6 @@
           }
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "filterable": true
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Uptime"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "RAM"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "CPU"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "gauge",
-                  "mode": "gradient",
-                  "valueDisplayMode": "text"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "value": 70,
-                      "color": "#EAB839"
-                    },
-                    {
-                      "value": 85,
-                      "color": "orange"
-                    },
-                    {
-                      "value": 95,
-                      "color": "red"
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "max",
-                "value": 100
-              },
-              {
-                "id": "min",
-                "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Memory"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "gauge",
-                  "mode": "gradient",
-                  "valueDisplayMode": "text"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "value": 70,
-                      "color": "#EAB839"
-                    },
-                    {
-                      "value": 85,
-                      "color": "orange"
-                    },
-                    {
-                      "value": 95,
-                      "color": "red"
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "max",
-                "value": 100
-              },
-              {
-                "id": "min",
-                "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Root disk"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "gauge",
-                  "mode": "gradient",
-                  "valueDisplayMode": "text"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "value": 70,
-                      "color": "#EAB839"
-                    },
-                    {
-                      "value": 85,
-                      "color": "orange"
-                    },
-                    {
-                      "value": 95,
-                      "color": "red"
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "max",
-                "value": 100
-              },
-              {
-                "id": "min",
-                "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Max temp"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green"
-                    },
-                    {
-                      "value": 70,
-                      "color": "#EAB839"
-                    },
-                    {
-                      "value": 85,
-                      "color": "red"
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "OOM kills 24h"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background",
-                  "mode": "basic"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "transparent"
-                    },
-                    {
-                      "value": 1,
-                      "color": "orange"
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              }
-            ]
-          }
-        ]
-      },
-      "options": {
-        "showHeader": true,
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        },
-        "sortBy": []
-      },
       "id": 1,
       "gridPos": {
         "x": 0,
@@ -597,6 +670,469 @@
         "h": 1
       },
       "repeat": "node"
+    },
+    {
+      "type": "stat",
+      "title": "CPU",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{node=\"$node\",mode=\"idle\"}[$__rate_interval])))",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              },
+              {
+                "value": 70,
+                "color": "#f5b73b"
+              },
+              {
+                "value": 85,
+                "color": "#ff8a3d"
+              },
+              {
+                "value": 95,
+                "color": "#f2495c"
+              }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 3,
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Memory",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "100 * (1 - node_memory_MemAvailable_bytes{node=\"$node\"} / node_memory_MemTotal_bytes{node=\"$node\"})",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              },
+              {
+                "value": 70,
+                "color": "#f5b73b"
+              },
+              {
+                "value": 85,
+                "color": "#ff8a3d"
+              },
+              {
+                "value": 95,
+                "color": "#f2495c"
+              }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 4,
+      "gridPos": {
+        "x": 4,
+        "y": 7,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Root disk",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "100 * (1 - node_filesystem_avail_bytes{node=\"$node\",mountpoint=\"/\"} / node_filesystem_size_bytes{node=\"$node\",mountpoint=\"/\"})",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              },
+              {
+                "value": 70,
+                "color": "#f5b73b"
+              },
+              {
+                "value": 85,
+                "color": "#ff8a3d"
+              },
+              {
+                "value": 95,
+                "color": "#f2495c"
+              }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 5,
+      "gridPos": {
+        "x": 8,
+        "y": 7,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Load per core",
+      "description": "5 minute load average divided by core count.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "node_load5{node=\"$node\"} / scalar(count(node_cpu_seconds_total{node=\"$node\",mode=\"idle\"}))",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              },
+              {
+                "value": 0.8,
+                "color": "#f5b73b"
+              },
+              {
+                "value": 1,
+                "color": "#f2495c"
+              }
+            ]
+          },
+          "unit": "percentunit",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 6,
+      "gridPos": {
+        "x": 12,
+        "y": 7,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Hottest sensor",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "max(node_hwmon_temp_celsius{node=\"$node\"})",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#3ecf8e"
+              },
+              {
+                "value": 70,
+                "color": "#f5b73b"
+              },
+              {
+                "value": 85,
+                "color": "#f2495c"
+              }
+            ]
+          },
+          "unit": "celsius",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 7,
+      "gridPos": {
+        "x": 16,
+        "y": 7,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Uptime",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "node_time_seconds{node=\"$node\"} - node_boot_time_seconds{node=\"$node\"}",
+          "legendFormat": "__auto",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "editorMode": "code"
+        }
+      ],
+      "transparent": false,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ff8a3d"
+              },
+              {
+                "value": 3600,
+                "color": "#2dd4bf"
+              }
+            ]
+          },
+          "unit": "dtdurations"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "percentChangeColorMode": "standard"
+      },
+      "id": 8,
+      "gridPos": {
+        "x": 20,
+        "y": 7,
+        "w": 4,
+        "h": 4
+      }
     },
     {
       "type": "timeseries",
@@ -625,27 +1161,38 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 40,
+            "lineWidth": 2,
+            "fillOpacity": 35,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "normal",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             }
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
@@ -658,23 +1205,25 @@
       "options": {
         "legend": {
           "displayMode": "table",
-          "placement": "bottom",
+          "placement": "right",
           "calcs": [
             "mean",
-            "max",
-            "lastNotNull"
+            "max"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 3,
+      "id": 9,
       "gridPos": {
         "x": 0,
-        "y": 7,
+        "y": 11,
         "w": 8,
         "h": 8
       }
@@ -745,20 +1294,31 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 25,
+            "lineWidth": 2,
+            "fillOpacity": 20,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
             "axisSoftMin": 0
           },
@@ -766,7 +1326,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
@@ -783,7 +1343,7 @@
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "#808080"
+                  "fixedColor": "#8e9aaf"
                 }
               },
               {
@@ -791,14 +1351,18 @@
                 "value": {
                   "fill": "dash",
                   "dash": [
-                    10,
-                    10
+                    8,
+                    6
                   ]
                 }
               },
               {
                 "id": "custom.fillOpacity",
                 "value": 0
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
               }
             ]
           },
@@ -812,7 +1376,7 @@
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "orange"
+                  "fixedColor": "#8b7cf6"
                 }
               }
             ]
@@ -827,7 +1391,7 @@
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "blue"
+                  "fixedColor": "#5794f2"
                 }
               }
             ]
@@ -842,7 +1406,7 @@
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "red"
+                  "fixedColor": "#f2495c"
                 }
               }
             ]
@@ -858,17 +1422,20 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 4,
+      "id": 10,
       "gridPos": {
         "x": 8,
-        "y": 7,
+        "y": 11,
         "w": 8,
         "h": 8
       }
@@ -876,7 +1443,7 @@
     {
       "type": "timeseries",
       "title": "Load average",
-      "description": "",
+      "description": "The dashed line is the core count.",
       "datasource": {
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
@@ -939,20 +1506,31 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "fillOpacity": 0,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
             "axisSoftMin": 0
           },
@@ -960,7 +1538,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           }
@@ -976,7 +1554,7 @@
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "red"
+                  "fixedColor": "#f2495c"
                 }
               },
               {
@@ -984,14 +1562,63 @@
                 "value": {
                   "fill": "dash",
                   "dash": [
-                    10,
-                    10
+                    8,
+                    6
                   ]
                 }
               },
               {
                 "id": "custom.fillOpacity",
                 "value": 0
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "1m"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c4b5fd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5m"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8b7cf6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "15m"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#4c3fa8"
+                }
               }
             ]
           }
@@ -1006,24 +1633,27 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 5,
+      "id": 11,
       "gridPos": {
         "x": 16,
-        "y": 7,
+        "y": 11,
         "w": 8,
         "h": 8
       }
     },
     {
       "type": "timeseries",
-      "title": "Disk throughput (read +, write -)",
+      "title": "Disk throughput (read up, write down)",
       "description": "",
       "datasource": {
         "type": "prometheus",
@@ -1061,28 +1691,39 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 15,
+            "lineWidth": 2,
+            "fillOpacity": 18,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
             },
-            "axisSoftMin": 0
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "axisCenteredZero": true
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
@@ -1099,17 +1740,20 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 6,
+      "id": 12,
       "gridPos": {
         "x": 0,
-        "y": 15,
+        "y": 19,
         "w": 8,
         "h": 8
       }
@@ -1141,27 +1785,38 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "fillOpacity": 10,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             }
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
@@ -1180,24 +1835,27 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 7,
+      "id": 13,
       "gridPos": {
         "x": 8,
-        "y": 15,
+        "y": 19,
         "w": 8,
         "h": 8
       }
     },
     {
       "type": "timeseries",
-      "title": "Network (rx +, tx -)",
+      "title": "Network (rx up, tx down)",
       "description": "",
       "datasource": {
         "type": "prometheus",
@@ -1235,28 +1893,39 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 15,
+            "lineWidth": 2,
+            "fillOpacity": 18,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
             },
-            "axisSoftMin": 0
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "axisCenteredZero": true
           },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
@@ -1273,17 +1942,20 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 8,
+      "id": 14,
       "gridPos": {
         "x": 16,
-        "y": 15,
+        "y": 19,
         "w": 8,
         "h": 8
       }
@@ -1311,6 +1983,7 @@
           "editorMode": "code"
         }
       ],
+      "transparent": false,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1321,25 +1994,26 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               },
               {
                 "value": 70,
-                "color": "#EAB839"
+                "color": "#f5b73b"
               },
               {
                 "value": 85,
-                "color": "orange"
+                "color": "#ff8a3d"
               },
               {
                 "value": 95,
-                "color": "red"
+                "color": "#f2495c"
               }
             ]
           },
           "unit": "percent",
           "min": 0,
-          "max": 100
+          "max": 100,
+          "decimals": 0
         },
         "overrides": []
       },
@@ -1348,22 +2022,26 @@
         "orientation": "horizontal",
         "showUnfilled": true,
         "valueMode": "color",
-        "namePlacement": "auto",
-        "sizing": "auto",
+        "namePlacement": "left",
+        "sizing": "manual",
+        "minVizHeight": 18,
+        "maxVizHeight": 22,
+        "minVizWidth": 8,
+        "legend": {
+          "showLegend": false
+        },
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
           "fields": "",
           "values": false
-        },
-        "minVizHeight": 16,
-        "maxVizHeight": 28
+        }
       },
-      "id": 9,
+      "id": 15,
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 27,
         "w": 8,
         "h": 8
       }
@@ -1434,20 +2112,31 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "fillOpacity": 0,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
+            },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
             "axisSoftMin": 0
           },
@@ -1455,13 +2144,74 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#3ecf8e"
               }
             ]
           },
           "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cpu waiting"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#5794f2"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "memory waiting"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#8b7cf6"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "io waiting"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f5b73b"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "memory stalled"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f2495c"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -1472,17 +2222,20 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 10,
+      "id": 16,
       "gridPos": {
         "x": 8,
-        "y": 23,
+        "y": 27,
         "w": 8,
         "h": 8
       }
@@ -1514,24 +2267,35 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "fillOpacity": 0,
             "gradientMode": "opacity",
             "showPoints": "never",
+            "pointSize": 4,
             "spanNulls": true,
             "lineInterpolation": "smooth",
             "barAlignment": 0,
+            "barWidthFactor": 0.75,
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "axisLabel": "",
             "stacking": {
               "mode": "none",
               "group": "A"
             },
+            "insertNulls": false,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "axisSoftMin": 0,
             "thresholdsStyle": {
-              "mode": "line"
+              "mode": "dashed"
             }
           },
           "thresholds": {
@@ -1542,7 +2306,7 @@
               },
               {
                 "value": 85,
-                "color": "red"
+                "color": "#f2495c"
               }
             ]
           },
@@ -1559,17 +2323,20 @@
             "max",
             "lastNotNull"
           ],
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": true
         }
       },
-      "id": 11,
+      "id": 17,
       "gridPos": {
         "x": 16,
-        "y": 23,
+        "y": 27,
         "w": 8,
         "h": 8
       }

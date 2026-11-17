@@ -45,6 +45,7 @@ job "reactive-resume" {
         "traefik.enable=true",
         "traefik.http.routers.reactive-resume.entrypoints=https",
         "traefik.http.routers.reactive-resume.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.reactive-resume.middlewares=lan-only@file",
       ]
 
       check {

@@ -45,14 +45,14 @@ apk add --no-cache curl jq >/dev/null
 state=/data/active.txt
 touch "$state"
 
-curl -fsS --resolve "$TRUENAS_HOST:443:$TRUENAS_IP" -H "Authorization: Bearer $TRUENAS_API_KEY" "$TRUENAS_URL/api/v2.0/alert/list" \
+curl -fsS --resolve "$TRUENAS_HOST:443:$TRUENAS_IP" -H @"$NOMAD_SECRETS_DIR/truenas-auth" "$TRUENAS_URL/api/v2.0/alert/list" \
   | jq -c '.[] | select((.dismissed | not) and (.level | IN("WARNING","ERROR","CRITICAL","ALERT","EMERGENCY")))' \
   > /local/alerts.jsonl
 
 jq -r .uuid /local/alerts.jsonl | sort > /local/now.txt
 
 send() {
-  curl -fsS -H "Authorization: Bearer $NTFY_TOKEN" -H "Priority: $1" -H "Tags: $2" \
+  curl -fsS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" -H "Priority: $1" -H "Tags: $2" \
     -H "Title: $3" -H "Click: $TRUENAS_URL/ui/alerts" \
     --data-binary "$4" "$NTFY_URL/homelab-alerts" >/dev/null
 }
@@ -80,7 +80,7 @@ SCRIPT
         ]
 
         volumes = [
-          "/storage/nomad/truenas-alerts:/data:rw",
+          "/storage/nomad/truenas-alerts/forward:/data:rw",
         ]
       }
 
@@ -100,6 +100,24 @@ SCRIPT
 TRUENAS_API_KEY = {{ key "truenas/api/key" }}
 NTFY_URL        = {{ key "ntfy/url" }}
 NTFY_TOKEN      = {{ key "ntfy/token/truenas" }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/ntfy-auth"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+Authorization: Bearer {{ key "ntfy/token/truenas" }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/truenas-auth"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+Authorization: Bearer {{ key "truenas/api/key" }}
 EOH
       }
 

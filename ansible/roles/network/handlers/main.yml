@@ -1,0 +1,4 @@
+---
+- name: Refresh resolv.conf
+  ansible.builtin.command: dhcpcd -n eno1
+  changed_when: true

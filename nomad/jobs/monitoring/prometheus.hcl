@@ -45,7 +45,7 @@ job "prometheus" {
         "traefik.enable=true",
         "traefik.http.routers.prometheus.entrypoints=https",
         "traefik.http.routers.prometheus.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.prometheus.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.prometheus.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {
@@ -160,6 +160,31 @@ scrape_configs:
     consul_sd_configs:
       - server: "{{ env "attr.unique.network.ip-address" }}:8500"
         services: ["authentik-metrics"]
+
+  # Security stack. Consul node names are the node labels.
+  - job_name: "falco"
+    consul_sd_configs:
+      - server: "{{ env "attr.unique.network.ip-address" }}:8500"
+        services: ["falco"]
+    relabel_configs:
+      - source_labels: [__meta_consul_node]
+        target_label: node
+
+  - job_name: "crowdsec"
+    consul_sd_configs:
+      - server: "{{ env "attr.unique.network.ip-address" }}:8500"
+        services: ["crowdsec-metrics"]
+    relabel_configs:
+      - source_labels: [__meta_consul_node]
+        target_label: node
+
+  - job_name: "adguard"
+    consul_sd_configs:
+      - server: "{{ env "attr.unique.network.ip-address" }}:8500"
+        services: ["adguard-exporter"]
+    relabel_configs:
+      - source_labels: [__meta_consul_node]
+        target_label: node
 EOH
       }
 
