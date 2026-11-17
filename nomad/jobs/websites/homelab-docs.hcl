@@ -47,6 +47,19 @@ job "homelab-docs" {
         "traefik.http.routers.docs.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.docs.middlewares=authentik@consulcatalog",
       ]
+
+      check {
+        name     = "homelab-docs-health"
+        type     = "http"
+        path     = "/"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "mkdocs" {
@@ -79,8 +92,9 @@ EOH
       }
 
       resources {
-        cpu    = 100
-        memory = 64
+        cpu        = 100
+        memory     = 64
+        memory_max = 256
       }
     }
   }

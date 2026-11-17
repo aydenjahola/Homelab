@@ -11,6 +11,8 @@ job "gatus-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "gatus-db-backup" {
       driver = "docker"
 

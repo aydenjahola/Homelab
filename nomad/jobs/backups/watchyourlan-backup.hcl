@@ -11,6 +11,8 @@ job "watchyourlan-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "watchyourlan-db-backup" {
       driver = "docker"
 

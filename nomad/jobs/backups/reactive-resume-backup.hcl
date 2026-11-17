@@ -11,6 +11,8 @@ job "reactive-resume-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "reactive-resume-db-backup" {
       driver = "docker"
 

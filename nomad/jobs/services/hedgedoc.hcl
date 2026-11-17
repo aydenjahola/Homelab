@@ -46,6 +46,19 @@ job "hedgedoc" {
         "traefik.http.routers.md.entrypoints=https",
         "traefik.http.routers.md.rule=Host(`${NOMAD_META_domain}`)",
       ]
+
+      check {
+        name     = "hedgedoc-health"
+        type     = "http"
+        path     = "/_health"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "wait-for-db" {
@@ -194,7 +207,9 @@ EOH
     }
 
     task "postgres" {
-      driver = "docker"
+      driver       = "docker"
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
 
       config {
         image = "postgres:17-alpine"

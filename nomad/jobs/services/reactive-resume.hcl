@@ -96,8 +96,9 @@ EOH
       }
 
       resources {
-        cpu    = 50
-        memory = 64
+        cpu        = 50
+        memory     = 64
+        memory_max = 128
       }
     }
 
@@ -204,7 +205,9 @@ EOH
     }
 
     task "db" {
-      driver = "docker"
+      driver       = "docker"
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
 
       config {
         image = "postgres:17-alpine"

@@ -11,6 +11,8 @@ job "netronome-backup" {
   group "backup" {
     count = 1
 
+    max_run_duration = "1h"
+
     task "netronome-db-backup" {
       driver = "docker"
 

@@ -101,6 +101,10 @@ retry_join = {{ consul_retry_join | to_json }}
 #retry_join = ["provider=azure tag_name=... tag_value=... tenant_id=... client_id=... subscription_id=... secret_access_key=..."]
 #retry_join = ["provider=gce project_name=... tag_value=..."]
 {{ ' ' }}
+performance {
+  raft_multiplier = 1
+}
+
 limits {
   http_max_conns_per_client = 0
   rpc_max_conns_per_client = 0

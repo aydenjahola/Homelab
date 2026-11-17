@@ -47,6 +47,19 @@ job "your-lastfm" {
         "traefik.http.routers.your-lastfm.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.your-lastfm.middlewares=authentik@consulcatalog",
       ]
+
+      check {
+        name     = "your-lastfm-health"
+        type     = "http"
+        path     = "/"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "your-lastfm" {

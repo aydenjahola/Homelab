@@ -46,6 +46,19 @@ job "stirling-pdf" {
         "traefik.http.routers.stirling.entrypoints=https",
         "traefik.http.routers.stirling.rule=Host(`${NOMAD_META_domain}`)",
       ]
+
+      check {
+        name     = "stirling-pdf-health"
+        type     = "http"
+        path     = "/api/v1/info/status"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "stirling-pdf" {

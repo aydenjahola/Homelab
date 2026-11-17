@@ -47,6 +47,19 @@ job "archisteamfarm" {
         "traefik.http.routers.asf.rule=Host(`${NOMAD_META_domain}`)",
         "traefik.http.routers.asf.middlewares=authentik@consulcatalog",
       ]
+
+      check {
+        name     = "archisteamfarm-health"
+        type     = "http"
+        path     = "/"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "asf" {

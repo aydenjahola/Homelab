@@ -23,6 +23,8 @@ nomad job run jobs/media/jellyfin.hcl
 
 The scheduler uses `spread`. Running jobs never move on their own, so after a node has been offline run `scripts/rebalance.sh <busiest-node>`.
 
+Before rebooting a node, drain it so its jobs move first: `nomad node drain -enable -self -deadline 5m` on that node, then `nomad node eligibility -enable -self` once it is back. `drain_on_shutdown` is not used, because it needs `leave_on_terminate`, which would make each server leave Raft whenever its agent stops.
+
 ## New app checklist
 
 - App group first, then a `db` group on `postgres:17-alpine` with a `wait-for-db` prestart task.
@@ -44,7 +46,7 @@ ansible-playbook site.yml --check --diff     # drift check, expect 0 changed
 ansible-playbook site.yml --diff -l <host>   # apply; runs serial to keep quorum
 ```
 
-Rebuilding a wiped node: install Debian 13 with user `ayden`, keep its DHCP reservation, `ssh-copy-id`, run the playbook for that host. Remove the dead peer first (`consul operator raft remove-peer`, `nomad server force-leave`); Raft data replicates from the other two. Restarting Docker kills containers, so drain the node first.
+Rebuilding a wiped node: install Debian 13 with user `ayden`, keep its DHCP reservation, `ssh-copy-id`, run the playbook for that host. Remove the dead peer first (`consul operator raft remove-peer`, `nomad server force-leave`); Raft data replicates from the other two. Docker has `live-restore` on, so a Docker restart or upgrade keeps containers running.
 
 ## Backups and restore
 

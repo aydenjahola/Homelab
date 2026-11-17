@@ -46,6 +46,19 @@ job "flaresolverr" {
         "traefik.http.routers.flaresolverr.entrypoints=https",
         "traefik.http.routers.flaresolverr.rule=Host(`${NOMAD_META_domain}`)",
       ]
+
+      check {
+        name     = "flaresolverr-health"
+        type     = "http"
+        path     = "/health"
+        interval = "30s"
+        timeout  = "5s"
+
+        check_restart {
+          limit = 3
+          grace = "2m"
+        }
+      }
     }
 
     task "flaresolverr" {
