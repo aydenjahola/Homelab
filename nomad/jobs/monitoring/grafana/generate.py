@@ -778,12 +778,65 @@ def monitoring_stack():
     return d
 
 
+PKG_W = 'sum by (node) (rate(node_rapl_package_joules_total[5m]))'
+DRAM_W = 'sum by (node) (rate(node_rapl_dram_joules_total[5m]))'
+WALL_W = (f'(sum({PKG_W}) + sum({DRAM_W}) + count(node_uname_info) * $node_overhead_w + $nas_w)')
+
+
+def power():
+    v = [var_text("price", "€ per kWh", "0.35"),
+         var_text("node_overhead_w", "Per-node overhead (W)", "12"),
+         var_text("nas_w", "NAS (W)", "35")]
+    d = Dash("homelab-power", "Power & cost", ["homelab", "infrastructure"],
+             "CPU power is measured with RAPL on each node. Wall power adds the per-node overhead "
+             "(PSU loss, board, SSD, fans) and the NAS, which are estimates: adjust them at the top, "
+             "or replace them with a smart plug reading.",
+             time_from="now-7d", refresh="1m", variables=v)
+    d.add(stat("Estimated wall power", [prom(WALL_W, instant=True)], unit="watt", decimals=0,
+               color_mode="value", graph=False,
+               desc="Measured CPU and memory power plus the overhead and NAS estimates."), 6, 5)
+    d.add(stat("Per day", [prom(f'{WALL_W} * 24 / 1000', instant=True)], unit="kwatth", decimals=2,
+               color_mode="value", graph=False), 4, 5)
+    d.add(stat("Per month", [prom(f'{WALL_W} * 24 * 30.44 / 1000 * $price', instant=True)],
+               unit="currencyEUR", decimals=2, color_mode="value", graph=False,
+               desc="At the current draw, 30.44 days."), 5, 5)
+    d.add(stat("Per year", [prom(f'{WALL_W} * 24 * 365 / 1000 * $price', instant=True)],
+               unit="currencyEUR", decimals=0, color_mode="value", graph=False), 5, 5)
+    d.add(stat("Measured CPU power", [prom(f'sum({PKG_W})', instant=True)], unit="watt", decimals=1,
+               color_mode="value", graph=False, desc="Sum of RAPL package power on all nodes."), 4, 5)
+
+    d.add(timeseries("CPU package power by node", [prom(PKG_W, "{{node}}")], unit="watt", stack=True,
+                     fill=30, desc="RAPL package domain: cores, iGPU and uncore."), 12, 9, newrow=True)
+    d.add(timeseries("Estimated wall power", [prom(WALL_W, "total")], unit="watt", fill=20,
+                     legend_calcs=("min", "mean", "max")), 12, 9)
+
+    d.add(timeseries("Power vs CPU load", [
+        prom(PKG_W, "{{node}} watts"),
+        prom('100 * (1 - avg by (node) (rate(node_cpu_seconds_total{mode="idle"}[5m])))', "{{node}} CPU %", ref="B"),
+    ], unit="watt", fill=0, overrides=[{"matcher": {"id": "byRegexp", "options": ".*CPU %"},
+                                         "properties": [{"id": "unit", "value": "percent"},
+                                                        {"id": "custom.axisPlacement", "value": "right"},
+                                                        {"id": "custom.lineStyle", "value": {"fill": "dash", "dash": [6, 4]}}]}]),
+          12, 9, newrow=True)
+    d.add(timeseries("Memory (DRAM) power by node", [prom(DRAM_W, "{{node}}")], unit="watt", fill=10), 12, 9)
+
+    d.add(bargauge("CPU energy in selected range", [
+        prom('sum by (node) (increase(node_rapl_package_joules_total[$__range])) / 3.6e6', "{{node}}", instant=True)],
+        unit="kwatth", thresholds=thr((None, BLUE)), mn=0), 12, 7, newrow=True)
+    d.add(stat("Estimated cost of selected range", [
+        prom(f'avg_over_time(({WALL_W})[$__range:5m]) * ($__range_s / 3600) / 1000 * $price', instant=True)],
+        unit="currencyEUR", decimals=2, color_mode="value", graph=False,
+        desc="Average estimated wall power over the time picker range, priced at € per kWh."), 12, 7)
+    return d
+
+
 DASHES = {
     "Homelab/command-center.json": command_center,
     "Infrastructure/nodes.json": nodes,
     "Infrastructure/nomad-cluster.json": nomad_cluster,
     "Infrastructure/nomad-workloads.json": nomad_workloads,
     "Infrastructure/traefik.json": traefik,
+    "Infrastructure/power.json": power,
     "Services/authentik.json": authentik,
     "Observability/logs.json": logs_dash,
     "Observability/monitoring-stack.json": monitoring_stack,

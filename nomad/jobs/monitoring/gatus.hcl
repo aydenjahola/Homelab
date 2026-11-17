@@ -223,10 +223,8 @@ endpoints:
 
   - name: truenas-ui
     group: Storage
-    url: "tcp://192.168.1.103:443"
-    <<: *defaults
-    conditions:
-      - "[CONNECTED] == true"
+    url: "https://nas.local.aydenjahola.com"
+    <<: *defaults_https
 
   # --- Monitoring ---
   - name: gatus

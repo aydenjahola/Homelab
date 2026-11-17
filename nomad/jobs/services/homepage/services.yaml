@@ -147,9 +147,10 @@
         description: Service catalog and KV
         siteMonitor: http://192.168.1.100:8500/v1/status/leader
     - TrueNAS:
-        href: https://192.168.1.103
+        href: https://nas.local.aydenjahola.com
         icon: truenas-scale.svg
         description: NAS
+        siteMonitor: https://nas.local.aydenjahola.com
     - Homebridge:
         href: http://192.168.1.102:8581
         icon: homebridge.svg

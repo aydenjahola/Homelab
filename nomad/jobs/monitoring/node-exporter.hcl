@@ -13,6 +13,9 @@ job "node-exporter" {
     task "node-exporter" {
       driver = "docker"
 
+      # RAPL energy counters are root-only and masked by Docker (CVE-2020-8694); read the host's /sys.
+      user = "root"
+
       config {
         image = "prom/node-exporter:v1.12.1"
 
@@ -22,6 +25,7 @@ job "node-exporter" {
         volumes = ["/:/host:ro,rslave"]
         args = [
           "--path.rootfs=/host",
+          "--path.sysfs=/host/sys",
           "--collector.mountstats",
         ]
       }
