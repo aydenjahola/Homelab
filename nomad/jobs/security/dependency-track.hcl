@@ -50,6 +50,7 @@ job "dependency-track" {
         "traefik.enable=true",
         "traefik.http.routers.dtrack-api.entrypoints=https",
         "traefik.http.routers.dtrack-api.rule=Host(`${NOMAD_META_domain}`) && PathPrefix(`/api`)",
+        "traefik.http.routers.dtrack-api.middlewares=lan-only@file",
       ]
 
       check {
@@ -76,6 +77,7 @@ job "dependency-track" {
         "traefik.enable=true",
         "traefik.http.routers.dtrack.entrypoints=https",
         "traefik.http.routers.dtrack.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.dtrack.middlewares=lan-only@file",
       ]
 
       check {

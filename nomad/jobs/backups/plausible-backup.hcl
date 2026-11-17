@@ -44,7 +44,7 @@ export GNUPGHOME="/gnupg"
 export PGPASSWORD="$POSTGRES_PASSWORD"
 
 ntfy() {
-  curl -sS -H "Authorization: Bearer $NTFY_TOKEN" \
+  curl -sS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" \
     -H "Priority: $1" -H "Tags: $2" -H "Markdown: yes" \
     --data-binary "$(printf '%s' "$3" | sed 's/<@[0-9]*> //g')" \
     "$NTFY_URL/homelab-backups" >/dev/null || true
@@ -54,7 +54,7 @@ notify_ok() {
   msg="$*"
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$msg")" \
-    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+    -K "$NOMAD_SECRETS_DIR/discord.curl" >/dev/null || true
 }
 
 notify_fail() {
@@ -62,7 +62,7 @@ notify_fail() {
   payload="$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$msg")"
   curl -sS -H "Content-Type: application/json" \
     -d "$payload" \
-    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+    -K "$NOMAD_SECRETS_DIR/discord.curl" >/dev/null || true
   ntfy 4 backup,failed "$*"
 }
 
@@ -136,6 +136,24 @@ DB_PORT={{ (index $svc 0).Port }}
 EOH
       }
 
+      template {
+        destination          = "secrets/ntfy-auth"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+Authorization: Bearer {{ key "ntfy/token/backups" }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/discord.curl"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+url = "{{ key "backup/webhook/discord" }}"
+EOH
+      }
+
       resources {
         cpu        = 200
         memory     = 64
@@ -170,7 +188,7 @@ export GNUPGHOME="/gnupg"
 : "$NTFY_TOKEN"
 
 ntfy() {
-  curl -sS -H "Authorization: Bearer $NTFY_TOKEN" \
+  curl -sS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" \
     -H "Priority: $1" -H "Tags: $2" -H "Markdown: yes" \
     --data-binary "$(printf '%s' "$3" | sed 's/<@[0-9]*> //g')" \
     "$NTFY_URL/homelab-backups" >/dev/null || true
@@ -180,7 +198,7 @@ notify_ok() {
   msg="$*"
   curl -sS -H "Content-Type: application/json" \
     -d "$(printf '{"content":"%s"}' "$msg")" \
-    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+    -K "$NOMAD_SECRETS_DIR/discord.curl" >/dev/null || true
 }
 
 notify_fail() {
@@ -188,7 +206,7 @@ notify_fail() {
   payload="$(printf '{"content":"%s","allowed_mentions":{"users":["367293674981294086"]}}' "$msg")"
   curl -sS -H "Content-Type: application/json" \
     -d "$payload" \
-    "$DISCORD_WEBHOOK_URL" >/dev/null || true
+    -K "$NOMAD_SECRETS_DIR/discord.curl" >/dev/null || true
   ntfy 4 backup,failed "$*"
 }
 
@@ -279,6 +297,24 @@ EOH
 CH_HOST={{ (index $svc 0).Address }}
 CH_PORT={{ (index $svc 0).Port }}
 {{- end -}}
+EOH
+      }
+
+      template {
+        destination          = "secrets/ntfy-auth"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+Authorization: Bearer {{ key "ntfy/token/backups" }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/discord.curl"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+url = "{{ key "backup/webhook/discord" }}"
 EOH
       }
 

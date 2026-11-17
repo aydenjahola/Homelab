@@ -1,0 +1,92 @@
+---
+- name: Install Wazuh apt key
+  ansible.builtin.copy:
+    src: wazuh.asc
+    dest: /etc/apt/keyrings/wazuh.asc
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install Wazuh apt source
+  ansible.builtin.copy:
+    src: wazuh.list
+    dest: /etc/apt/sources.list.d/wazuh.list
+    owner: root
+    group: root
+    mode: "0644"
+  register: wazuh_agent_source
+
+# Only this source, so a broken third-party repo can't block the install.
+- name: Refresh apt cache when the Wazuh source changed  # noqa: command-instead-of-module
+  ansible.builtin.command: >-
+    apt-get update
+    -o Dir::Etc::sourcelist=sources.list.d/wazuh.list
+    -o Dir::Etc::sourceparts=-
+    -o APT::Get::List-Cleanup=0
+  changed_when: true
+  when: wazuh_agent_source is changed and not ansible_check_mode
+
+- name: Install pinned wazuh-agent
+  ansible.builtin.apt:
+    name: "wazuh-agent={{ wazuh_agent_version }}"
+    state: present
+  when: not (ansible_check_mode and wazuh_agent_source is changed)
+  notify: Restart wazuh-agent
+
+# An agent newer than the manager is rejected, so upgrades go manager first.
+# The docker-listener wodle runs on the system python3.
+- name: Install python3-docker for the docker-listener wodle
+  ansible.builtin.apt:
+    name: python3-docker
+    state: present
+  notify: Restart wazuh-agent
+
+- name: Hold wazuh-agent at the pinned version
+  ansible.builtin.dpkg_selections:
+    name: wazuh-agent
+    selection: hold
+  when: not ansible_check_mode
+
+- name: Read enrollment password from Consul
+  ansible.builtin.uri:
+    url: "{{ consul_http }}/v1/kv/{{ wazuh_agent_enrollment_key }}?raw"
+    return_content: true
+  register: wazuh_agent_enrollment
+  check_mode: false
+  no_log: true
+
+- name: Write enrollment password
+  ansible.builtin.copy:
+    content: "{{ wazuh_agent_enrollment.content }}"
+    dest: /var/ossec/etc/authd.pass
+    owner: root
+    group: wazuh
+    mode: "0640"
+  no_log: true
+  when: not ansible_check_mode
+  notify: Restart wazuh-agent
+
+- name: Point the agent at the managers
+  ansible.builtin.replace:
+    path: /var/ossec/etc/ossec.conf
+    regexp: '<client>[\s\S]*?</client>'
+    replace: "{{ lookup('ansible.builtin.template', 'client.xml.j2') | trim }}"
+  when: not ansible_check_mode
+  notify: Restart wazuh-agent
+
+# FIM, Docker events and other homelab additions, merged after the defaults.
+- name: Add homelab agent config
+  ansible.builtin.blockinfile:
+    path: /var/ossec/etc/ossec.conf
+    marker: "<!-- {mark} ANSIBLE MANAGED homelab -->"
+    insertafter: EOF
+    block: "{{ lookup('ansible.builtin.template', 'homelab.xml.j2') | trim }}"
+  when: not ansible_check_mode
+  notify: Restart wazuh-agent
+
+- name: Enable and start wazuh-agent
+  ansible.builtin.systemd_service:
+    name: wazuh-agent
+    enabled: true
+    state: started
+  when: not ansible_check_mode

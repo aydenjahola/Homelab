@@ -1,0 +1,8 @@
+<group name="local,docker,">
+  <!-- Container HEALTHCHECK and Nomad script-check execs fire every few seconds. -->
+  <rule id="100100" level="0">
+    <if_sid>87907</if_sid>
+    <field name="docker.Action" type="pcre2">(?i)health|^exec_start: (nslookup |pidof -q )|^exec_start: /bin/sh -c wget .*(127\.0\.0\.1|localhost)</field>
+    <description>Docker: health check exec in $(docker.Actor.Attributes.name)</description>
+  </rule>
+</group>

@@ -1,0 +1,16 @@
+<ossec_config>
+  <syscheck>
+    <directories realtime="yes">/etc</directories>
+    <directories realtime="yes">/etc/nomad.d,/etc/consul.d</directories>
+    <directories realtime="yes">/root/.ssh,/home/*/.ssh</directories>
+
+    <ignore>/etc/resolv.conf</ignore>
+    <ignore>/etc/resolv.conf.head</ignore>
+    <ignore>/etc/openvpn/server/ipp.txt</ignore>
+    <ignore>/etc/ld.so.cache</ignore>
+  </syscheck>
+
+  <wodle name="docker-listener">
+    <disabled>no</disabled>
+  </wodle>
+</ossec_config>

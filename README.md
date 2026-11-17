@@ -37,6 +37,18 @@ Self-hosted ntfy at `ntfy.aydenjahola.com`, login required. Senders publish with
 
 Backup successes are quiet: `backup-digest` posts one summary at 08:00, and `diun-digest` lists new image tags on Monday mornings. `truenas-alerts` forwards TrueNAS alerts to `homelab-alerts`.
 
+## Security monitoring
+
+| Tool | Where | What |
+|---|---|---|
+| Falco | every node | Container runtime detection (eBPF) |
+| Suricata | every node, `eno1` | Network IDS with ET Open rules, updated daily |
+| CrowdSec | Traefik bouncer on `https` | Bans attackers from Traefik access logs; fails open |
+| Wazuh | `wazuh.local` (SSO) | SIEM: host agents, FIM, vulnerabilities, CIS checks |
+| AdGuard Home | DNS on 192.168.1.100-102 | Blocklists, local and split-horizon DNS for `*.aydenjahola.com` |
+
+Everything lands in Loki and Prometheus; the Grafana *Security* folder has a dashboard per tool, and security alerts go to ntfy `homelab-security`. `*.local` routers carry the `lan-only` middleware, so they never answer the internet.
+
 ## Hosts
 
 ```sh
@@ -50,7 +62,7 @@ Rebuilding a wiped node: install Debian 13 with user `ayden`, keep its DHCP rese
 
 ## Backups and restore
 
-App databases are dumped, GPG-encrypted and uploaded to Google Drive with rclone. `cluster-snapshot-backup` writes encrypted Consul and Nomad snapshots daily to `/storage/nomad/cluster-snapshot-backup/` and Google Drive. The private key stays on the Mac.
+App databases are dumped, GPG-encrypted and uploaded to Google Drive with rclone. `cluster-snapshot-backup` writes encrypted Consul and Nomad snapshots daily to `/storage/nomad/cluster-snapshot-backup/encrypt-snapshots/` and Google Drive. The private key stays on the Mac.
 
 ```sh
 gpg --decrypt consul-<stamp>.snap.gpg > consul.snap

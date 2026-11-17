@@ -45,6 +45,7 @@ job "flaresolverr" {
         "traefik.enable=true",
         "traefik.http.routers.flaresolverr.entrypoints=https",
         "traefik.http.routers.flaresolverr.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.flaresolverr.middlewares=lan-only@file",
       ]
 
       check {

@@ -45,6 +45,7 @@ job "jellyfin" {
         "traefik.enable=true",
         "traefik.http.routers.jellyfin.entrypoints=https",
         "traefik.http.routers.jellyfin.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.jellyfin.middlewares=lan-only@file",
       ]
 
       check {
@@ -117,7 +118,7 @@ EOH
         ]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/config:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/config:rw",
           "/storage/jellyfin/tv:/data/tvshows:rw",
           "/storage/jellyfin/movies:/data/movies:rw",
           "/etc/localtime:/etc/localtime:ro",

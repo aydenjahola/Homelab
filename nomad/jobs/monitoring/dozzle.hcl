@@ -45,7 +45,7 @@ job "dozzle" {
         "traefik.enable=true",
         "traefik.http.routers.dozzle.entrypoints=https",
         "traefik.http.routers.dozzle.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.dozzle.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.dozzle.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {

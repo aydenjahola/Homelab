@@ -81,7 +81,7 @@ else
   body="Every backup task finished in the last 24h."
 fi
 
-curl -fsS -H "Authorization: Bearer $NTFY_TOKEN" \
+curl -fsS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" \
   -H "Title: Backups: $good/$total OK" -H "Priority: $priority" -H "Tags: $tags" -H "Markdown: yes" \
   --data-binary "$body" "$NTFY_URL/homelab-backups" >/dev/null
 echo "$good/$total OK"
@@ -106,6 +106,15 @@ NTFY_TOKEN = {{ key "ntfy/token/backups" }}
 {{ range service "loki" }}
 LOKI_URL={{ printf "http://%s:%d" .Address .Port }}
 {{ end }}
+EOH
+      }
+
+      template {
+        destination          = "secrets/ntfy-auth"
+        perms                = "0600"
+        error_on_missing_key = true
+        data                 = <<EOH
+Authorization: Bearer {{ key "ntfy/token/backups" }}
 EOH
       }
 

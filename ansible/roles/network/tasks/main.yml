@@ -15,3 +15,16 @@
   ansible.builtin.systemd_service:
     name: networking
     enabled: true
+
+# AdGuard Home on this node first, another node second; dhcpcd appends the
+# router from DHCP as the fallback when the cluster is down.
+- name: DNS via the cluster's AdGuard Home
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf.head
+    content: |
+      nameserver {{ host_ip }}
+      nameserver {{ groups['homelab'] | map('extract', hostvars, 'host_ip') | difference([host_ip]) | sort | first }}
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Refresh resolv.conf

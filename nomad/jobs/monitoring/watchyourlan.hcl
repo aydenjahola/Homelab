@@ -48,7 +48,7 @@ job "watchyourlan" {
         "traefik.enable=true",
         "traefik.http.routers.watchyourlan.entrypoints=https",
         "traefik.http.routers.watchyourlan.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.watchyourlan.middlewares=authentik@consulcatalog",
+        "traefik.http.routers.watchyourlan.middlewares=lan-only@file,authentik@consulcatalog",
       ]
 
       check {

@@ -108,7 +108,7 @@ EOH
         ports = ["http"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/uploads:/hedgedoc/public/uploads:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/uploads:/hedgedoc/public/uploads:rw",
         ]
       }
 
@@ -216,7 +216,7 @@ EOH
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/db-pg17:/var/lib/postgresql/data:rw",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}-pg17:/var/lib/postgresql/data:rw",
         ]
       }
 

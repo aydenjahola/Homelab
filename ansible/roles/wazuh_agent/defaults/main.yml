@@ -1,0 +1,6 @@
+---
+wazuh_agent_version: "4.14.10-1"
+# The manager runs as a Nomad job on whichever node the scheduler picks,
+# with static ports 1514/1515. Agents list every node and fail over.
+wazuh_agent_managers: "{{ groups['homelab'] | map('extract', hostvars, 'ansible_host') | list }}"
+wazuh_agent_enrollment_key: wazuh/authd/password

@@ -115,7 +115,7 @@ EOH
         args    = ["-c", "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/data:/var/lib/plausible",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}:/var/lib/plausible",
         ]
       }
 
@@ -224,7 +224,7 @@ EOH
         ports = ["db"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/db/data-pg17:/var/lib/postgresql/data",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}-pg17:/var/lib/postgresql/data",
         ]
       }
 
@@ -279,8 +279,8 @@ EOH
         ports = ["clickhouse"]
 
         volumes = [
-          "/storage/nomad/${NOMAD_JOB_NAME}/event-data:/var/lib/clickhouse",
-          "/storage/nomad/${NOMAD_JOB_NAME}/event-logs:/var/log/clickhouse-server",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/data:/var/lib/clickhouse",
+          "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/logs:/var/log/clickhouse-server",
           "local/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro",
           "local/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro",
           "local/clickhouse-ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro",

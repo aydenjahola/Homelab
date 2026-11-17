@@ -240,6 +240,45 @@ endpoints:
     url: "https://nas.local.aydenjahola.com"
     <<: *defaults_https
 
+  # --- Network ---
+  - name: adguard-dns-odin
+    group: Network
+    url: "192.168.1.100"
+    dns:
+      query-name: "nas.local.aydenjahola.com"
+      query-type: "A"
+    <<: *defaults
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 192.168.1.103"
+
+  - name: adguard-dns-thor
+    group: Network
+    url: "192.168.1.101"
+    dns:
+      query-name: "nas.local.aydenjahola.com"
+      query-type: "A"
+    <<: *defaults
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 192.168.1.103"
+
+  - name: adguard-dns-loki
+    group: Network
+    url: "192.168.1.102"
+    dns:
+      query-name: "nas.local.aydenjahola.com"
+      query-type: "A"
+    <<: *defaults
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 192.168.1.103"
+
+  - name: adguard-ui
+    group: Network
+    url: "https://adguard.local.aydenjahola.com/login.html"
+    <<: *defaults_https
+
   # --- Monitoring ---
   - name: gatus
     group: Monitoring
@@ -334,6 +373,11 @@ endpoints:
   - name: trivy-server
     group: Security
     url: "https://trivy.local.aydenjahola.com/healthz"
+    <<: *defaults_https
+
+  - name: wazuh
+    group: Security
+    url: "https://wazuh.local.aydenjahola.com/app/login"
     <<: *defaults_https
 
   # --- Media ---

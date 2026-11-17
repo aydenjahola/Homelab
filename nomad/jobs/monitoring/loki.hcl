@@ -49,6 +49,7 @@ job "loki" {
         "traefik.enable=true",
         "traefik.http.routers.loki.entrypoints=https",
         "traefik.http.routers.loki.rule=Host(`${NOMAD_META_domain}`)",
+        "traefik.http.routers.loki.middlewares=lan-only@file",
       ]
 
       check {

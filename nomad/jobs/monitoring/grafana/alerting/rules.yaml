@@ -503,7 +503,7 @@ groups:
             datasourceUid: "PBFA97CFB590B2093"
             model:
               refId: "A"
-              expr: "max(max_over_time(nomad_raft_peers[1h]))"
+              expr: "max(last_over_time(nomad_raft_peers[1d]))"
               intervalMs: 15000
               maxDataPoints: 43200
               instant: true
@@ -1059,7 +1059,7 @@ groups:
             datasourceUid: "PBFA97CFB590B2093"
             model:
               refId: "A"
-              expr: "up{job!~\"node-exporters|nomad_metrics|traefik|prometheus\"}"
+              expr: "up{job!~\"node-exporters|nomad_metrics|traefik|prometheus|crowdsec|adguard\"}"
               intervalMs: 15000
               maxDataPoints: 43200
               instant: true
@@ -1284,3 +1284,400 @@ groups:
         annotations:
           summary: "{{ with $values.A }}{{ humanize .Value }}{{ end }} failed SSH logins on {{ $labels.node }} in 10m"
           description: "Repeated SSH authentication failures. Something is guessing passwords."
+  - orgId: 1
+    name: "security"
+    folder: "Homelab Alerts"
+    interval: "1m"
+    rules:
+      - uid: "falco-critical"
+        title: "Falco critical event"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (rule, node, container) (count_over_time({task=\"falco\", node=~\".+\"} != \"Falco internal\" | json | __error__=\"\" | rule!=\"\" | priority=~\"Emergency|Alert|Critical\" | (rule!=\"Drop and execute new binary in container\" or output_fields_container_name!~\"forward-.*|flaresolverr-.*|.*-backup-.*\") | (rule!=\"Clear Log Activities\" or output_fields_proc_name!=\"dockerd\") | label_format container=\"{{ .output_fields_container_name }}\" [5m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 0
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "critical"
+          category: "security"
+        annotations:
+          summary: "Falco: {{ $labels.rule }} on {{ $labels.node }} ({{ $labels.container }})"
+          description: "{{ with $values.A }}{{ humanize .Value }}{{ end }} event(s) in 5 minutes. Open the Falco dashboard for the process, user and command line."
+      - uid: "falco-warning-burst"
+        title: "Falco warning burst"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (rule, node) (count_over_time({task=\"falco\", node=~\".+\"} != \"Falco internal\" | json | __error__=\"\" | rule!=\"\" | priority=~\"Error|Warning\" | (rule!=\"Drop and execute new binary in container\" or output_fields_container_name!~\"forward-.*|flaresolverr-.*|.*-backup-.*\") | (rule!=\"Clear Log Activities\" or output_fields_proc_name!=\"dockerd\") [10m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 5
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "Falco: {{ $labels.rule }} fired {{ with $values.A }}{{ humanize .Value }}{{ end }} times on {{ $labels.node }}"
+          description: "More than 5 Error or Warning events from one rule in 10 minutes."
+      - uid: "suricata-severity-1"
+        title: "Suricata high severity alert"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (alert_signature, src_ip, dest_ip) (count_over_time({task=\"suricata\"} |= `\"event_type\":\"alert\"` | json | __error__=\"\" | alert_severity=\"1\" | alert_signature!~\"ET (P2P|INFO) .*\" [5m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 0
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "critical"
+          category: "security"
+        annotations:
+          summary: "Suricata: {{ $labels.alert_signature }}"
+          description: "{{ $labels.src_ip }} -> {{ $labels.dest_ip }}, {{ with $values.A }}{{ humanize .Value }}{{ end }} time(s) in 5 minutes. ET P2P (Transmission) and ET INFO (cleartext internal traffic) signatures are ignored."
+      - uid: "suricata-severity-2-burst"
+        title: "Suricata medium severity burst"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (alert_category) (count_over_time({task=\"suricata\"} |= `\"event_type\":\"alert\"` | json | __error__=\"\" | alert_severity=\"2\" [10m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 5
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "Suricata: {{ with $values.A }}{{ humanize .Value }}{{ end }} {{ $labels.alert_category }} alerts in 10m"
+          description: "Severity 2 alerts above 5 in 10 minutes. The Suricata dashboard lists the sources."
+      - uid: "suricata-capture-drops"
+        title: "Suricata dropping packets"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "100 * sum by (node) (sum_over_time({task=\"suricata\"} |= `\"event_type\":\"stats\"` | json d=\"stats.capture.kernel_drops_delta\" | unwrap d | __error__=\"\" [30m])) / sum by (node) (sum_over_time({task=\"suricata\"} |= `\"event_type\":\"stats\"` | json p=\"stats.capture.kernel_packets_delta\" | unwrap p | __error__=\"\" [30m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 5
+        for: "15m"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "Suricata on {{ $labels.node }} dropping {{ with $values.A }}{{ printf \"%.1f\" .Value }}{{ end }}% of packets"
+          description: "Kernel capture drops above 5% over 30 minutes. The IDS is missing traffic; it needs more CPU or threads."
+      - uid: "crowdsec-ban"
+        title: "CrowdSec banned an IP"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (ip, scenario) (count_over_time({task=\"crowdsec\"} |~ \"ban on [Ii]p\" | regexp `\\) (?P<scenario>.+?) by ip (?P<ip>[0-9a-fA-F.:]+)` [5m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 0
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "CrowdSec banned {{ $labels.ip }}"
+          description: "Reason: {{ $labels.scenario }}. Informational: the ban is already enforced by the bouncers."
+      - uid: "crowdsec-down"
+        title: "CrowdSec down"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "PBFA97CFB590B2093"
+            model:
+              refId: "A"
+              expr: "max(up{job=\"crowdsec\"}) or vector(0)"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              instant: true
+              range: false
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "lt"
+                    params:
+                      - 1
+        for: "5m"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "CrowdSec metrics are missing"
+          description: "Prometheus cannot scrape CrowdSec (or it is not registered in Consul). Logs are not being analysed and no new bans are issued."
+      - uid: "wazuh-critical"
+        title: "Wazuh critical alert"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (rule_id, rule_description, agent_name) (count_over_time({task=~\"wazuh-alerts\"} | json | __error__=\"\" | rule_level!=\"\" | rule_level >= 12 [5m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 0
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "critical"
+          category: "security"
+        annotations:
+          summary: "Wazuh: {{ $labels.rule_description }} on {{ $labels.agent_name }}"
+          description: "Rule {{ $labels.rule_id }} (level 12+) fired {{ with $values.A }}{{ humanize .Value }}{{ end }} time(s) in 5 minutes."
+      - uid: "wazuh-burst"
+        title: "Wazuh alert burst"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "P8E80F9AEF21F6940"
+            model:
+              refId: "A"
+              expr: "sum by (agent_name) (count_over_time({task=~\"wazuh-alerts\"} | json | __error__=\"\" | rule_level!=\"\" | rule_level >= 7 | rule_level < 12 [10m]))"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              queryType: "instant"
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "gt"
+                    params:
+                      - 5
+        for: "0s"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "Wazuh: {{ with $values.A }}{{ humanize .Value }}{{ end }} level 7+ alerts on {{ $labels.agent_name }} in 10m"
+          description: "Open the Wazuh dashboard for the rules involved."
+      - uid: "adguard-down"
+        title: "AdGuard down"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "PBFA97CFB590B2093"
+            model:
+              refId: "A"
+              expr: "min(up{job=\"adguard\"})"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              instant: true
+              range: false
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "lt"
+                    params:
+                      - 1
+        for: "5m"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+          category: "security"
+        annotations:
+          summary: "AdGuard exporter is down"
+          description: "Prometheus cannot scrape the AdGuard exporter, so AdGuard itself is likely down and DNS filtering may be off."
