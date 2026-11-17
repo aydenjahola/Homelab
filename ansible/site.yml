@@ -25,6 +25,8 @@
   roles:
     - role: packages
       tags: [packages]
+    - role: security_updates
+      tags: [security_updates]
     - role: base
       tags: [base]
     - role: network

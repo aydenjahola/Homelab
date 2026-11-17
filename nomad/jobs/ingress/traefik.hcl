@@ -101,7 +101,7 @@ http:
           updateIntervalSeconds: 60
           updateMaxFailure: -1
           crowdsecLapiScheme: http
-          crowdsecLapiHost: "{{ range service "crowdsec" }}{{ .Address }}:{{ .Port }}{{ end }}"
+          crowdsecLapiHost: "{{ with service "crowdsec" }}{{ with index . 0 }}{{ .Address }}:{{ .Port }}{{ end }}{{ else }}127.0.0.1:1{{ end }}"
           crowdsecLapiKey: "{{ key "crowdsec/bouncer/traefik" }}"
           forwardedHeadersTrustedIPs:
             - "173.245.48.0/20"

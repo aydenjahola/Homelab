@@ -28,10 +28,10 @@ network_gateway: 192.168.1.1
 # Versions installed today. Pinned with name=version so a rebuild gets
 # exactly these. No apt holds/preferences exist on the hosts today; set
 # packages_hold_pinned: true to also `apt-mark hold` them.
-packages_hold_pinned: false
+packages_hold_pinned: true
 packages_pinned:
-  nomad: "2.0.3-1"
-  consul: "2.0.0-1"
+  nomad: "2.1.1-1"
+  consul: "2.1.0-1"
   docker-ce: "5:29.9.3-1~debian.13~trixie"
   docker-ce-cli: "5:29.9.3-1~debian.13~trixie"
   containerd.io: "2.4.2-4~debian.13~trixie"
