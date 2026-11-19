@@ -40,6 +40,13 @@ job "crowdsec" {
     service {
       name = "crowdsec"
       port = "lapi"
+      # Served on every node's loopback-only crowdsec-lapi entrypoint (127.0.0.1:8081)
+      # for the Traefik bouncer plugin.
+      tags = [
+        "traefik.enable=true",
+        "traefik.http.routers.crowdsec-lapi.entrypoints=crowdsec-lapi",
+        "traefik.http.routers.crowdsec-lapi.rule=PathPrefix(`/`)",
+      ]
 
       check {
         name     = "crowdsec-health"

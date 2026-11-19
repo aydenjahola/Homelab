@@ -1,4 +1,9 @@
 ---
+# The storage drop-in only affects the next start, so no Nomad restart.
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
 # Restarting the Nomad agent does not stop allocations (KillMode=process,
 # client state is restored on start), so no drain is needed for a config
 # reload. serial: 1 in site.yml keeps 2 of 3 servers up at all times.

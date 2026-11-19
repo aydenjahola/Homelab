@@ -35,3 +35,18 @@
     group: crontab
     mode: "0600"
   loop: "{{ users_admin_cron_lines }}"
+
+# Key-only SSH. sshd uses the first value it sees and sshd_config.d/*.conf is
+# included at the top of sshd_config, so this overrides the Debian default.
+# root is already key-only (PermitRootLogin without-password is the default).
+- name: Disable SSH password authentication
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-key-only.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload ssh

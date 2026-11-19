@@ -1,0 +1,6 @@
+---
+# Reload keeps existing sessions (including Ansible's own) open.
+- name: Reload ssh
+  ansible.builtin.systemd_service:
+    name: ssh
+    state: reloaded

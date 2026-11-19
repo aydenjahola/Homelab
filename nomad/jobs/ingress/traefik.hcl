@@ -101,7 +101,10 @@ http:
           updateIntervalSeconds: 60
           updateMaxFailure: -1
           crowdsecLapiScheme: http
-          crowdsecLapiHost: "{{ with service "crowdsec" }}{{ with index . 0 }}{{ .Address }}:{{ .Port }}{{ end }}{{ else }}127.0.0.1:1{{ end }}"
+          # Local loopback entrypoint that Traefik routes to wherever crowdsec runs.
+          # The plugin's stream ticker keeps the host it started with, so the
+          # host must never change (a Consul address went stale on every move).
+          crowdsecLapiHost: "127.0.0.1:8081"
           crowdsecLapiKey: "{{ key "crowdsec/bouncer/traefik" }}"
           forwardedHeadersTrustedIPs:
             - "173.245.48.0/20"
@@ -142,6 +145,10 @@ api:
 ping: {}
 
 entryPoints:
+  # Loopback only: the crowdsec bouncer plugin reaches the LAPI through here.
+  crowdsec-lapi:
+    address: "127.0.0.1:8081"
+
   http:
     address: ":80"
     http:
