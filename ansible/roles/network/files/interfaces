@@ -7,6 +7,8 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 
-# The primary network interface
-allow-hotplug eno1
+# The primary network interface. `auto`, not `allow-hotplug`: with hotplug,
+# network-online.target is reached before the DHCP lease and the /storage NFS
+# mount fails at boot ("Network is unreachable").
+auto eno1
 iface eno1 inet dhcp

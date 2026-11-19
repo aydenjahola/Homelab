@@ -66,6 +66,27 @@
     mode: "0644"
   notify: Restart nomad
 
+# Never start Nomad without the NFS export: allocs would run on the empty
+# local /storage directory underneath the mount point instead of real data.
+- name: Nomad unit drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/nomad.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Nomad requires /storage
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/nomad.service.d/storage.conf
+    content: |
+      [Unit]
+      RequiresMountsFor=/storage
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+
 - name: Nomad service
   ansible.builtin.systemd_service:
     name: nomad
