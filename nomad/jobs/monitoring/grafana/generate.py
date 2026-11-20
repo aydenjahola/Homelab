@@ -1771,7 +1771,8 @@ def clean(o):
 
 # ================================================================ alert rules
 # Each rule: instant query A plus threshold C on A. Labels on A become alert labels.
-# severity=critical repeats hourly, warning every 4h (see alerting/policies.yaml).
+# severity=critical pushes to the phone (repeats every 6h); warnings go to the homelab-info
+# ntfy topic only. See alerting/policies.yaml.
 
 def rule(uid, title, expr, op, value, for_, severity, summary, description, ds="prom",
          no_data="OK", exec_err="Error", lookback=600, labels=None):

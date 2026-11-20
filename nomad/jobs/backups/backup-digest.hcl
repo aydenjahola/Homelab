@@ -74,16 +74,19 @@ done < /local/tasks.txt
 if [ -s /local/problems.txt ]; then
   priority=4
   tags="floppy_disk,warning"
+  topic=homelab-backups
   body="$(cat /local/problems.txt)"
 else
+  # Nothing to act on: log it to homelab-info, which does not push to the phone.
   priority=2
   tags="floppy_disk"
+  topic=homelab-info
   body="Every backup task finished in the last 24h."
 fi
 
 curl -fsS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" \
   -H "Title: Backups: $good/$total OK" -H "Priority: $priority" -H "Tags: $tags" -H "Markdown: yes" \
-  --data-binary "$body" "$NTFY_URL/homelab-backups" >/dev/null
+  --data-binary "$body" "$NTFY_URL/$topic" >/dev/null
 echo "$good/$total OK"
 cat /local/problems.txt
 SCRIPT

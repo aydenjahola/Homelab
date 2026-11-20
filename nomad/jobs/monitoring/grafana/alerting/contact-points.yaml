@@ -2,6 +2,11 @@
 # Nomad renders this file with double-square-bracket delimiters; the webhook comes from Consul KV.
 apiVersion: 1
 
+# Retired 2026-11-20: security warnings now go to the ntfy (homelab-info) receiver.
+deleteContactPoints:
+  - orgId: 1
+    uid: ntfy-homelab-security
+
 contactPoints:
   - orgId: 1
     name: Discord
@@ -15,14 +20,15 @@ contactPoints:
           title: '{{ template "homelab.title" . }}'
           message: '{{ template "homelab.message" . }}'
 
+  # Warnings go to homelab-info: low priority, no resolved messages, not subscribed on the phone.
   - orgId: 1
     name: ntfy
     receivers:
       - uid: ntfy-homelab-warning
         type: webhook
-        disableResolveMessage: false
+        disableResolveMessage: true
         settings:
-          url: '[[ key "ntfy/url" ]]/homelab-alerts?template=grafana&markdown=yes&priority=4&tags=warning&click=https://grafana.aydenjahola.com/alerting/list'
+          url: '[[ key "ntfy/url" ]]/homelab-info?template=grafana&markdown=yes&priority=2&tags=warning&click=https://grafana.aydenjahola.com/alerting/list'
           httpMethod: POST
           authorization_scheme: Bearer
           authorization_credentials: '[[ key "ntfy/token/grafana" ]]'
@@ -43,21 +49,7 @@ contactPoints:
           title: '{{ template "homelab.ntfy.title" . }}'
           message: '{{ template "homelab.ntfy.message" . }}'
 
-  # Security alerts (rules labelled category=security) go to their own topic.
-  - orgId: 1
-    name: ntfy-security
-    receivers:
-      - uid: ntfy-homelab-security
-        type: webhook
-        disableResolveMessage: false
-        settings:
-          url: '[[ key "ntfy/url" ]]/homelab-security?template=grafana&markdown=yes&priority=4&tags=shield&click=https://grafana.aydenjahola.com/d/homelab-security-overview'
-          httpMethod: POST
-          authorization_scheme: Bearer
-          authorization_credentials: '[[ key "ntfy/token/cve-scan" ]]'
-          title: '{{ template "homelab.ntfy.title" . }}'
-          message: '{{ template "homelab.ntfy.message" . }}'
-
+  # Critical security alerts (rules labelled category=security) go to their own topic.
   - orgId: 1
     name: ntfy-security-critical
     receivers:
