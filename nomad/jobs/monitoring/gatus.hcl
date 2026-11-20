@@ -157,10 +157,11 @@ alerting:
     token: '{{ key "ntfy/token/gatus" }}'
     priority: 4
     click: "https://{{ env "NOMAD_META_domain" }}"
+    # Phone push: only after 5 minutes down, and no "resolved" follow-up.
     default-alert:
       enabled: true
-      send-on-resolved: true
-      failure-threshold: 3
+      send-on-resolved: false
+      failure-threshold: 5
       success-threshold: 2
 
 defaults: &defaults
@@ -479,6 +480,21 @@ endpoints:
   - name: solar-racing
     group: "Public Websites"
     url: "https://solarracing.ie"
+    <<: *defaults_https
+
+  - name: solar-racing-projects
+    group: "Public Websites"
+    url: "https://projects.solarracing.ie"
+    <<: *defaults_https
+
+  - name: solar-racing-auth
+    group: "Public Websites"
+    url: "https://auth.solarracing.ie/-/health/live/"
+    <<: *defaults_https
+
+  - name: solar-racing-lists
+    group: "Public Websites"
+    url: "https://lists.solarracing.ie"
     <<: *defaults_https
 EOH
       }

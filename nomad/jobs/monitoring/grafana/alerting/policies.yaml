@@ -1,4 +1,8 @@
 # Notification policy tree. Replaces whatever was set in the UI.
+#
+# Phone (ntfy) rule: only severity=critical lands on a topic that pushes.
+# Warnings go to homelab-info, which the phone does not subscribe to;
+# browse it in the ntfy web UI when you want the detail.
 apiVersion: 1
 
 policies:
@@ -9,28 +13,36 @@ policies:
     group_interval: 5m
     repeat_interval: 4h
     routes:
-      # Security alerts only go to the homelab-security ntfy topic.
-      - receiver: ntfy-security
+      # Security alerts (category=security): critical to homelab-security, the rest to homelab-info.
+      - receiver: ntfy
         object_matchers:
           - ["category", "=", "security"]
+        group_wait: 1m
+        group_interval: 15m
+        repeat_interval: 24h
         continue: false
         routes:
           - receiver: ntfy-security-critical
             object_matchers:
               - ["severity", "=", "critical"]
-            group_wait: 10s
-            repeat_interval: 1h
+            group_wait: 30s
+            group_interval: 15m
+            repeat_interval: 12h
       - receiver: ntfy-critical
         object_matchers:
           - ["severity", "=", "critical"]
-        group_wait: 10s
-        repeat_interval: 1h
+        group_wait: 30s
+        group_interval: 10m
+        repeat_interval: 6h
         continue: true
       - receiver: Discord
         object_matchers:
           - ["severity", "=", "critical"]
-        group_wait: 10s
-        repeat_interval: 1h
+        group_wait: 30s
+        repeat_interval: 6h
       - receiver: ntfy
+        group_wait: 1m
+        group_interval: 15m
+        repeat_interval: 24h
         continue: true
       - receiver: Discord

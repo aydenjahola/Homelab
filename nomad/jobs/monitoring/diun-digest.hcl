@@ -46,7 +46,7 @@ count="$(wc -l < /local/body.md | tr -d ' ')"
 
 curl -fsS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" \
   -H "Title: $count image updates this week" -H "Priority: 2" -H "Tags: package" -H "Markdown: yes" \
-  --data-binary @/local/body.md "$NTFY_URL/homelab-updates" >/dev/null
+  --data-binary @/local/body.md "$NTFY_URL/homelab-info" >/dev/null
 
 rm -f /data/sending.tsv
 cat /local/body.md

@@ -51,10 +51,11 @@ curl -fsS --resolve "$TRUENAS_HOST:443:$TRUENAS_IP" -H @"$NOMAD_SECRETS_DIR/true
 
 jq -r .uuid /local/alerts.jsonl | sort > /local/now.txt
 
+# send <priority> <tags> <title> <body> [topic]. WARNING-level alerts go to homelab-info (no phone push).
 send() {
   curl -fsS -H @"$NOMAD_SECRETS_DIR/ntfy-auth" -H "Priority: $1" -H "Tags: $2" \
     -H "Title: $3" -H "Click: $TRUENAS_URL/ui/alerts" \
-    --data-binary "$4" "$NTFY_URL/homelab-alerts" >/dev/null
+    --data-binary "$4" "$NTFY_URL/$${5:-homelab-alerts}" >/dev/null
 }
 
 while read -r alert; do
@@ -63,16 +64,16 @@ while read -r alert; do
   level="$(printf '%s' "$alert" | jq -r .level)"
   text="$(printf '%s' "$alert" | jq -r '.formatted // .text')"
   case "$level" in
-    WARNING) prio=3 ;;
-    ERROR) prio=4 ;;
-    *) prio=5 ;;
+    WARNING) prio=2; topic=homelab-info ;;
+    ERROR) prio=4; topic=homelab-alerts ;;
+    *) prio=5; topic=homelab-alerts ;;
   esac
-  send "$prio" "warning" "TrueNAS $level" "$text"
+  send "$prio" "warning" "TrueNAS $level" "$text" "$topic"
 done < /local/alerts.jsonl
 
 gone="$(comm -23 "$state" /local/now.txt | wc -l | tr -d ' ')"
 if [ "$gone" -gt 0 ]; then
-  send 2 "white_check_mark" "TrueNAS" "$gone alert(s) cleared"
+  send 2 "white_check_mark" "TrueNAS" "$gone alert(s) cleared" homelab-info
 fi
 
 cp /local/now.txt "$state"
