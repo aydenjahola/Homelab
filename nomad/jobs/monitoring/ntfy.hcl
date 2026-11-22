@@ -43,7 +43,7 @@ job "ntfy" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.ntfy.entrypoints=https",
+        "traefik.http.routers.ntfy.entrypoints=https,tunnel",
         "traefik.http.routers.ntfy.rule=Host(`${NOMAD_META_domain}`)",
       ]
 

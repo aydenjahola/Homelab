@@ -1088,6 +1088,28 @@ def traefik():
         f'sum by (service, code) (rate(traefik_service_requests_total{{{s},code=~"[45].."}}[$__rate_interval]))', "{{service}} {{code}}")],
         "reqps", fill=0, width=1, legend_place="right", legend_calcs=("mean", "max")), 12, 9)
 
+    d.row("Cloudflare Tunnel")
+    d.add(health("Tunnel connectors", [prom('count(cloudflared_tunnel_ha_connections > 0) or vector(0)')],
+                 thr((None, BAD), (1, WARN), (3, GOOD)),
+                 "cloudflared nodes connected to Cloudflare. 3 is normal; 0 means every public site is down."), 6, 4)
+    d.add(stat("Edge connections", [prom('sum(cloudflared_tunnel_ha_connections)')], "short",
+               thr((None, BAD), (4, WARN), (12, GOOD)), desc="4 per connector."), 6, 4)
+    d.add(stat("Tunnel requests/s", [prom('sum(rate(cloudflared_tunnel_total_requests[$__rate_interval]))')],
+               "reqps", FIXED(INFO), decimals=2), 6, 4)
+    d.add(stat("Tunnel errors (range)", [prom('sum(increase(cloudflared_tunnel_request_errors[$__range])) or vector(0)', instant=True)],
+               "short", COUNT_THR(1, 20), graph=False, decimals=0,
+               desc="Requests cloudflared could not proxy to Traefik."), 6, 4)
+    d.add(timeseries("Edge connections by node", [prom('sum by (node) (cloudflared_tunnel_ha_connections)', "{{node}}")],
+                     fill=10), 8, 8, newrow=True)
+    d.add(timeseries("Tunnel requests by node", [
+        prom('sum by (node) (rate(cloudflared_tunnel_total_requests[$__rate_interval]))', "{{node}}"),
+        prom('sum by (node) (rate(cloudflared_tunnel_request_errors[$__rate_interval]))', "{{node}} errors", "B")],
+        "reqps", fill=10, overrides=[series_color(".* errors", BAD, regex=True, dashed=True, fill=0)]), 8, 8)
+    d.add(bars("Tunnel responses by status", [prom(
+        'sum by (class) (label_replace(rate(cloudflared_tunnel_response_by_code[$__rate_interval]), '
+        '"class", "${1}xx", "status_code", "(.)..")', "{{class}}")],
+        unit="reqps", overrides=STATUS_COLORS), 8, 8)
+
     d.row("Connections and certificates", collapsed=True)
     d.add(timeseries("Open connections by entrypoint", [prom('sum by (entrypoint) (traefik_open_connections)', "{{entrypoint}}")],
                      fill=15), 8, 8)
@@ -1908,6 +1930,16 @@ ALERT_GROUPS = [
              "gt", 5, "10m", "warning",
              '{{ $labels.service }} returns {{ printf "%.1f" $values.A.Value }}% 5xx',
              "More than 5% of responses from this service have been server errors for 10 minutes."),
+        rule("cloudflared-down", "Cloudflare Tunnel down",
+             'sum(cloudflared_tunnel_ha_connections) or vector(0)', "lt", 1, "2m", "critical",
+             "Cloudflare Tunnel has no connections",
+             "No cloudflared connector is connected to Cloudflare, so every public site is unreachable. "
+             "Check the cloudflared job and the cloudflare/tunnel/token key."),
+        rule("cloudflared-degraded", "Cloudflare Tunnel degraded",
+             'count(cloudflared_tunnel_ha_connections > 0) or vector(0)', "lt", 2, "5m", "warning",
+             "Only {{ printf \"%.0f\" $values.A.Value }} cloudflared connector(s) connected",
+             "Fewer than 2 of the 3 nodes have a working tunnel connector. Public sites still work, "
+             "but one more failure takes them down."),
         rule("tls-cert-expiry", "TLS certificate expiring",
              'min by (cn) (traefik_tls_certs_not_after - time()) / 86400', "lt", 14, "1h", "warning",
              'Certificate {{ $labels.cn }} expires in {{ printf "%.0f" $values.A.Value }} days',

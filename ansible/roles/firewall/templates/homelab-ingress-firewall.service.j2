@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Homelab ingress firewall (nft table inet homelab_ingress)
+DefaultDependencies=no
+Wants=network-pre.target
+Before=network-pre.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/homelab-firewall/ingress.nft
+ExecReload=/usr/sbin/nft -f /etc/homelab-firewall/ingress.nft
+ExecStop=/usr/sbin/nft delete table inet homelab_ingress
+
+[Install]
+WantedBy=multi-user.target

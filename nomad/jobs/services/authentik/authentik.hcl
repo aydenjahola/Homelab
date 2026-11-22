@@ -47,7 +47,7 @@ job "authentik" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.authentik.entrypoints=https",
+        "traefik.http.routers.authentik.entrypoints=https,tunnel",
         "traefik.http.routers.authentik.rule=Host(`${NOMAD_META_domain}`)",
 
         # Embedded outpost endpoints (login callback, sign_out) on every forward-auth host.

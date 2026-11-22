@@ -82,7 +82,7 @@ http:
           - "192.168.1.0/24"
           - "172.16.0.0/12"
           - "10.0.0.0/8"
-          - "127.0.0.1/32"
+          # No 127.0.0.1: Cloudflare Tunnel traffic arrives from loopback.
 EOH
       }
 
@@ -129,10 +129,13 @@ http:
             - "2405:8100::/32"
             - "2a06:98c0::/29"
             - "2c0f:f248::/32"
+            # cloudflared on the same node (tunnel entrypoint)
+            - "127.0.0.1/32"
+          # No 127.0.0.1 here: tunnel traffic comes from loopback and must
+          # still be checked against the real client IP.
           clientTrustedIPs:
             - "192.168.1.0/24"
             - "172.16.0.0/12"
-            - "127.0.0.1/32"
 EOH
       }
 
@@ -148,6 +151,18 @@ entryPoints:
   # Loopback only: the crowdsec bouncer plugin reaches the LAPI through here.
   crowdsec-lapi:
     address: "127.0.0.1:8081"
+
+  # Loopback only: cloudflared (Nomad job ingress/cloudflared) sends all
+  # public traffic here. TLS ends at Cloudflare. Only routers that list
+  # this entrypoint are public; everything else gets a 404.
+  tunnel:
+    address: "127.0.0.1:8880"
+    forwardedHeaders:
+      trustedIPs:
+        - "127.0.0.1/32"
+    http:
+      middlewares:
+        - crowdsec@file
 
   http:
     address: ":80"

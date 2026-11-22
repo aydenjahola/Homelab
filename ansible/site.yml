@@ -41,6 +41,8 @@
       tags: [cni, nomad]
     - role: virt
       tags: [virt, nomad]
+    - role: firewall
+      tags: [firewall]
     - role: openvpn
       tags: [openvpn]
       when: openvpn_enabled | bool

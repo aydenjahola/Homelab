@@ -43,7 +43,7 @@ job "vaultwarden" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.vault.entrypoints=https",
+        "traefik.http.routers.vault.entrypoints=https,tunnel",
         "traefik.http.routers.vault.rule=Host(`${NOMAD_META_domain}`)",
       ]
 

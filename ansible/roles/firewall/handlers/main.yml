@@ -1,0 +1,8 @@
+---
+- name: Reload ingress firewall
+  ansible.builtin.systemd_service:
+    name: homelab-ingress-firewall.service
+    daemon_reload: true
+    state: reloaded
+  # The unit file doesn't exist yet on a first --check run.
+  ignore_errors: "{{ ansible_check_mode }}"
