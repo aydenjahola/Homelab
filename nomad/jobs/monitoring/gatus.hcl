@@ -43,9 +43,9 @@ job "gatus" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.gatus.entrypoints=https",
+        "traefik.http.routers.gatus.entrypoints=https,tunnel",
         "traefik.http.routers.gatus.rule=Host(`${NOMAD_META_domain}`)",
-        "traefik.http.routers.gatus-old.entrypoints=https",
+        "traefik.http.routers.gatus-old.entrypoints=https,tunnel",
         "traefik.http.routers.gatus-old.rule=Host(`gatus.aydenjahola.com`)",
         "traefik.http.routers.gatus-old.middlewares=gatus-old",
         "traefik.http.middlewares.gatus-old.redirectregex.regex=^https://gatus\\.aydenjahola\\.com/(.*)",
@@ -285,6 +285,15 @@ endpoints:
     group: Monitoring
     url: "https://status.aydenjahola.com"
     <<: *defaults_https
+
+  # Resolves through public DNS, so this goes out to Cloudflare and back in
+  # through the tunnel (everything else here uses AdGuard and stays on the LAN).
+  - name: public-edge
+    group: Monitoring
+    url: "https://status.aydenjahola.com/health"
+    <<: *defaults_https
+    client:
+      dns-resolver: "tcp://1.1.1.1:53"
 
   - name: ntfy
     group: Monitoring

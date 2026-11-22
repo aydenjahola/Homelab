@@ -43,7 +43,7 @@ job "hedgedoc" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.md.entrypoints=https",
+        "traefik.http.routers.md.entrypoints=https,tunnel",
         "traefik.http.routers.md.rule=Host(`${NOMAD_META_domain}`)",
       ]
 

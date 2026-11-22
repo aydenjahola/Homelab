@@ -43,7 +43,7 @@ job "stirling-pdf" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.stirling.entrypoints=https",
+        "traefik.http.routers.stirling.entrypoints=https,tunnel",
         "traefik.http.routers.stirling.rule=Host(`${NOMAD_META_domain}`)",
       ]
 

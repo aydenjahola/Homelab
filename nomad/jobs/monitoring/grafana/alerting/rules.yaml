@@ -926,6 +926,84 @@ groups:
         annotations:
           summary: "{{ $labels.service }} returns {{ with $values.A }}{{ printf \"%.1f\" .Value }}{{ end }}% 5xx"
           description: "More than 5% of responses from this service have been server errors for 10 minutes."
+      - uid: "cloudflared-down"
+        title: "Cloudflare Tunnel down"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "PBFA97CFB590B2093"
+            model:
+              refId: "A"
+              expr: "sum(cloudflared_tunnel_ha_connections) or vector(0)"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              instant: true
+              range: false
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "lt"
+                    params:
+                      - 1
+        for: "2m"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "critical"
+        annotations:
+          summary: "Cloudflare Tunnel has no connections"
+          description: "No cloudflared connector is connected to Cloudflare, so every public site is unreachable. Check the cloudflared job and the cloudflare/tunnel/token key."
+      - uid: "cloudflared-degraded"
+        title: "Cloudflare Tunnel degraded"
+        condition: "C"
+        data:
+          - refId: "A"
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: "PBFA97CFB590B2093"
+            model:
+              refId: "A"
+              expr: "count(cloudflared_tunnel_ha_connections > 0) or vector(0)"
+              intervalMs: 15000
+              maxDataPoints: 43200
+              instant: true
+              range: false
+          - refId: "C"
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "__expr__"
+            model:
+              refId: "C"
+              type: "threshold"
+              expression: "A"
+              conditions:
+                - evaluator:
+                    type: "lt"
+                    params:
+                      - 2
+        for: "5m"
+        noDataState: "OK"
+        execErrState: "Error"
+        isPaused: false
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "Only {{ with $values.A }}{{ printf \"%.0f\" .Value }}{{ end }} cloudflared connector(s) connected"
+          description: "Fewer than 2 of the 3 nodes have a working tunnel connector. Public sites still work, but one more failure takes them down."
       - uid: "tls-cert-expiry"
         title: "TLS certificate expiring"
         condition: "C"

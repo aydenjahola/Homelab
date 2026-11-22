@@ -178,6 +178,14 @@ scrape_configs:
       - source_labels: [__meta_consul_node]
         target_label: node
 
+  - job_name: "cloudflared"
+    consul_sd_configs:
+      - server: "{{ env "attr.unique.network.ip-address" }}:8500"
+        services: ["cloudflared-metrics"]
+    relabel_configs:
+      - source_labels: [__meta_consul_node]
+        target_label: node
+
   - job_name: "adguard"
     consul_sd_configs:
       - server: "{{ env "attr.unique.network.ip-address" }}:8500"

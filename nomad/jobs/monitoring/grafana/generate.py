@@ -1908,6 +1908,16 @@ ALERT_GROUPS = [
              "gt", 5, "10m", "warning",
              '{{ $labels.service }} returns {{ printf "%.1f" $values.A.Value }}% 5xx',
              "More than 5% of responses from this service have been server errors for 10 minutes."),
+        rule("cloudflared-down", "Cloudflare Tunnel down",
+             'sum(cloudflared_tunnel_ha_connections) or vector(0)', "lt", 1, "2m", "critical",
+             "Cloudflare Tunnel has no connections",
+             "No cloudflared connector is connected to Cloudflare, so every public site is unreachable. "
+             "Check the cloudflared job and the cloudflare/tunnel/token key."),
+        rule("cloudflared-degraded", "Cloudflare Tunnel degraded",
+             'count(cloudflared_tunnel_ha_connections > 0) or vector(0)', "lt", 2, "5m", "warning",
+             "Only {{ printf \"%.0f\" $values.A.Value }} cloudflared connector(s) connected",
+             "Fewer than 2 of the 3 nodes have a working tunnel connector. Public sites still work, "
+             "but one more failure takes them down."),
         rule("tls-cert-expiry", "TLS certificate expiring",
              'min by (cn) (traefik_tls_certs_not_after - time()) / 86400', "lt", 14, "1h", "warning",
              'Certificate {{ $labels.cn }} expires in {{ printf "%.0f" $values.A.Value }} days',

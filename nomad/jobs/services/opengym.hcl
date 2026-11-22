@@ -45,7 +45,7 @@ job "opengym" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.opengym.entrypoints=https",
+        "traefik.http.routers.opengym.entrypoints=https,tunnel",
         "traefik.http.routers.opengym.rule=Host(`${NOMAD_META_domain}`)",
       ]
 

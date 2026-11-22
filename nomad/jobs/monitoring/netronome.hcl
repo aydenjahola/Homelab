@@ -43,7 +43,7 @@ job "netronome" {
 
       tags = [
         "traefik.enable=true",
-        "traefik.http.routers.netronome.entrypoints=https",
+        "traefik.http.routers.netronome.entrypoints=https,tunnel",
         "traefik.http.routers.netronome.rule=Host(`${NOMAD_META_domain}`)",
       ]
 

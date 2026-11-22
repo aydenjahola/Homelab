@@ -44,8 +44,11 @@ job "cloudflare-ddns" {
         error_on_missing_key = true
         data                 = <<EOH
 CLOUDFLARE_API_TOKEN = "{{ key "cloudflare/api/key" }}"
-DOMAINS              = {{ key "cloudflare/zone" }}
-PROXIED              = true
+# Only the OpenVPN endpoint. Web hosts use the tunnel CNAME that OpenTofu
+# owns (cloudflare/dns.tf); DDNS must not touch *.aydenjahola.com.
+# Cloudflare can't proxy UDP, so this record is DNS-only.
+DOMAINS              = vpn.aydenjahola.com
+PROXIED              = false
 TZ                   = "Europe/Dublin"
 UPDATE_CRON          = "@every 2m"
 IP6_PROVIDER         = "none"
