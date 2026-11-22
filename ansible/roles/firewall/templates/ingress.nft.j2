@@ -1,0 +1,22 @@
+#!/usr/sbin/nft -f
+# {{ ansible_managed }}
+#
+# Defence in depth for the Cloudflare Tunnel: even if a port forward comes
+# back on the router, internet traffic can't reach Traefik on 80/443.
+#
+# Own table only. Never "flush ruleset": Docker, the Nomad CNI, libvirt and
+# openvpn-iptables keep their own rules in the iptables-nft tables.
+# "table + delete table" makes reloads atomic and idempotent.
+table inet homelab_ingress
+delete table inet homelab_ingress
+
+table inet homelab_ingress {
+  chain input {
+    type filter hook input priority filter - 10; policy accept;
+
+    iifname "lo" accept
+    tcp dport { {{ firewall_ingress_ports | join(', ') }} } ip saddr { {{ firewall_ingress_allowed_v4 | join(', ') }} } accept
+    tcp dport { {{ firewall_ingress_ports | join(', ') }} } ip6 saddr { {{ firewall_ingress_allowed_v6 | join(', ') }} } accept
+    tcp dport { {{ firewall_ingress_ports | join(', ') }} } counter drop
+  }
+}

@@ -1,0 +1,15 @@
+---
+# Sources allowed to reach Traefik on tcp/80 and tcp/443. Everything else
+# is dropped. Public traffic arrives through the Cloudflare Tunnel
+# (cloudflared -> 127.0.0.1:8880), never on these ports.
+#   192.168.1.0/24  LAN (includes the VIP)
+#   10.0.0.0/8      OpenVPN clients (10.8.0.0/24) and other private ranges
+#   172.16.0.0/12   Docker and Nomad CNI bridges
+firewall_ingress_ports: [80, 443]
+firewall_ingress_allowed_v4:
+  - 192.168.1.0/24
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+firewall_ingress_allowed_v6:
+  - fe80::/10
+  - fc00::/7

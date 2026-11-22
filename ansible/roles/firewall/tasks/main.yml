@@ -1,0 +1,39 @@
+---
+# Loaded by its own oneshot unit. nftables.service stays disabled: Debian's
+# default /etc/nftables.conf starts with "flush ruleset", which would wipe
+# the Docker, CNI, libvirt and OpenVPN rules.
+- name: Firewall config directory
+  ansible.builtin.file:
+    path: /etc/homelab-firewall
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ingress firewall rules
+  ansible.builtin.template:
+    src: ingress.nft.j2
+    dest: /etc/homelab-firewall/ingress.nft
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/nft -c -f %s
+  notify: Reload ingress firewall
+
+- name: Ingress firewall unit
+  ansible.builtin.template:
+    src: homelab-ingress-firewall.service.j2
+    dest: /etc/systemd/system/homelab-ingress-firewall.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload ingress firewall
+
+- name: Ingress firewall service
+  ansible.builtin.systemd_service:
+    name: homelab-ingress-firewall.service
+    daemon_reload: true
+    enabled: true
+    state: started
+  # The unit file doesn't exist yet on a first --check run.
+  ignore_errors: "{{ ansible_check_mode }}"
