@@ -10,6 +10,7 @@ permissions:
 env:
   # Matches the server version running on the cluster (`nomad server members`).
   NOMAD_VERSION: "2.0.3"
+  TOFU_VERSION: "1.13.9"
 
 jobs:
   pre-commit:
@@ -24,6 +25,10 @@ jobs:
       - uses: hashicorp/setup-nomad@ceba9087d4322dbdd7b35dafac5a87a8c459a157 # v1.0.0
         with:
           version: ${{ env.NOMAD_VERSION }}
+      - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+          tofu_wrapper: false
       - run: pip install pre-commit==4.3.0
       # The hook's venv has no Ansible collections, so ansible-lint fails to
       # resolve modules here; the `ansible` job installs them and lints.
@@ -63,6 +68,23 @@ jobs:
             echo "::endgroup::"
           done < <(find jobs -name '*.hcl' | sort)
           exit "$status"
+
+  tofu:
+    # Cloudflare config: format and validate only. No backend and no
+    # credentials, so nothing here can read state or touch the account.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cloudflare
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+          tofu_wrapper: false
+      - run: tofu fmt -check -recursive
+      - run: tofu init -backend=false -input=false
+      - run: tofu validate
 
   ansible:
     runs-on: ubuntu-latest
