@@ -1,4 +1,4 @@
-# Setup: `brew install pre-commit nomad` (nomad is required for the nomad-fmt hook),
+# Setup: `brew install pre-commit nomad opentofu` (nomad and tofu are required for the fmt hooks),
 # then `pre-commit install`. Run everything with `pre-commit run --all-files`.
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -33,3 +33,9 @@ repos:
         entry: nomad fmt -check
         language: system
         files: ^nomad/.*\.hcl$
+
+      - id: tofu-fmt
+        name: tofu fmt -check
+        entry: tofu fmt -check
+        language: system
+        files: ^cloudflare/.*\.tf$
