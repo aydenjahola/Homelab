@@ -9,9 +9,9 @@ locals {
 }
 
 variable "tunnel_cutover" {
-  description = "Point *.aydenjahola.com at the tunnel (true) or keep it on the home IP (false, managed by DDNS until Stage B)."
+  description = "Point *.aydenjahola.com at the tunnel. Set false only to roll back (then restore the home-IP record and port forwards)."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Every public hostname. Which ones actually answer is decided by the
