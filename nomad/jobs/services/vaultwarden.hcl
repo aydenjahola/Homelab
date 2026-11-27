@@ -130,6 +130,10 @@ SSO_AUTHORITY           = {{ key "authentik/url" }}/application/o/vaultwarden/
 SSO_SCOPES              = "openid profile email offline_access"
 SSO_CLIENT_ID           = {{ key "authentik/oidc/vaultwarden/client_id" }}
 SSO_CLIENT_SECRET       = {{ key "authentik/oidc/vaultwarden/client_secret" }}
+# Use Authentik for login only; Vaultwarden owns the session. Otherwise each
+# client refresh is exchanged against Authentik's rotating refresh token, and a
+# revoked/raced token (invalid_grant) logs the client out, e.g. after sleep.
+SSO_AUTH_ONLY_NOT_SESSION = true
 
 WEBSOCKET_ENABLED = true
 
