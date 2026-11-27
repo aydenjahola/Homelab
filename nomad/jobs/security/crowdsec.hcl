@@ -118,6 +118,7 @@ EOH
           "/storage/nomad/${NOMAD_JOB_NAME}/${NOMAD_TASK_NAME}/data:/var/lib/crowdsec/data:rw",
           "local/acquis.yaml:/etc/crowdsec/acquis.yaml:ro",
           "local/config.yaml.local:/etc/crowdsec/config.yaml.local:ro",
+          "local/home-ip.yaml:/etc/crowdsec/postoverflows/s01-whitelist/home-ip.yaml:ro",
         ]
       }
 
@@ -156,6 +157,20 @@ prometheus:
   level: full
   listen_addr: 0.0.0.0
   listen_port: 6060
+EOH
+      }
+
+      # Never ban the home IP. It is dynamic, so resolve it from the
+      # DNS-only (unproxied) DDNS record vpn.aydenjahola.com at overflow time.
+      template {
+        destination = "local/home-ip.yaml"
+        data        = <<EOH
+name: homelab/home-ip-whitelist
+description: Never ban the home public IP (tracked by DDNS)
+whitelist:
+  reason: home IP
+  expression:
+    - evt.Overflow.Alert.Source.IP in LookupHost('vpn.aydenjahola.com')
 EOH
       }
 
